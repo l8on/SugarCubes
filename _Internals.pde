@@ -20,6 +20,7 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
 import processing.opengl.*;
 import java.lang.reflect.*;
+import rwmidi.*;
 
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;

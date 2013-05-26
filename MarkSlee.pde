@@ -276,3 +276,71 @@ class BoomEffect extends SCEffect {
   }
 }
 
+public class PianoKeyPattern extends SCPattern {
+  
+  final LinearEnvelope[] cubeBrt;
+  final SinLFO base[];  
+  final BasicParameter attack = new BasicParameter("ATK", 0.1);
+  final BasicParameter release = new BasicParameter("REL", 0.5);
+  final BasicParameter level = new BasicParameter("AMB", 0.6);
+  
+  PianoKeyPattern(GLucose glucose) {
+    super(glucose);
+    
+    for (MidiInputDevice input : RWMidi.getInputDevices()) {
+      input.createInput(this);
+    }
+    
+    addParameter(attack);
+    addParameter(release);
+    addParameter(level);
+    cubeBrt = new LinearEnvelope[Cube.list.size() / 4];
+    for (int i = 0; i < cubeBrt.length; ++i) {
+      addModulator(cubeBrt[i] = new LinearEnvelope(0, 0, 100));
+    }
+    base = new SinLFO[Cube.list.size() / 12];
+    for (int i = 0; i < base.length; ++i) {
+      addModulator(base[i] = new SinLFO(0, 1, 7000 + 1000*i)).trigger();
+    }
+  }
+  
+  private float getAttackTime() {
+    return 15 + attack.getValuef()*attack.getValuef() * 2000;
+  }
+  
+  private float getReleaseTime() {
+    return 15 + release.getValuef() * 3000;
+  }
+  
+  private LinearEnvelope getEnvelope(int index) {
+    return cubeBrt[index % cubeBrt.length];
+  }
+  
+  private SinLFO getBase(int index) {
+    return base[index % base.length];
+  }
+    
+  public void noteOnReceived(Note note) {
+    LinearEnvelope env = getEnvelope(note.getPitch());
+    env.setEndVal(min(1, env.getValuef() + (note.getVelocity() / 127.)), getAttackTime()).start();
+  }
+  
+  public void noteOffReceived(Note note) {
+    getEnvelope(note.getPitch()).setEndVal(0, getReleaseTime()).start();
+  }
+  
+  public void run(int deltaMs) {
+    int i = 0;
+    float huef = lx.getBaseHuef();
+    float levelf = level.getValuef();
+    for (Cube c : Cube.list) {
+      float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
+      setColor(c, color(
+        (huef + 20*v + abs(c.fy-128.)*.3 + c.fz) % 360,
+        min(100, 120*v),
+        100*v
+      ));
+    }
+  }
+}
+

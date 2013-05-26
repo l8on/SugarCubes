@@ -28,6 +28,7 @@ LXPattern[] patterns(GLucose glucose) {
     new SpaceTime(glucose),
     new Swarm(glucose),
     new CubeEQ(glucose),
+    new PianoKeyPattern(glucose),
     
     // Basic test patterns for reference, not art
 //    new TestHuePattern(glucose),

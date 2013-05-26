@@ -6,10 +6,12 @@
 
 import glucose.*;
 import glucose.control.*;
+import glucose.effect.*;
 import glucose.pattern.*;
 import glucose.transition.*;
 import glucose.model.*;
 import heronarts.lx.*;
+import heronarts.lx.control.*;
 import heronarts.lx.effect.*;
 import heronarts.lx.pattern.*;
 import heronarts.lx.modulator.*;
@@ -30,7 +32,6 @@ LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
-int activeTransitionIndex = 0;
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -38,6 +39,7 @@ void setup() {
   // Initialize the Processing graphics environment
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frameRate(TARGET_FRAMERATE);
+  noSmooth();
   // hint(ENABLE_OPENGL_4X_SMOOTH); // no discernable improvement?
   logTime("Created viewport");
 
@@ -59,8 +61,8 @@ void setup() {
   logTime("Built overlay UI");
   
   // MIDI devices
-  MidiKnobController.initializeStandardDevices(glucose);
-  logTime("Setup MIDI controllers");
+  SCMidiDevices.initializeStandardDevices(glucose);
+  logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
 }
@@ -86,9 +88,15 @@ void drawUI() {
 }
 
 boolean uiOn = true;
+boolean knobsOn = true;
 void keyPressed() {
-  if (key == 'u') {
-    uiOn = !uiOn;
+  switch (key) {
+    case 'u':
+      uiOn = !uiOn;
+      break;
+    case 'k':
+      knobsOn = !knobsOn;
+      break;
   }
 }
 

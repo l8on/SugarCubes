@@ -3,10 +3,10 @@ class SpaceTime extends SCPattern {
   SinLFO pos = new SinLFO(0, 15, 3000);
   SinLFO rate = new SinLFO(1000, 9000, 13000);
   SinLFO falloff = new SinLFO(10, 70, 5000);
-  float sat = 0;
-  
-  BasicKnob rateKnob = new BasicKnob("RATE", 0.5);
-  BasicKnob sizeKnob = new BasicKnob("SIZE", 0.5);
+  float angle = 0;
+
+  BasicParameter rateParameter = new BasicParameter("RATE", 0.5);
+  BasicParameter sizeParameter = new BasicParameter("SIZE", 0.5);
 
   public SpaceTime(GLucose glucose) {
     super(glucose);
@@ -14,22 +14,22 @@ class SpaceTime extends SCPattern {
     addModulator(rate).trigger();
     addModulator(falloff).trigger();    
     pos.modulateDurationBy(rate);
-    addKnob(rateKnob);
-    addKnob(sizeKnob);
+    addParameter(rateParameter);
+    addParameter(sizeParameter);
   }
-  
-  public void onKnobChange(Knob knob) {
-    if (knob == rateKnob) {
-        rate.stop().setValue(9000 - 8000*knob.getValuef());
-    } else if (knob == sizeKnob) {
-        falloff.stop().setValue(70 - 60*knob.getValuef());
+
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == rateParameter) {
+      rate.stop().setValue(9000 - 8000*parameter.getValuef());
+    }  else if (parameter == sizeParameter) {
+      falloff.stop().setValue(70 - 60*parameter.getValuef());
     }
   }
 
   void run(int deltaMs) {    
-    sat += deltaMs * 0.00004;
-    float sVal1 = Strip.list.size() * (0.5 + 0.5*sin(sat));
-    float sVal2 = Strip.list.size() * (0.5 + 0.5*cos(sat));
+    angle += deltaMs * 0.0007;
+    float sVal1 = Strip.list.size() * (0.5 + 0.5*sin(angle));
+    float sVal2 = Strip.list.size() * (0.5 + 0.5*cos(angle));
 
     float pVal = pos.getValuef();
     float fVal = falloff.getValuef();
@@ -39,12 +39,13 @@ class SpaceTime extends SCPattern {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
-        (lx.getBaseHuef() + s*.2 + i*3) % 360, 
-        min(100, min(abs(s - sVal1), abs(s - sVal2))), 
+        (lx.getBaseHuef() + 360 - p.fy*.2 + p.fz * .3) % 360, 
+        constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
         max(0, 100 - fVal*abs(i - pVal))
           );
         ++i;
       }
+      ++s;
     }
   }
 }
@@ -99,21 +100,27 @@ class Swarm extends SCPattern {
 }
 
 class SwipeTransition extends SCTransition {
+  
+  final BasicParameter bleed = new BasicParameter("WIDTH", 0.5);
+  
   SwipeTransition(GLucose glucose) {
     super(glucose);
     setDuration(5000);
+    addParameter(bleed);
   }
 
   void computeBlend(int[] c1, int[] c2, double progress) {
-    float bleed = 50.;
-    float yPos = (float) (-bleed + progress * (255. + bleed));
+    float bleedf = 10 + bleed.getValuef() * 200.;
+    float yPos = (float) (-bleedf + progress * (255. + bleedf));
     for (Point p : Point.list) {
-      float d = (p.fy - yPos) / 50.;
+      float d = (p.fy - yPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
-      } else if (d > 1) {
+      } 
+      else if (d > 1) {
         colors[p.index] = c1[p.index];
-      } else {
+      } 
+      else {
         colors[p.index] = lerpColor(c2[p.index], c1[p.index], d, RGB);
       }
     }
@@ -126,23 +133,23 @@ class CubeEQ extends SCPattern {
   private LinearEnvelope[] bandVals = null;
   private int avgSize;
 
-  private final BasicKnob thrsh = new BasicKnob("LVL", 0.35);
-  private final BasicKnob range = new BasicKnob("RANG", 0.45);
-  private final BasicKnob edge = new BasicKnob("EDGE", 0.5);
-  private final BasicKnob speed = new BasicKnob("SPD", 0.5);
-  private final BasicKnob tone = new BasicKnob("TONE", 0.5);
-  private final BasicKnob clr = new BasicKnob("CLR", 0.5);
+  private final BasicParameter thrsh = new BasicParameter("LVL", 0.35);
+  private final BasicParameter range = new BasicParameter("RANG", 0.45);
+  private final BasicParameter edge = new BasicParameter("EDGE", 0.5);
+  private final BasicParameter speed = new BasicParameter("SPD", 0.5);
+  private final BasicParameter tone = new BasicParameter("TONE", 0.5);
+  private final BasicParameter clr = new BasicParameter("CLR", 0.5);
 
   public CubeEQ(GLucose glucose) {
     super(glucose);
-    addKnob(thrsh);
-    addKnob(range);
-    addKnob(edge);
-    addKnob(speed);
-    addKnob(tone);
-    addKnob(clr);
+    addParameter(thrsh);
+    addParameter(range);
+    addParameter(edge);
+    addParameter(speed);
+    addParameter(tone);
+    addParameter(clr);
   }
-  
+
   protected void onActive() {
     if (this.fft == null) {
       this.fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
@@ -160,7 +167,7 @@ class CubeEQ extends SCPattern {
     this.fft.forward(this.lx.audioInput().mix);
     float toneConst = .35 + .4 * (tone.getValuef() - 0.5);
     float edgeConst = 2 + 30*(edge.getValuef()*edge.getValuef()*edge.getValuef());
-    
+
     for (int i = 0; i < avgSize; ++i) {
       float value = this.fft.getAvg(i);
       value = 20*log(1 + sqrt(value));
@@ -169,11 +176,12 @@ class CubeEQ extends SCPattern {
       value *= 6;
       if (value > this.bandVals[i].getValue()) {
         this.bandVals[i].setEndVal(value, 40).trigger();
-      } else {
+      } 
+      else {
         this.bandVals[i].setEndVal(value, 1000 - 900*speed.getValuef()).trigger();
       }
     }
-    
+
     float jBase = 120 - 360*thrsh.getValuef();
     float jConst = 300.*(1-range.getValuef());
     float clrConst = 1.1 + clr.getValuef();
@@ -183,16 +191,87 @@ class CubeEQ extends SCPattern {
       int avgFloor = (int) avgIndex;
       float j = jBase + jConst * (p.fz / 128.);
       float value = lerp(
-        this.bandVals[avgFloor].getValuef(),
-        this.bandVals[avgFloor+1].getValuef(),
-        avgIndex-avgFloor
-      );
-      
+      this.bandVals[avgFloor].getValuef(), 
+      this.bandVals[avgFloor+1].getValuef(), 
+      avgIndex-avgFloor
+        );
+
       float b = constrain(edgeConst * (value - j), 0, 100);
       colors[p.index] = color(
-        (480 + lx.getBaseHuef() - min(clrConst*p.fz, 120)) % 360, 
-        100, 
-        b);
+      (480 + lx.getBaseHuef() - min(clrConst*p.fz, 120)) % 360, 
+      100, 
+      b);
+    }
+  }
+}
+
+class BoomEffect extends SCEffect {
+
+  final BasicParameter falloff = new BasicParameter("WIDTH", 0.5);
+  final BasicParameter speed = new BasicParameter("SPD", 0.5);
+  final BasicParameter bright = new BasicParameter("BRT", 1.0);
+  final BasicParameter sat = new BasicParameter("SAT", 0.2);
+  List<Layer> layers = new ArrayList<Layer>();
+
+  class Layer {
+    LinearEnvelope boom = new LinearEnvelope(-40, 500, 1300);
+
+    Layer() {
+      addModulator(boom);
+      trigger();
+    }
+
+    void trigger() {
+      float falloffv = falloffv();
+      boom.setRange(-100 / falloffv, 500 + 100/falloffv, 4000 - speed.getValuef() * 3300);
+      boom.trigger();
+    }
+
+    void doApply(int[] colors) {
+      float brightv = 100 * bright.getValuef();
+      float falloffv = falloffv();
+      float satv = sat.getValuef() * 100;
+      float huev = lx.getBaseHuef();
+      for (Point p : Point.list) {
+        colors[p.index] = blendColor(
+        colors[p.index], 
+        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(2*p.fx, p.fy, 2*p.fz, 128, 128, 128)), 0, 100)), 
+        ADD);
+      }
+    }
+  }
+
+  BoomEffect(GLucose glucose) {
+    super(glucose, true);
+    addParameter(falloff);
+    addParameter(speed);
+    addParameter(bright);
+    addParameter(sat);
+  }
+
+  public void onEnable() {
+    for (Layer l : layers) {
+      if (!l.boom.isRunning()) {
+        l.trigger();
+        return;
+      }
+    }
+    layers.add(new Layer());
+  }
+
+  private float falloffv() {
+    return 20 - 19 * falloff.getValuef();
+  }
+
+  public void onTrigger() {
+    onEnable();
+  }
+
+  public void doApply(int[] colors) {
+    for (Layer l : layers) {
+      if (l.boom.isRunning()) {
+        l.doApply(colors);
+      }
     }
   }
 }

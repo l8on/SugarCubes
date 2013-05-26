@@ -39,15 +39,16 @@ LXPattern[] patterns(GLucose glucose) {
 
 LXTransition[] transitions(GLucose glucose) {
   return new LXTransition[] {
-    new DissolveTransition(lx).setDuration(3000),
+    new DissolveTransition(lx),
     new SwipeTransition(glucose),
-    new FadeTransition(lx).setDuration(2000),
+    new FadeTransition(lx),
   };
 }
 
 LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
     new FlashEffect(lx),
+    new BoomEffect(glucose),
     new DesaturationEffect(lx),
   };
 }

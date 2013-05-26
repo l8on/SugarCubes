@@ -6,15 +6,17 @@
 class OverlayUI {
   
   private final PFont titleFont = createFont("Myriad Pro", 10);
-  private final PFont itemFont = createFont("Myriad Pro", 11);
+  private final PFont itemFont = createFont("Lucida Grande", 11);
   private final PFont knobFont = titleFont;
   private final int w = 140;
   private final int leftPos;
   private final int leftTextPos;
   private final int lineHeight = 20;
   private final int sectionSpacing = 12;
+  private final int controlSpacing = 18;
   private final int tempoHeight = 20;
   private final int knobSize = 28;
+  private final float knobIndent = .4;  
   private final int knobSpacing = 6;
   private final int knobLabelHeight = 14;
   private final color lightBlue = #666699;
@@ -27,23 +29,45 @@ class OverlayUI {
   private PImage logo;
   
   private int firstPatternY;
+  private int firstPatternKnobY;
   private int firstTransitionY;
+  private int firstTransitionKnobY;
   private int firstEffectY;
-  private int firstKnobY;
+  private int firstEffectKnobY;
+
   private int tempoY;
   
   private Method patternStateMethod;
   private Method transitionStateMethod;
   private Method effectStateMethod;
   
+  private final int NUM_TRANSITION_KNOBS = 4;
+  private final int NUM_EFFECT_KNOBS = 4;
+  
+  private int activeTransitionIndex = 0;
+  private int activeEffectIndex = 0;
+  
+  private final VirtualTransitionKnob[] transitionKnobs;
+  private final VirtualEffectKnob[] effectKnobs;
+    
   OverlayUI() {
     leftPos = width - w;
     leftTextPos = leftPos + 4;
     logo = loadImage("logo-sm.png");
     
-    patternNames = classNameArray(patterns);
-    transitionNames = classNameArray(transitions);
-    effectNames = classNameArray(effects);    
+    patternNames = classNameArray(patterns, "Pattern");
+    transitionNames = classNameArray(transitions, "Transition");
+    effectNames = classNameArray(effects, "Effect");
+
+    transitionKnobs = new VirtualTransitionKnob[NUM_TRANSITION_KNOBS];
+    for (int i = 0; i < transitionKnobs.length; ++i) {
+      transitionKnobs[i] = new VirtualTransitionKnob(i);
+    }
+
+    effectKnobs = new VirtualEffectKnob[NUM_EFFECT_KNOBS];
+    for (int i = 0; i < effectKnobs.length; ++i) {
+      effectKnobs[i] = new VirtualEffectKnob(i);
+    }
 
     try {
       patternStateMethod = getClass().getMethod("getState", LXPattern.class);
@@ -71,11 +95,8 @@ class OverlayUI {
     int yPos = 0;    
     firstPatternY = yPos + lineHeight + 6;
     yPos = drawObjectList(yPos, "PATTERN", patterns, patternNames, patternStateMethod);
-
-    yPos += sectionSpacing;
-    yPos = drawObjectList(yPos, "CONTROL", null, null, null);
-    yPos += 6;
-    firstKnobY = yPos;
+    yPos += controlSpacing;
+    firstPatternKnobY = yPos;
     int xPos = leftTextPos;
     for (int i = 0; i < glucose.NUM_PATTERN_KNOBS/2; ++i) {
       drawKnob(xPos, yPos, knobSize, glucose.patternKnobs[i]);
@@ -87,10 +108,26 @@ class OverlayUI {
     yPos += sectionSpacing;
     firstTransitionY = yPos + lineHeight + 6;
     yPos = drawObjectList(yPos, "TRANSITION", transitions, transitionNames, transitionStateMethod);
+    yPos += controlSpacing;
+    firstTransitionKnobY = yPos;
+    xPos = leftTextPos;
+    for (int i = 0; i < transitionKnobs.length; ++i) {
+      drawKnob(xPos, yPos, knobSize, transitionKnobs[i]);
+      xPos += knobSize + knobSpacing;
+    }
+    yPos += knobSize + knobLabelHeight;
     
     yPos += sectionSpacing;
     firstEffectY = yPos + lineHeight + 6;
     yPos = drawObjectList(yPos, "FX", effects, effectNames, effectStateMethod);
+    yPos += controlSpacing;
+    firstEffectKnobY = yPos;    
+    xPos = leftTextPos;
+    for (int i = 0; i < effectKnobs.length; ++i) {
+      drawKnob(xPos, yPos, knobSize, effectKnobs[i]);
+      xPos += knobSize + knobSpacing;
+    }
+    yPos += knobSize + knobLabelHeight;
     
     yPos += sectionSpacing;
     yPos = drawObjectList(yPos, "TEMPO", null, null, null);
@@ -110,7 +147,7 @@ class OverlayUI {
     text("Tap 'u' to hide UI (~+3FPS)", leftTextPos, height-6);
   }
   
-  public Knob getOrNull(List<Knob> items, int index) {
+  public LXParameter getOrNull(List<LXParameter> items, int index) {
     if (index < items.size()) {
       return items.get(index);
     }
@@ -138,7 +175,12 @@ class OverlayUI {
   }
   
   public int getState(LXEffect e) {
-    return e.isEnabled() ? STATE_ACTIVE : STATE_DEFAULT;
+    if (e.isEnabled()) {
+      return STATE_PENDING;
+    } else if (effects[activeEffectIndex] == e) {
+      return STATE_ACTIVE;
+    }
+    return STATE_DEFAULT;
   }
   
   public int getState(LXTransition t) {
@@ -151,7 +193,7 @@ class OverlayUI {
   }
 
   protected int drawObjectList(int yPos, String title, Object[] items, Method stateMethod) {
-    return drawObjectList(yPos, title, items, classNameArray(items), stateMethod);
+    return drawObjectList(yPos, title, items, classNameArray(items, null), stateMethod);
   }
   
   private int drawObjectList(int yPos, String title, Object[] items, String[] names, Method stateMethod) {
@@ -195,25 +237,42 @@ class OverlayUI {
     return yPos;
   }
   
-  private void drawKnob(int xPos, int yPos, int knobSize, Knob knob) {
-    final float knobIndent = .4;
+  private void drawKnob(int xPos, int yPos, int knobSize, LXParameter knob) {
+    if (!knobsOn) {
+      return;
+    }
     final float knobValue = knob.getValuef();
     String knobLabel = knob.getLabel();
-    if (knobLabel.length() > 4) {
-      knobLabel = knobLabel.substring(0, 4);
-    } else if (knobLabel.length() == 0) {
+    if (knobLabel == null) {
       knobLabel = "-";
+    } else if (knobLabel.length() > 4) {
+      knobLabel = knobLabel.substring(0, 4);
     }
     
     ellipseMode(CENTER);
     fill(#222222);
-    arc(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize, HALF_PI + knobIndent, HALF_PI + knobIndent + (TWO_PI-2*knobIndent));
-
+    // For some reason this arc call really crushes drawing performance. Presumably
+    // because openGL is drawing it and when we overlap the second set of arcs it
+    // does a bunch of depth buffer intersection tests? Ellipse with a trapezoid cut out is faster
+    // arc(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize, HALF_PI + knobIndent, HALF_PI + knobIndent + (TWO_PI-2*knobIndent));
+    ellipse(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize);
+    
+    float endArc = HALF_PI + knobIndent + (TWO_PI-2*knobIndent)*knobValue;
     fill(lightGreen);
-    arc(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize, HALF_PI + knobIndent, HALF_PI + knobIndent + (TWO_PI-2*knobIndent)*knobValue);
-
+    arc(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize, HALF_PI + knobIndent, endArc);
+    
+    // Center circle of knob
     fill(#333333);
     ellipse(xPos + knobSize/2, yPos + knobSize/2, knobSize/2, knobSize/2);
+
+    // Mask notch out of knob
+    fill(color(0, 0, 30));
+    beginShape();
+    vertex(xPos + knobSize/2 - 3, yPos + knobSize - 8);
+    vertex(xPos + knobSize/2 - 5, yPos + knobSize);
+    vertex(xPos + knobSize/2 + 5, yPos + knobSize);
+    vertex(xPos + knobSize/2 + 3, yPos + knobSize - 8);
+    endShape();
     
     fill(0);
     rect(xPos, yPos + knobSize + 2, knobSize, knobLabelHeight - 2);
@@ -224,62 +283,103 @@ class OverlayUI {
 
   }
   
-  private String[] classNameArray(Object[] objects) {
+  private String[] classNameArray(Object[] objects, String suffix) {
     if (objects == null) {
       return null;
     }
     String[] names = new String[objects.length];
     for (int i = 0; i < objects.length; ++i) {
-      names[i] = className(objects[i]);
+      names[i] = className(objects[i], suffix);
     }
     return names;
   }
   
-  private String className(Object p) {
+  private String className(Object p, String suffix) {
     String s = p.getClass().getName();
     int li;
     if ((li = s.lastIndexOf(".")) > 0) {
       s = s.substring(li + 1);
     }
     if (s.indexOf("SugarCubes$") == 0) {
-      return s.substring("SugarCubes$".length());
+      s = s.substring("SugarCubes$".length());
+    }
+    if ((suffix != null) && ((li = s.indexOf(suffix)) != -1)) {
+      s = s.substring(0, li);
     }
     return s;
   }
+
+  class VirtualTransitionKnob extends LXVirtualParameter {
+    private final int index;
+    
+    VirtualTransitionKnob(int index) {
+      this.index = index;
+    }
+    
+    public LXParameter getRealParameter() {
+      List<LXParameter> parameters = transitions[activeTransitionIndex].getParameters();
+      if (index < parameters.size()) {
+        return parameters.get(index);
+      }
+      return null;
+    }
+  }
+
+  class VirtualEffectKnob extends LXVirtualParameter {
+    private final int index;
+    
+    VirtualEffectKnob(int index) {
+      this.index = index;
+    }
+    
+    public LXParameter getRealParameter() {
+      List<LXParameter> parameters = effects[activeEffectIndex].getParameters();
+      if (index < parameters.size()) {
+        return parameters.get(index);
+      }
+      return null;
+    }
+  }
   
-  private int knobIndex = -1;
+  private int patternKnobIndex = -1;
+  private int transitionKnobIndex = -1;
+  private int effectKnobIndex = -1;
+  
   private int lastY;
   private int releaseEffect = -1;
   private boolean tempoDown = false;
 
   public void mousePressed() {
     lastY = mouseY;
-    knobIndex = -1;
+    patternKnobIndex = transitionKnobIndex = effectKnobIndex = -1;
     releaseEffect = -1;
     if (mouseY > tempoY) {
       if (mouseY - tempoY < tempoHeight) {
         lx.tempo.tap();
         tempoDown = true;
       }
+    } else if ((mouseY >= firstEffectKnobY) && (mouseY < firstEffectKnobY + knobSize + knobLabelHeight)) {
+      effectKnobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
     } else if (mouseY > firstEffectY) {
       int effectIndex = (mouseY - firstEffectY) / lineHeight;
       if (effectIndex < effects.length) {
-        if (effects[effectIndex].isMomentary()) {
+        if (activeEffectIndex == effectIndex) {
           effects[effectIndex].enable();
           releaseEffect = effectIndex;
-        } else {
-          effects[effectIndex].toggle();
         }
+        activeEffectIndex = effectIndex;        
       }
+    } else if ((mouseY >= firstTransitionKnobY) && (mouseY < firstTransitionKnobY + knobSize + knobLabelHeight)) {
+      transitionKnobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
     } else if (mouseY > firstTransitionY) {
       int transitionIndex = (mouseY - firstTransitionY) / lineHeight;
       if (transitionIndex < transitions.length) {
         activeTransitionIndex = transitionIndex;
       }
-    } else if ((mouseY >= firstKnobY) && (mouseY < firstKnobY + 2*(knobSize+knobLabelHeight) + knobSpacing)) {
-      knobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
-      if (mouseY >= firstKnobY + knobSize + knobLabelHeight + knobSpacing) {
-        knobIndex += glucose.NUM_PATTERN_KNOBS / 2;
+    } else if ((mouseY >= firstPatternKnobY) && (mouseY < firstPatternKnobY + 2*(knobSize+knobLabelHeight) + knobSpacing)) {
+      patternKnobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
+      if (mouseY >= firstPatternKnobY + knobSize + knobLabelHeight + knobSpacing) {
+        patternKnobIndex += glucose.NUM_PATTERN_KNOBS / 2;
       }      
     } else if (mouseY > firstPatternY) {
       int patternIndex = (mouseY - firstPatternY) / lineHeight;
@@ -293,9 +393,15 @@ class OverlayUI {
   public void mouseDragged() {
     int dy = lastY - mouseY;
     lastY = mouseY;
-    if (knobIndex >= 0 && knobIndex < glucose.NUM_PATTERN_KNOBS) {
-      Knob k = glucose.patternKnobs[knobIndex];
-      k.setValue(k.getValuef() + dy*.01);
+    if (patternKnobIndex >= 0 && patternKnobIndex < glucose.NUM_PATTERN_KNOBS) {
+      LXParameter p = glucose.patternKnobs[patternKnobIndex];
+      p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
+    } else if (effectKnobIndex >= 0 && effectKnobIndex < NUM_EFFECT_KNOBS) {
+      LXParameter p = effectKnobs[effectKnobIndex];
+      p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
+    } else if (transitionKnobIndex >= 0 && transitionKnobIndex < NUM_TRANSITION_KNOBS) {
+      LXParameter p = transitionKnobs[transitionKnobIndex];
+      p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
     }
   }
     
@@ -306,6 +412,7 @@ class OverlayUI {
       releaseEffect = -1;      
     }
   }
+  
 }
 
 void mousePressed() {

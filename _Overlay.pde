@@ -144,7 +144,7 @@ class OverlayUI {
     fill(#999999);
     textFont(itemFont);
     textAlign(LEFT);
-    text("Tap 'u' to hide UI (~+3FPS)", leftTextPos, height-6);
+    text("Tap 'u' to hide UI", leftTextPos, height-6);
   }
   
   public LXParameter getOrNull(List<LXParameter> items, int index) {

@@ -268,18 +268,17 @@ class OverlayUI {
     fill(lightGreen);
     arc(xPos + knobSize/2, yPos + knobSize/2, knobSize, knobSize, HALF_PI + knobIndent, endArc);
     
-    // Center circle of knob
-    fill(#333333);
-    ellipse(xPos + knobSize/2, yPos + knobSize/2, knobSize/2, knobSize/2);
-
     // Mask notch out of knob
     fill(color(0, 0, 30));
     beginShape();
-    vertex(xPos + knobSize/2 - 3, yPos + knobSize - 8);
-    vertex(xPos + knobSize/2 - 5, yPos + knobSize);
-    vertex(xPos + knobSize/2 + 5, yPos + knobSize);
-    vertex(xPos + knobSize/2 + 3, yPos + knobSize - 8);
+    vertex(xPos + knobSize/2, yPos + knobSize/2.);
+    vertex(xPos + knobSize/2 - 6, yPos + knobSize);
+    vertex(xPos + knobSize/2 + 6, yPos + knobSize);
     endShape();
+
+    // Center circle of knob
+    fill(#333333);
+    ellipse(xPos + knobSize/2, yPos + knobSize/2, knobSize/2, knobSize/2);    
     
     fill(0);
     rect(xPos, yPos + knobSize + 2, knobSize, knobLabelHeight - 2);

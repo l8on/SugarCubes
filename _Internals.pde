@@ -61,7 +61,7 @@ void setup() {
   logTime("Built overlay UI");
   
   // MIDI devices
-  SCMidiDevices.initializeStandardDevices(glucose);
+  SCMidiDevices.initializeStandardDevices(glucose, ui.patternKnobs, ui.transitionKnobs, ui.effectKnobs);
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");

@@ -424,32 +424,38 @@ class CrossSections extends SCPattern {
 
 class Blinders extends SCPattern {
     
-  final SinLFO m;
+  final SinLFO[] m;
   final TriangleLFO r;
   final SinLFO s;
   final TriangleLFO hs;
 
   public Blinders(GLucose glucose) {
     super(glucose);
-    addModulator(m = new SinLFO(0.5, 80, 9000)).trigger();
-    addModulator(r = new TriangleLFO(3000, 9000, 21000)).trigger();
-    addModulator(s = new SinLFO(-20, 275, 4000)).trigger();
+    m = new SinLFO[12];
+    for (int i = 0; i < m.length; ++i) {  
+      addModulator(m[i] = new SinLFO(0.5, 120, (120000. / (3+i)))).trigger();
+    }
+    addModulator(r = new TriangleLFO(9000, 15000, 29000)).trigger();
+    addModulator(s = new SinLFO(-20, 275, 11000)).trigger();
     addModulator(hs = new TriangleLFO(0.1, 0.5, 15000)).trigger();
-    m.modulateDurationBy(r);
+    s.modulateDurationBy(r);
   }
 
   public void run(int deltaMs) {
     float hv = lx.getBaseHuef();
+    int si = 0;
     for (Strip strip : Strip.list) {
       int i = 0;
+      float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
         colors[p.index] = color(
           (hv + p.fx + p.fz*hs.getValuef()) % 360, 
           min(100, abs(p.fy - s.getValuef())/2.), 
-          max(0, 100 - m.getValuef() * abs(i - 7.5))
+          max(0, 100 - mv * abs(i - 7.5))
         );
         ++i;
       }
+      ++si;
     }
   }
 }

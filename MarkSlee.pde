@@ -344,3 +344,114 @@ public class PianoKeyPattern extends SCPattern {
   }
 }
 
+class CrossSections extends SCPattern {
+  
+  final SinLFO y = new SinLFO(0, 255, 5000);
+  final SinLFO z = new SinLFO(0, 127, 6000);
+  final SinLFO x = new SinLFO(0, 127, 7000);
+  
+  final BasicParameter xw = new BasicParameter("XWID", 0.3);
+  final BasicParameter yw = new BasicParameter("YWID", 0.3);
+  final BasicParameter zw = new BasicParameter("ZWID", 0.3);  
+  final BasicParameter xr = new BasicParameter("XRAT", 0.5);
+  final BasicParameter yr = new BasicParameter("YRAT", 0.6);
+  final BasicParameter zr = new BasicParameter("ZRAT", 0.7);
+  final BasicParameter xl = new BasicParameter("XLEV", 0.5);
+  final BasicParameter yl = new BasicParameter("YLEV", 1);
+  final BasicParameter zl = new BasicParameter("ZLEV", 1);
+
+  
+  CrossSections(GLucose glucose) {
+    super(glucose);
+    addModulator(x).trigger();
+    addModulator(y).trigger();
+    addModulator(z).trigger();
+    addParameter(xr);
+    addParameter(yr);
+    addParameter(zr);    
+    addParameter(yw);
+    addParameter(xl);
+    addParameter(yl);
+    addParameter(zl);
+    addParameter(zw);    
+    addParameter(xw);
+  }
+  
+  void onParameterChanged(LXParameter p) {
+    if (p == xr) {
+      x.setDuration(10000 - 9000*p.getValuef());
+    } else if (p == yr) {
+      y.setDuration(10000 - 8800*p.getValuef());
+    } else if (p == zr) {
+      z.setDuration(10000 - 9000*p.getValuef());
+    }
+      
+  }
+
+  public void run(int deltaMs) {
+    float xv = x.getValuef();
+    float yv = y.getValuef();
+    float zv = z.getValuef();    
+    float xlv = 100*xl.getValuef();
+    float ylv = 100*yl.getValuef();
+    float zlv = 100*zl.getValuef();
+    
+    float xwv = 100. / (10 + 40*xw.getValuef());
+    float ywv = 100. / (10 + 40*yw.getValuef());
+    float zwv = 100. / (10 + 40*zw.getValuef());
+    
+    for (Point p : Point.list) {
+      color c = 0;
+      c = blendColor(c, color(
+      (lx.getBaseHuef() + p.fy/10 + p.fz/3) % 360, 
+      constrain(140 - 1.1*abs(p.fy - 127), 0, 100), 
+      max(0, ylv - ywv*abs(p.fy - yv))
+        ), ADD);
+      c = blendColor(c, color(
+      (lx.getBaseHuef() + 80 + p.fz/10) % 360, 
+      constrain(140 - 2.2*abs(p.fz - 64), 0, 100), 
+      max(0, zlv - zwv*abs(p.fz - zv))
+        ), ADD); 
+      c = blendColor(c, color(
+      (lx.getBaseHuef() + 160 + p.fx / 10 + p.fz/2) % 360, 
+      constrain(140 - 2.2*abs(p.fx - 64), 0, 100), 
+      max(0, xlv - xwv*abs(p.fx - xv))
+        ), ADD); 
+      colors[p.index] = c;
+    }
+  }
+}
+
+class Blinders extends SCPattern {
+    
+  final SinLFO m;
+  final TriangleLFO r;
+  final SinLFO s;
+  final TriangleLFO hs;
+
+  public Blinders(GLucose glucose) {
+    super(glucose);
+    addModulator(m = new SinLFO(0.5, 80, 9000)).trigger();
+    addModulator(r = new TriangleLFO(3000, 9000, 21000)).trigger();
+    addModulator(s = new SinLFO(-20, 275, 4000)).trigger();
+    addModulator(hs = new TriangleLFO(0.1, 0.5, 15000)).trigger();
+    m.modulateDurationBy(r);
+  }
+
+  public void run(int deltaMs) {
+    float hv = lx.getBaseHuef();
+    for (Strip strip : Strip.list) {
+      int i = 0;
+      for (Point p : strip.points) {
+        colors[p.index] = color(
+          (hv + p.fx + p.fz*hs.getValuef()) % 360, 
+          min(100, abs(p.fy - s.getValuef())/2.), 
+          max(0, 100 - m.getValuef() * abs(i - 7.5))
+        );
+        ++i;
+      }
+    }
+  }
+}
+
+

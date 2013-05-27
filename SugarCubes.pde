@@ -25,8 +25,10 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    new SpaceTime(glucose),
     new Swarm(glucose),
+    new SpaceTime(glucose),
+    new Blinders(glucose),
+    new CrossSections(glucose),
     new CubeEQ(glucose),
     new PianoKeyPattern(glucose),
     

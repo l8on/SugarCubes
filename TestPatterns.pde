@@ -10,7 +10,7 @@ class TestHuePattern extends SCPattern {
 }
 
 class TestXPattern extends SCPattern {
-  private SinLFO xPos = new SinLFO(0, 127, 4000);
+  private SinLFO xPos = new SinLFO(0, 255, 4000);
   public TestXPattern(GLucose glucose) {
     super(glucose);
     addModulator(xPos).trigger();
@@ -27,7 +27,7 @@ class TestXPattern extends SCPattern {
 }
 
 class TestYPattern extends SCPattern {
-  private SinLFO yPos = new SinLFO(0, 255, 4000);
+  private SinLFO yPos = new SinLFO(0, 127, 4000);
   public TestYPattern(GLucose glucose) {
     super(glucose);
     addModulator(yPos).trigger();

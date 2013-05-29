@@ -39,7 +39,7 @@ class SpaceTime extends SCPattern {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
-        (lx.getBaseHuef() + 360 - p.fy*.2 + p.fz * .3) % 360, 
+        (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
         constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
         max(0, 100 - fVal*abs(i - pVal))
           );
@@ -55,18 +55,18 @@ class Swarm extends SCPattern {
   SawLFO offset = new SawLFO(0, 16, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
-  SinLFO fY = new SinLFO(0, 250, 19000);
-  SinLFO fZ = new SinLFO(0, 127, 11000);
-  SinLFO hOffY = new SinLFO(0, 255, 13000);
+  SinLFO fX = new SinLFO(0, 255, 19000);
+  SinLFO fY = new SinLFO(0, 127, 11000);
+  SinLFO hOffX = new SinLFO(0, 255, 13000);
 
   public Swarm(GLucose glucose) {
     super(glucose);
     addModulator(offset).trigger();
     addModulator(rate).trigger();
     addModulator(falloff).trigger();
+    addModulator(fX).trigger();
     addModulator(fY).trigger();
-    addModulator(fZ).trigger();
-    addModulator(hOffY).trigger();
+    addModulator(hOffX).trigger();
     offset.modulateDurationBy(rate);
   }
 
@@ -86,9 +86,9 @@ class Swarm extends SCPattern {
     for (Strip strip : Strip.list) {
       int i = 0;
       for (Point p : strip.points) {
-        float fV = max(-1, 1 - dist(p.fy/2., p.fz, fY.getValuef()/2., fZ.getValuef()) / 64.);
+        float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
         colors[p.index] = color(
-        (lx.getBaseHuef() + 0.3 * abs(p.fy - hOffY.getValuef())) % 360, 
+        (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
         constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef(), 16), 0, 100)
           );
@@ -111,16 +111,14 @@ class SwipeTransition extends SCTransition {
 
   void computeBlend(int[] c1, int[] c2, double progress) {
     float bleedf = 10 + bleed.getValuef() * 200.;
-    float yPos = (float) (-bleedf + progress * (255. + bleedf));
+    float xPos = (float) (-bleedf + progress * (255. + bleedf));
     for (Point p : Point.list) {
-      float d = (p.fy - yPos) / bleedf;
+      float d = (p.fx - xPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
-      } 
-      else if (d > 1) {
+      } else if (d > 1) {
         colors[p.index] = c1[p.index];
-      } 
-      else {
+      } else {
         colors[p.index] = lerpColor(c2[p.index], c1[p.index], d, RGB);
       }
     }
@@ -187,9 +185,9 @@ class CubeEQ extends SCPattern {
     float clrConst = 1.1 + clr.getValuef();
 
     for (Point p : Point.list) {
-      float avgIndex = constrain((p.fy / 256. * avgSize), 0, avgSize-2);
+      float avgIndex = constrain((p.fx / 256. * avgSize), 0, avgSize-2);
       int avgFloor = (int) avgIndex;
-      float j = jBase + jConst * (p.fz / 128.);
+      float j = jBase + jConst * (p.fy / 128.);
       float value = lerp(
       this.bandVals[avgFloor].getValuef(), 
       this.bandVals[avgFloor+1].getValuef(), 
@@ -198,7 +196,7 @@ class CubeEQ extends SCPattern {
 
       float b = constrain(edgeConst * (value - j), 0, 100);
       colors[p.index] = color(
-      (480 + lx.getBaseHuef() - min(clrConst*p.fz, 120)) % 360, 
+      (480 + lx.getBaseHuef() - min(clrConst*p.fy, 120)) % 360, 
       100, 
       b);
     }
@@ -212,6 +210,7 @@ class BoomEffect extends SCEffect {
   final BasicParameter bright = new BasicParameter("BRT", 1.0);
   final BasicParameter sat = new BasicParameter("SAT", 0.2);
   List<Layer> layers = new ArrayList<Layer>();
+  final float maxr = sqrt(127*127 + 127*127 + 255*255) + 10;
 
   class Layer {
     LinearEnvelope boom = new LinearEnvelope(-40, 500, 1300);
@@ -223,7 +222,7 @@ class BoomEffect extends SCEffect {
 
     void trigger() {
       float falloffv = falloffv();
-      boom.setRange(-100 / falloffv, 500 + 100/falloffv, 4000 - speed.getValuef() * 3300);
+      boom.setRange(-100 / falloffv, maxr + 100/falloffv, 4000 - speed.getValuef() * 3300);
       boom.trigger();
     }
 
@@ -235,7 +234,7 @@ class BoomEffect extends SCEffect {
       for (Point p : Point.list) {
         colors[p.index] = blendColor(
         colors[p.index], 
-        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(2*p.fx, p.fy, 2*p.fz, 128, 128, 128)), 0, 100)), 
+        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 2*p.fz, 128, 128, 128)), 0, 100)), 
         ADD);
       }
     }
@@ -336,7 +335,7 @@ public class PianoKeyPattern extends SCPattern {
     for (Cube c : Cube.list) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
       setColor(c, color(
-        (huef + 20*v + abs(c.fy-128.)*.3 + c.fz) % 360,
+        (huef + 20*v + abs(c.fx-128.)*.3 + c.fy) % 360,
         min(100, 120*v),
         100*v
       ));
@@ -346,19 +345,19 @@ public class PianoKeyPattern extends SCPattern {
 
 class CrossSections extends SCPattern {
   
-  final SinLFO y = new SinLFO(0, 255, 5000);
-  final SinLFO z = new SinLFO(0, 127, 6000);
-  final SinLFO x = new SinLFO(0, 127, 7000);
+  final SinLFO x = new SinLFO(0, 255, 5000);
+  final SinLFO y = new SinLFO(0, 127, 6000);
+  final SinLFO z = new SinLFO(0, 127, 7000);
   
   final BasicParameter xw = new BasicParameter("XWID", 0.3);
   final BasicParameter yw = new BasicParameter("YWID", 0.3);
   final BasicParameter zw = new BasicParameter("ZWID", 0.3);  
-  final BasicParameter xr = new BasicParameter("XRAT", 0.5);
+  final BasicParameter xr = new BasicParameter("XRAT", 0.7);
   final BasicParameter yr = new BasicParameter("YRAT", 0.6);
-  final BasicParameter zr = new BasicParameter("ZRAT", 0.7);
-  final BasicParameter xl = new BasicParameter("XLEV", 0.5);
+  final BasicParameter zr = new BasicParameter("ZRAT", 0.5);
+  final BasicParameter xl = new BasicParameter("XLEV", 1);
   final BasicParameter yl = new BasicParameter("YLEV", 1);
-  final BasicParameter zl = new BasicParameter("ZLEV", 1);
+  final BasicParameter zl = new BasicParameter("ZLEV", 0.5);
 
   
   CrossSections(GLucose glucose) {
@@ -369,23 +368,22 @@ class CrossSections extends SCPattern {
     addParameter(xr);
     addParameter(yr);
     addParameter(zr);    
-    addParameter(yw);
+    addParameter(xw);
     addParameter(xl);
     addParameter(yl);
     addParameter(zl);
-    addParameter(zw);    
-    addParameter(xw);
+    addParameter(yw);    
+    addParameter(zw);
   }
   
   void onParameterChanged(LXParameter p) {
     if (p == xr) {
-      x.setDuration(10000 - 9000*p.getValuef());
+      x.setDuration(10000 - 8800*p.getValuef());
     } else if (p == yr) {
-      y.setDuration(10000 - 8800*p.getValuef());
+      y.setDuration(10000 - 9000*p.getValuef());
     } else if (p == zr) {
       z.setDuration(10000 - 9000*p.getValuef());
     }
-      
   }
 
   public void run(int deltaMs) {
@@ -403,19 +401,19 @@ class CrossSections extends SCPattern {
     for (Point p : Point.list) {
       color c = 0;
       c = blendColor(c, color(
-      (lx.getBaseHuef() + p.fy/10 + p.fz/3) % 360, 
-      constrain(140 - 1.1*abs(p.fy - 127), 0, 100), 
-      max(0, ylv - ywv*abs(p.fy - yv))
+      (lx.getBaseHuef() + p.fx/10 + p.fy/3) % 360, 
+      constrain(140 - 1.1*abs(p.fx - 127), 0, 100), 
+      max(0, xlv - xwv*abs(p.fx - xv))
         ), ADD);
       c = blendColor(c, color(
-      (lx.getBaseHuef() + 80 + p.fz/10) % 360, 
-      constrain(140 - 2.2*abs(p.fz - 64), 0, 100), 
-      max(0, zlv - zwv*abs(p.fz - zv))
+      (lx.getBaseHuef() + 80 + p.fy/10) % 360, 
+      constrain(140 - 2.2*abs(p.fy - 64), 0, 100), 
+      max(0, ylv - ywv*abs(p.fy - yv))
         ), ADD); 
       c = blendColor(c, color(
-      (lx.getBaseHuef() + 160 + p.fx / 10 + p.fz/2) % 360, 
-      constrain(140 - 2.2*abs(p.fx - 64), 0, 100), 
-      max(0, xlv - xwv*abs(p.fx - xv))
+      (lx.getBaseHuef() + 160 + p.fz / 10 + p.fy/2) % 360, 
+      constrain(140 - 2.2*abs(p.fz - 64), 0, 100), 
+      max(0, zlv - zwv*abs(p.fz - zv))
         ), ADD); 
       colors[p.index] = c;
     }
@@ -449,9 +447,9 @@ class Blinders extends SCPattern {
       float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
         colors[p.index] = color(
-          (hv + p.fx + p.fz*hs.getValuef()) % 360, 
-          min(100, abs(p.fy - s.getValuef())/2.), 
-          max(0, 100 - mv * abs(i - 7.5))
+          (hv + p.fz + p.fy*hs.getValuef()) % 360, 
+          min(100, abs(p.fx - s.getValuef())/2.), 
+          max(0, 100 - mv/2. - mv * abs(i - 7.5))
         );
         ++i;
       }

@@ -16,7 +16,7 @@ class TestXPattern extends SCPattern {
     addModulator(xPos).trigger();
   }
   public void run(int deltaMs) {
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       colors[p.index] = color(
         lx.getBaseHuef(),
         100,
@@ -33,7 +33,7 @@ class TestYPattern extends SCPattern {
     addModulator(yPos).trigger();
   }
   public void run(int deltaMs) {
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       colors[p.index] = color(
         lx.getBaseHuef(),
         100,
@@ -50,7 +50,7 @@ class TestZPattern extends SCPattern {
     addModulator(zPos).trigger();
   }
   public void run(int deltaMs) {
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       colors[p.index] = color(
         lx.getBaseHuef(),
         100,

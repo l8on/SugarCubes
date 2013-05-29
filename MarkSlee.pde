@@ -28,14 +28,14 @@ class SpaceTime extends SCPattern {
 
   void run(int deltaMs) {    
     angle += deltaMs * 0.0007;
-    float sVal1 = Strip.list.size() * (0.5 + 0.5*sin(angle));
-    float sVal2 = Strip.list.size() * (0.5 + 0.5*cos(angle));
+    float sVal1 = model.strips.size() * (0.5 + 0.5*sin(angle));
+    float sVal2 = model.strips.size() * (0.5 + 0.5*cos(angle));
 
     float pVal = pos.getValuef();
     float fVal = falloff.getValuef();
 
     int s = 0;
-    for (Strip strip : Strip.list) {
+    for (Strip strip : model.strips) {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
@@ -83,7 +83,7 @@ class Swarm extends SCPattern {
 
   void run(int deltaMs) {
     float s = 0;
-    for (Strip strip : Strip.list) {
+    for (Strip strip : model.strips) {
       int i = 0;
       for (Point p : strip.points) {
         float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
@@ -112,7 +112,7 @@ class SwipeTransition extends SCTransition {
   void computeBlend(int[] c1, int[] c2, double progress) {
     float bleedf = 10 + bleed.getValuef() * 200.;
     float xPos = (float) (-bleedf + progress * (255. + bleedf));
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       float d = (p.fx - xPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
@@ -184,7 +184,7 @@ class CubeEQ extends SCPattern {
     float jConst = 300.*(1-range.getValuef());
     float clrConst = 1.1 + clr.getValuef();
 
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       float avgIndex = constrain((p.fx / 256. * avgSize), 0, avgSize-2);
       int avgFloor = (int) avgIndex;
       float j = jBase + jConst * (p.fy / 128.);
@@ -231,7 +231,7 @@ class BoomEffect extends SCEffect {
       float falloffv = falloffv();
       float satv = sat.getValuef() * 100;
       float huev = lx.getBaseHuef();
-      for (Point p : Point.list) {
+      for (Point p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
         color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 2*p.fz, 128, 128, 128)), 0, 100)), 
@@ -293,11 +293,11 @@ public class PianoKeyPattern extends SCPattern {
     addParameter(attack);
     addParameter(release);
     addParameter(level);
-    cubeBrt = new LinearEnvelope[Cube.list.size() / 4];
+    cubeBrt = new LinearEnvelope[model.cubes.size() / 4];
     for (int i = 0; i < cubeBrt.length; ++i) {
       addModulator(cubeBrt[i] = new LinearEnvelope(0, 0, 100));
     }
-    base = new SinLFO[Cube.list.size() / 12];
+    base = new SinLFO[model.cubes.size() / 12];
     for (int i = 0; i < base.length; ++i) {
       addModulator(base[i] = new SinLFO(0, 1, 7000 + 1000*i)).trigger();
     }
@@ -332,7 +332,7 @@ public class PianoKeyPattern extends SCPattern {
     int i = 0;
     float huef = lx.getBaseHuef();
     float levelf = level.getValuef();
-    for (Cube c : Cube.list) {
+    for (Cube c : model.cubes) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
       setColor(c, color(
         (huef + 20*v + abs(c.fx-128.)*.3 + c.fy) % 360,
@@ -398,7 +398,7 @@ class CrossSections extends SCPattern {
     float ywv = 100. / (10 + 40*yw.getValuef());
     float zwv = 100. / (10 + 40*zw.getValuef());
     
-    for (Point p : Point.list) {
+    for (Point p : model.points) {
       color c = 0;
       c = blendColor(c, color(
       (lx.getBaseHuef() + p.fx/10 + p.fy/3) % 360, 
@@ -442,7 +442,7 @@ class Blinders extends SCPattern {
   public void run(int deltaMs) {
     float hv = lx.getBaseHuef();
     int si = 0;
-    for (Strip strip : Strip.list) {
+    for (Strip strip : model.strips) {
       int i = 0;
       float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
@@ -458,4 +458,37 @@ class Blinders extends SCPattern {
   }
 }
 
+class Psychedelia extends SCPattern {
+  
+  final int NUM = 3;
+  SinLFO m = new SinLFO(-0.5, NUM-0.5, 9000);
+  SinLFO s = new SinLFO(-20, 147, 11000);
+  TriangleLFO h = new TriangleLFO(0, 240, 19000);
+  SinLFO c = new SinLFO(-.2, .8, 31000);
 
+  Psychedelia(GLucose glucose) {
+    super(glucose);
+    addModulator(m).trigger();
+    addModulator(s).trigger();
+    addModulator(h).trigger();
+    addModulator(c).trigger();
+  }
+
+  void run(int deltaMs) {
+    float huev = h.getValuef();
+    float cv = c.getValuef();
+    float sv = s.getValuef();
+    float mv = m.getValuef();
+    int i = 0;
+    for (Strip strip : model.strips) {
+      for (Point p : strip.points) {
+        colors[p.index] = color(
+          (huev + i*constrain(cv, 0, 2) + p.fz/2. + p.fx/4.) % 360, 
+          min(100, abs(p.fy-sv)), 
+          max(0, 100 - 50*abs((i%NUM) - mv))
+        );
+      }
+      ++i;
+    }
+  }
+}

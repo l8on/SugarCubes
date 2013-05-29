@@ -257,6 +257,7 @@ class OverlayUI {
     }
     
     ellipseMode(CENTER);
+    noStroke();
     fill(#222222);
     // For some reason this arc call really crushes drawing performance. Presumably
     // because openGL is drawing it and when we overlap the second set of arcs it

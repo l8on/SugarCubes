@@ -55,9 +55,9 @@ class Swarm extends SCPattern {
   SawLFO offset = new SawLFO(0, 16, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
-  SinLFO fX = new SinLFO(0, 255, 19000);
-  SinLFO fY = new SinLFO(0, 127, 11000);
-  SinLFO hOffX = new SinLFO(0, 255, 13000);
+  SinLFO fX = new SinLFO(0, model.xMax, 19000);
+  SinLFO fY = new SinLFO(0, model.yMax, 11000);
+  SinLFO hOffX = new SinLFO(0, model.xMax, 13000);
 
   public Swarm(GLucose glucose) {
     super(glucose);
@@ -111,7 +111,7 @@ class SwipeTransition extends SCTransition {
 
   void computeBlend(int[] c1, int[] c2, double progress) {
     float bleedf = 10 + bleed.getValuef() * 200.;
-    float xPos = (float) (-bleedf + progress * (255. + bleedf));
+    float xPos = (float) (-bleedf + progress * (model.xMax + bleedf));
     for (Point p : model.points) {
       float d = (p.fx - xPos) / bleedf;
       if (d < 0) {
@@ -185,9 +185,9 @@ class CubeEQ extends SCPattern {
     float clrConst = 1.1 + clr.getValuef();
 
     for (Point p : model.points) {
-      float avgIndex = constrain((p.fx / 256. * avgSize), 0, avgSize-2);
+      float avgIndex = constrain((p.fx / model.xMax * avgSize), 0, avgSize-2);
       int avgFloor = (int) avgIndex;
-      float j = jBase + jConst * (p.fy / 128.);
+      float j = jBase + jConst * (p.fy / model.yMax);
       float value = lerp(
       this.bandVals[avgFloor].getValuef(), 
       this.bandVals[avgFloor+1].getValuef(), 
@@ -210,7 +210,7 @@ class BoomEffect extends SCEffect {
   final BasicParameter bright = new BasicParameter("BRT", 1.0);
   final BasicParameter sat = new BasicParameter("SAT", 0.2);
   List<Layer> layers = new ArrayList<Layer>();
-  final float maxr = sqrt(127*127 + 127*127 + 255*255) + 10;
+  final float maxr = sqrt(model.xMax*model.xMax + model.yMax*model.yMax + model.zMax*model.zMax) + 10;
 
   class Layer {
     LinearEnvelope boom = new LinearEnvelope(-40, 500, 1300);
@@ -234,7 +234,7 @@ class BoomEffect extends SCEffect {
       for (Point p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
-        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 2*p.fz, 128, 128, 128)), 0, 100)), 
+        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 3*p.fz, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
         ADD);
       }
     }
@@ -335,7 +335,7 @@ public class PianoKeyPattern extends SCPattern {
     for (Cube c : model.cubes) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
       setColor(c, color(
-        (huef + 20*v + abs(c.fx-128.)*.3 + c.fy) % 360,
+        (huef + 20*v + abs(c.fx-model.xMax/2.)*.3 + c.fy) % 360,
         min(100, 120*v),
         100*v
       ));
@@ -345,9 +345,9 @@ public class PianoKeyPattern extends SCPattern {
 
 class CrossSections extends SCPattern {
   
-  final SinLFO x = new SinLFO(0, 255, 5000);
-  final SinLFO y = new SinLFO(0, 127, 6000);
-  final SinLFO z = new SinLFO(0, 127, 7000);
+  final SinLFO x = new SinLFO(0, model.xMax, 5000);
+  final SinLFO y = new SinLFO(0, model.yMax, 6000);
+  final SinLFO z = new SinLFO(0, model.zMax, 7000);
   
   final BasicParameter xw = new BasicParameter("XWID", 0.3);
   final BasicParameter yw = new BasicParameter("YWID", 0.3);
@@ -402,17 +402,17 @@ class CrossSections extends SCPattern {
       color c = 0;
       c = blendColor(c, color(
       (lx.getBaseHuef() + p.fx/10 + p.fy/3) % 360, 
-      constrain(140 - 1.1*abs(p.fx - 127), 0, 100), 
+      constrain(140 - 1.1*abs(p.fx - model.xMax/2.), 0, 100), 
       max(0, xlv - xwv*abs(p.fx - xv))
         ), ADD);
       c = blendColor(c, color(
       (lx.getBaseHuef() + 80 + p.fy/10) % 360, 
-      constrain(140 - 2.2*abs(p.fy - 64), 0, 100), 
+      constrain(140 - 2.2*abs(p.fy - model.yMax/2.), 0, 100), 
       max(0, ylv - ywv*abs(p.fy - yv))
         ), ADD); 
       c = blendColor(c, color(
       (lx.getBaseHuef() + 160 + p.fz / 10 + p.fy/2) % 360, 
-      constrain(140 - 2.2*abs(p.fz - 64), 0, 100), 
+      constrain(140 - 2.2*abs(p.fz - model.zMax/2.), 0, 100), 
       max(0, zlv - zwv*abs(p.fz - zv))
         ), ADD); 
       colors[p.index] = c;

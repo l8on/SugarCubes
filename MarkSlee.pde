@@ -492,3 +492,94 @@ class Psychedelia extends SCPattern {
     }
   }
 }
+
+class AskewPlanes extends SCPattern {
+  
+  class Plane {
+    private final SinLFO a;
+    private final SinLFO b;
+    private final SinLFO c;
+    float av;
+    float bv;
+    float cv;
+    float denom;
+    
+    Plane(int i) {
+      addModulator(a = new SinLFO(-1, 1, 4000 + 1029*i)).trigger();
+      addModulator(b = new SinLFO(-1, 1, 11000 - 1104*i)).trigger();
+      addModulator(c = new SinLFO(-50, 50, 4000 + 1000*i * ((i % 2 == 0) ? 1 : -1))).trigger();      
+    }
+    
+    void run(int deltaMs) {
+      av = a.getValuef();
+      bv = b.getValuef();
+      cv = c.getValuef();
+      denom = sqrt(av*av + bv*bv);
+    }
+  }
+    
+  final Plane[] planes;
+  final int NUM_PLANES = 3;
+  
+  AskewPlanes(GLucose glucose) {
+    super(glucose);
+    planes = new Plane[NUM_PLANES];
+    for (int i = 0; i < planes.length; ++i) {
+      planes[i] = new Plane(i);
+    }
+  }
+
+  private final float denoms[] = new float[NUM_PLANES];
+  
+  public void run(int deltaMs) {
+    float huev = lx.getBaseHuef();
+    int i = 0;
+    for (Plane p : planes) {
+      p.run(deltaMs);
+    }
+    for (Point p : model.points) {
+       float d = MAX_FLOAT;
+       for (Plane plane : planes) {
+         d = min(d, abs(plane.av*(p.fx-model.xMax/2.) + plane.bv*(p.fy-model.yMax/2.) + plane.cv) / plane.denom);
+       }
+       colors[p.index] = color(
+         (lx.getBaseHuef() + abs(p.fx-model.xMax/2.)*.3 + p.fy*.8) % 360,
+         max(0, 100 - .8*abs(p.fx - model.xMax/2.)),
+         constrain(140 - 10.*d, 0, 100)
+       );
+    }
+  }
+}
+
+class ShiftingPlane extends SCPattern {
+
+  final SinLFO a = new SinLFO(-.2, .2, 5300);
+  final SinLFO b = new SinLFO(1, -1, 13300);
+  final SinLFO c = new SinLFO(-1.4, 1.4, 5700);
+  final SinLFO d = new SinLFO(-10, 10, 9500);
+
+  ShiftingPlane(GLucose glucose) {
+    super(glucose);
+    addModulator(a).trigger();
+    addModulator(b).trigger();
+    addModulator(c).trigger();
+    addModulator(d).trigger();    
+  }
+  
+  public void run(int deltaMs) {
+    float hv = lx.getBaseHuef();
+    float av = a.getValuef();
+    float bv = b.getValuef();
+    float cv = c.getValuef();
+    float dv = d.getValuef();    
+    float denom = sqrt(av*av + bv*bv + cv*cv);
+    for (Point p : model.points) {
+      float d = abs(av*(p.fx-model.xMax/2.) + bv*(p.fy-model.yMax/2.) + cv*(p.fz-model.zMax/2.) + dv) / denom;
+      colors[p.index] = color(
+        (hv + abs(p.fx-model.xMax/2.)*.6 + abs(p.fy-model.yMax/2)*.9 + abs(p.fz - model.zMax/2.)) % 360,
+        constrain(110 - d*6, 0, 100),
+        constrain(130 - 7*d, 0, 100)
+      );
+    }
+  }
+}

@@ -40,6 +40,8 @@ LXPattern[] patterns(GLucose glucose) {
 //    new TestXPattern(glucose),
 //    new TestYPattern(glucose),
 //    new TestZPattern(glucose),
+//    new TestProjectionPattern(glucose),
+
   };
 }
 

@@ -59,3 +59,36 @@ class TestZPattern extends SCPattern {
     }
   }
 }
+
+class TestProjectionPattern extends SCPattern {
+  
+  final Projection projection;
+  final SawLFO angle = new SawLFO(0, TWO_PI, 9000);
+  final SinLFO yPos = new SinLFO(-20, 40, 5000);
+  
+  TestProjectionPattern(GLucose glucose) {
+    super(glucose);
+    projection = new Projection(model);
+    addModulator(angle).trigger();
+    addModulator(yPos).trigger();
+  }
+  
+  public void run(int deltaMs) {
+    // Note: logically, you typically apply the transformations in reverse order
+    projection.reset(model)
+      .translate(-model.xMax/2., -model.yMax/2. + yPos.getValuef(), -model.zMax/2.)
+      .rotate(angle.getValuef(), 1, 0, 0)
+      .scale(1, 1.5, 1);
+
+    for (Coord c : projection) {
+      float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
+      // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
+      d = max(0, abs(c.y) - 10 + .3*abs(c.z) + .08*abs(c.x)); // plane / spear thing
+      colors[c.index] = color(
+        (lx.getBaseHuef() + .6*abs(c.x) + abs(c.z)) % 360,
+        100,
+        constrain(140 - 10*d, 0, 100)
+      );
+    }
+  } 
+}

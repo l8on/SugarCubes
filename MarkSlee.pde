@@ -583,3 +583,4 @@ class ShiftingPlane extends SCPattern {
     }
   }
 }
+

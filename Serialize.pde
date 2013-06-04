@@ -64,24 +64,31 @@ class Serialize
 
    for (int i=0; i<pointList.size(); i++) 
    {
+   	
     Point p = (Point)pointList.get(i);
+    
     float fx, fy, fz;
-
-    fx = (p.x + abs(min_x));
+	//TODO BEN =0.0; is temp initialize hack
+    fx=fy=fz=0.0;
+    //TODO BEN MUST RECREATE
+    //fx = (p.x + abs(min_x));
     fx/=(max_x+abs(min_x));
     fx*=127;
 
-    fy = p.y + abs(min_y);
+    //TODO BEN MUST RECREATE
+    //fy = p.y + abs(min_y);
     fy/=(max_y+abs(min_y));
     fy*=255;
 
-    fz = (p.z + abs(min_z));
+    //TODO BEN MUST RECREATE
+    //fz = (p.z + abs(min_z));
     fz/=(max_z+abs(min_z));
     fz*=127;
 
-    p.fx=fx;
+    ////TODO BEN MUST RECREATE
+    /*p.fx=fx;
     p.fy=fy;
-    p.fz=fz;
+    p.fz=fz;*/
 
     int ix = (int)floor(fx);
     int iy = (int)floor(fy);

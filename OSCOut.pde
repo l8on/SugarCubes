@@ -29,11 +29,11 @@ class OSCOut
 		  return (byte)( val > 127 ? val - 256 : val );
 	}
 
-	public void createAndSendMsg(NetAddress _bone, ArrayList<Point> _mappedPointList, ArrayList<Boolean> _masterFlipped) 
+	public void createAndSendMsg(NetAddress _bone, ArrayList<Integer> _mappedPointList, ArrayList<Boolean> _masterFlipped) 
 	{
 	  int size = 0;
 	  int msgnum = 0;
-	  
+	  int mp;
 
 	  for (int i=0; i<msgarr.length; i++) 
 	  {
@@ -42,30 +42,28 @@ class OSCOut
 
 
 	  for (int i=0; i<_mappedPointList.size(); i++) {
-	    Point p = _mappedPointList.get(i);
-
+	    int p = _mappedPointList.get(i);
+	    byte r,g,b;
 	    // LOGIC TO SEE IF POINT IS RGB FLIPPED
 	    if ( _masterFlipped.get(i)==false ) { 
-	    //BEN TODO RECREATE
 	      //IF FLIPPED, DO THIS
-	      //mp.r=p.b;
-	      //mp.g=p.g;
-	      //mp.b=p.r;
-	      //      print("Flipped at linear point: ");println(i);
+		      r = (byte) (p & 0xFF);
+		      g = (byte) ((p >> 8) & 0xFF);
+		      b = (byte) ((p >> 16) & 0xFF);
+
+	      //print("Flipped at linear point: ");println(i);
 	    }
 	    else {
-	      //IF NORMAL, DO THIS
-	      //BEN TODO RECREATE
-	      //mp.r=p.r;
-	      //mp.g=p.g;
-	      //mp.b=p.b;
+		      r = (byte) ((p >> 16) & 0xFF);
+		      g = (byte) ((p >> 8) & 0xFF);
+		      b = (byte) (p & 0xFF);
 	    }
 
 	    msgarr[size++]=unsignedByte((int)(0));
-	    //BEN TODO RECREATE
-	    //msgarr[size++]=unsignedByte((int)(mp.r*255));
-	    //msgarr[size++]=unsignedByte((int)(mp.g*255));
-	    //msgarr[size++]=unsignedByte((int)(mp.b*255));
+	    
+	    msgarr[size++]=unsignedByte((int)(r*255));
+	    msgarr[size++]=unsignedByte((int)(g*255));
+	    msgarr[size++]=unsignedByte((int)(b*255));
 
 	    if (size>=msgarr.length || i>=_mappedPointList.size()-1) { // JAAAAAAAAANK
 		      msg.clearArguments();

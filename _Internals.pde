@@ -94,6 +94,7 @@ void draw() {
 
   //BEN TEMPORARY
   int [] colors = glucose.getColors();
+  println(colors.length);
   serialize.processColors(colors);
   oscOut.sendToBoards();
   //END BEN TEMPORARY

@@ -9,6 +9,18 @@ class TestHuePattern extends SCPattern {
   } 
 }
 
+class TestRedPattern extends SCPattern {
+  public TestRedPattern(GLucose glucose) {
+    super(glucose);
+  }
+
+  public void run(int deltaMs) {
+    for (int i = 0; i < colors.length; ++i) {
+      colors[i] = color(0, 100, 100);
+    }
+  }
+}
+
 class TestXPattern extends SCPattern {
   private SinLFO xPos = new SinLFO(0, model.xMax, 4000);
   public TestXPattern(GLucose glucose) {

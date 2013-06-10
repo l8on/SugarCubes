@@ -6,12 +6,12 @@ class Serialize
 {
 	GLucose _glucose;
 
-	public List<Cube> cubes;
+	public Cube[] cubes;
 	
 	protected int[][] flippedRGBList;
 
-	ArrayList<Point> mappedPointListRear = new ArrayList<Point>();
-	ArrayList<Point> mappedPointListFront = new ArrayList<Point>();
+	ArrayList<Integer> mappedPointListRear = new ArrayList<Integer>();
+	ArrayList<Integer> mappedPointListFront = new ArrayList<Integer>();
 
 	ArrayList<Boolean> masterFlippedFront = new ArrayList<Boolean>();
 	ArrayList<Boolean> masterFlippedRear = new ArrayList<Boolean>();
@@ -21,15 +21,12 @@ class Serialize
 	int[][] frontChannelList;
 	int[][] rearChannelList;
 
-	Point zp;
-
 
 	public Serialize(GLucose glucose)
 	{
 		_glucose = glucose;
 		//println(glucose.model == null);
-		cubes = _glucose.model.cubes;
-		zp = _glucose.model.zeroPoint;
+		cubes = _glucose.model._cubes;
 		setupChannelData();
 	}
 	public void setupChannelData()
@@ -39,35 +36,39 @@ class Serialize
 		rearChannelList = channelLists.getRearChannelList();
 
 		// Creates linear point array, ordered as sent to Pandaboard
-		createMappedPointList(frontChannelList, mappedPointListFront);
-		createMappedPointList(rearChannelList, mappedPointListRear);
 
 		flippedRGBList = new FlippedRGBList().getFlippedRGBList();
 
-		createFlippedPointList( frontChannelList, flippedRGBList, mappedPointListFront.size(), masterFlippedFront );
-	  	createFlippedPointList( rearChannelList, flippedRGBList, mappedPointListRear.size(), masterFlippedRear );
+		
 	}
 	public void processColors(int[] colors)
 	{
+		mappedPointListFront.clear();
+		mappedPointListRear.clear();
+		masterFlippedFront.clear();
+		masterFlippedRear.clear();
 
+		createMappedPointList(frontChannelList, mappedPointListFront, colors);
+		createMappedPointList(rearChannelList, mappedPointListRear, colors);
+
+		createFlippedPointList( frontChannelList, flippedRGBList, mappedPointListFront.size(), masterFlippedFront );
+	  	createFlippedPointList( rearChannelList, flippedRGBList, mappedPointListRear.size(), masterFlippedRear );
 
 	}
 
 
-	public void createMappedPointList(int[][] _channelList, ArrayList<Point> _mappedPointList) {
+	public void createMappedPointList(int[][] _channelList, ArrayList<Integer> _mappedPointList, int[] colors) {
 		  for ( int[] channel : _channelList ) {
 		    for ( int cubeNumber : channel ) {
 		      if ( cubeNumber == 0 ) {  // if no cube is present at location
 		        for (int i=0; i<(16*3*4); i++) 
 		        { 
-		          _mappedPointList.add(zp);
+		          _mappedPointList.add(0);
 		        }
 		      }
 		      else {
-		      	//TODO(BEN) WTF 
-		      	//This complains that the max index is 74 but the model shows 76!
-		        for (Point p: cubes.get(cubeNumber <= 73 ? cubeNumber : 73).points) { 
-		          _mappedPointList.add(p);
+		        for (Point p: cubes[cubeNumber].points) { 
+		          _mappedPointList.add(colors!=null ? colors[p.index] : 0);
 		        }
 		      }
 		    }

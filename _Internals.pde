@@ -35,6 +35,9 @@ LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
 
+Serialize serialize;
+OSCOut oscOut;
+
 void setup() {
   startMillis = lastMillis = millis();
 
@@ -67,6 +70,9 @@ void setup() {
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
+
+  serialize = new Serialize( glucose );
+  oscOut = new OSCOut( serialize );
 }
 
 void logTime(String evt) {
@@ -75,14 +81,14 @@ void logTime(String evt) {
   lastMillis = now;
 }
 
-Serialize serialize=new Serialize(glucose);
-OSCOut oscOut = new OSCOut(serialize);
+
 
 
 void draw() {
   // The glucose engine deals with the core simulation here, we don't need
   // to do anything specific. This method just needs to exist.
   int [] colors = glucose.getColors();
+
   serialize.processColors(colors);
   oscOut.sendToBoards();
   /*for (int i=0;i<colors.length;i++)

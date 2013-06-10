@@ -1,5 +1,6 @@
 import netP5.*;
 import oscP5.*;
+import glucose.model.Point;
 class OSCOut
 {
 	protected NetAddress bone_front = new NetAddress("192.168.1.28", 9001);
@@ -8,11 +9,11 @@ class OSCOut
 	protected OscP5 oscP5;
 	protected OscMessage msg;
 	protected byte[] msgarr = new byte[4*352];
-	protected ArrayList[][][] pointMap = new ArrayList[128][256][128];
 
 	public OSCOut(Serialize serializer)
 	{
 		_serializer= serializer;
+		msg = new OscMessage("/shady/pointbuffer"); 
 		start();
 	}
 
@@ -29,7 +30,7 @@ class OSCOut
 		  return (byte)( val > 127 ? val - 256 : val );
 	}
 
-	public void createAndSendMsg(NetAddress _bone, ArrayList<Integer> _mappedPointList, ArrayList<Boolean> _masterFlipped) 
+	public void createAndSendMsg(NetAddress _bone, ArrayList<Point> _mappedPointList, ArrayList<Boolean> _masterFlipped) 
 	{
 	  int size = 0;
 	  int msgnum = 0;
@@ -39,24 +40,24 @@ class OSCOut
 	  {
 	    msgarr[i] = 0;
 	  }
-
+	  int p2=0;
 
 	  for (int i=0; i<_mappedPointList.size(); i++) {
-	    int p = _mappedPointList.get(i);
+	    Point p = _mappedPointList.get(i);
 	    byte r,g,b;
 	    // LOGIC TO SEE IF POINT IS RGB FLIPPED
 	    if ( _masterFlipped.get(i)==false ) { 
 	      //IF FLIPPED, DO THIS
-		      r = (byte) (p & 0xFF);
-		      g = (byte) ((p >> 8) & 0xFF);
-		      b = (byte) ((p >> 16) & 0xFF);
+		      r = (byte) (p2 & 0xFF);
+		      g = (byte) ((p2 >> 8) & 0xFF);
+		      b = (byte) ((p2 >> 16) & 0xFF);
 
 	      //print("Flipped at linear point: ");println(i);
 	    }
 	    else {
-		      r = (byte) ((p >> 16) & 0xFF);
-		      g = (byte) ((p >> 8) & 0xFF);
-		      b = (byte) (p & 0xFF);
+		      r = (byte) ((p2 >> 16) & 0xFF);
+		      g = (byte) ((p2 >> 8) & 0xFF);
+		      b = (byte) (p2 & 0xFF);
 	    }
 
 	    msgarr[size++]=unsignedByte((int)(0));

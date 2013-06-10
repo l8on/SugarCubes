@@ -35,8 +35,10 @@ LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
 
+//BEN TEMPORARY
 Serialize serialize;
 OSCOut oscOut;
+//END BEN TEMPORARY
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -71,8 +73,10 @@ void setup() {
   
   println("Total setup: " + (millis() - startMillis) + "ms");
 
+  //BEN TEMPORARY
   serialize = new Serialize( glucose );
   oscOut = new OSCOut( serialize );
+  //END BEN TEMPORARY
 }
 
 void logTime(String evt) {
@@ -87,10 +91,13 @@ void logTime(String evt) {
 void draw() {
   // The glucose engine deals with the core simulation here, we don't need
   // to do anything specific. This method just needs to exist.
-  int [] colors = glucose.getColors();
 
+  //BEN TEMPORARY
+  int [] colors = glucose.getColors();
   serialize.processColors(colors);
   oscOut.sendToBoards();
+  //END BEN TEMPORARY
+
   /*for (int i=0;i<colors.length;i++)
   {
     print(colors[i]+" ");

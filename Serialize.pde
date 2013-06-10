@@ -29,7 +29,7 @@ class Serialize
 		_glucose = glucose;
 		//println(glucose.model == null);
 		cubes = _glucose.model.cubes;
-		zp= _glucose.model.zeroPoint;
+		zp = _glucose.model.zeroPoint;
 		setupChannelData();
 	}
 	public void setupChannelData()
@@ -64,7 +64,8 @@ class Serialize
 		        }
 		      }
 		      else {
-		      	//This complains that the max index is 74!
+		      	//TODO(BEN) WTF 
+		      	//This complains that the max index is 74 but the model shows 76!
 		        for (Point p: cubes.get(cubeNumber <= 73 ? cubeNumber : 73).points) { 
 		          _mappedPointList.add(p);
 		        }
@@ -102,7 +103,7 @@ class Serialize
 		  // creates list of flipped points
 		  for ( int stripNum: flippedStripList ) {
 		    for (int pointNumInStrip = 1; pointNumInStrip <= 16; pointNumInStrip++) {
-		      flippedPointList.add( 16*(stripNum - 1) + pointNumInStrip );    //adds all flipped points to a list, starts from point 1 on strip 1
+		      flippedPointList.add( 16 * (stripNum - 1) + pointNumInStrip );    //adds all flipped points to a list, starts from point 1 on strip 1
 		    }
 		  }
 		  

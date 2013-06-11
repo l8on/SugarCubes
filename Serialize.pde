@@ -25,7 +25,6 @@ class Serialize
 	public Serialize(GLucose glucose)
 	{
 		_glucose = glucose;
-		//println(glucose.model == null);
 		cubes = _glucose.model._cubes;
 		setupChannelData();
 	}
@@ -36,28 +35,23 @@ class Serialize
 		rearChannelList = channelLists.getRearChannelList();
 
 		// Creates linear point array, ordered as sent to Pandaboard
-
 		flippedRGBList = new FlippedRGBList().getFlippedRGBList();
 
+		createMappedPointList(frontChannelList, mappedPointListFront);
+		createMappedPointList(rearChannelList, mappedPointListRear);
+		createFlippedPointList( frontChannelList, flippedRGBList, 7680, masterFlippedFront );
+	  	createFlippedPointList( rearChannelList, flippedRGBList, 7680, masterFlippedRear );
 		
 	}
+
 	public void processColors(int[] colors)
 	{
-		mappedPointListFront.clear();
-		mappedPointListRear.clear();
-		masterFlippedFront.clear();
-		masterFlippedRear.clear();
-
-		createMappedPointList(frontChannelList, mappedPointListFront, colors);
-		createMappedPointList(rearChannelList, mappedPointListRear, colors);
-
-		createFlippedPointList( frontChannelList, flippedRGBList, mappedPointListFront.size(), masterFlippedFront );
-	  	createFlippedPointList( rearChannelList, flippedRGBList, mappedPointListRear.size(), masterFlippedRear );
-
+		updateMappedPointListColors(frontChannelList, mappedPointListFront, colors);
+		updateMappedPointListColors(rearChannelList, mappedPointListRear, colors);
 	}
 
-
-	public void createMappedPointList(int[][] _channelList, ArrayList<Integer> _mappedPointList, int[] colors) {
+	public void createMappedPointList(int[][] _channelList, ArrayList<Integer> _mappedPointList) 
+	{
 		  for ( int[] channel : _channelList ) {
 		    for ( int cubeNumber : channel ) {
 		      if ( cubeNumber == 0 ) {  // if no cube is present at location
@@ -68,12 +62,32 @@ class Serialize
 		      }
 		      else {
 		        for (Point p: cubes[cubeNumber].points) { 
-		          _mappedPointList.add(colors!=null ? colors[p.index] : 0);
+		          _mappedPointList.add(0);
 		        }
 		      }
 		    }
 		  }
-		}
+	}
+
+		public void updateMappedPointListColors(int[][] _channelList, ArrayList<Integer> _mappedPointList, int[] colors) 
+	{
+		int pointCounter=0;
+		  for ( int[] channel : _channelList ) {
+		    for ( int cubeNumber : channel ) {
+		      if ( cubeNumber == 0 ) {  // if no cube is present at location
+		        for (int i=0; i<(16*3*4); i++) 
+		        { 
+		          _mappedPointList.set(pointCounter++,0);
+		        }
+		      }
+		      else {
+		        for (Point p: cubes[cubeNumber].points) { 
+		          _mappedPointList.set(pointCounter++,colors[p.index]);
+		        }
+		      }
+		    }
+		  }
+	}
 	
 	public void createFlippedPointList( int[][] _channelList, int[][] _flippedRGBlist, int _mappedPointListSize, ArrayList<Boolean> _masterFlipped ) 
 	{

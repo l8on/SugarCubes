@@ -1,6 +1,7 @@
 import netP5.*;
 import oscP5.*;
 import glucose.model.Point;
+import java.util.Arrays;
 class OSCOut
 {
 	protected NetAddress bone_front = new NetAddress("192.168.1.28", 9001);
@@ -19,53 +20,37 @@ class OSCOut
 
 	public void sendToBoards()
 	{
-	  
 	    createAndSendMsg(bone_front, _serializer.mappedPointListFront, _serializer.masterFlippedFront);
 	    createAndSendMsg(bone_rear, _serializer.mappedPointListRear, _serializer.masterFlippedRear);
-	  
 	}
 
-	public byte unsignedByte( int val ) 
+	/*public byte unsignedByte( int val ) 
 	{
 		  return (byte)( val > 127 ? val - 256 : val );
-	}
+	}*/
 
 	public void createAndSendMsg(NetAddress _bone, ArrayList<Integer> _mappedPointList, ArrayList<Boolean> _masterFlipped) 
 	{
-	  int size = 0;
+	  int size = 1;
 	  int msgnum = 0;
 	  int mp;
+	  int listSize=_mappedPointList.size();
+ 	  byte r,g,b;
+	 
+	 Arrays.fill(msgarr,(byte) 0);
 
-	  for (int i=0; i<msgarr.length; i++) 
+	  for (int i=0; i < listSize; i++) 
 	  {
-	    msgarr[i] = 0;
-	  }
 
-	  for (int i=0; i<_mappedPointList.size(); i++) {
-	    Integer p = _mappedPointList.get(i);
-	    byte r,g,b;
-	    // LOGIC TO SEE IF POINT IS RGB FLIPPED
-	    if ( _masterFlipped.get(i)==false ) { 
-	      //IF FLIPPED, DO THIS
-		      r = (byte) (p & 0xFF);
-		      g = (byte) ((p >> 8) & 0xFF);
-		      b = (byte) ((p >> 16) & 0xFF);
+	    int p = _mappedPointList.get(i);
 
-	      //print("Flipped at linear point: ");println(i);
-	    }
-	    else {
-		      r = (byte) ((p >> 16) & 0xFF);
-		      g = (byte) ((p >> 8) & 0xFF);
-		      b = (byte) (p & 0xFF);
-	    }
+	    msgarr[0] = (0 & 0xFF);
+	    boolean unflipped = _masterFlipped.get(i);
+	    msgarr[size++] = (byte) (unflipped ? ((p >> 16) & 0xFF) : (p & 0xFF));
+	    msgarr[size++] = (byte) ((p >> 8) & 0xFF);
+	    msgarr[size++] = (byte) (unflipped ? (p & 0xFF) : ((p >> 16) & 0xFF) );
 
-	    msgarr[size++]=unsignedByte((int)(0));
-	    
-	    msgarr[size++]=unsignedByte((int)(r));
-	    msgarr[size++]=unsignedByte((int)(g));
-	    msgarr[size++]=unsignedByte((int)(b));
-
-	    if (size>=msgarr.length || i>=_mappedPointList.size()-1) { // JAAAAAAAAANK
+	    if (size >= msgarr.length || i >= listSize-1) { // JAAAAAAAAANK
 		      msg.clearArguments();
 		      msg.add(msgnum++);
 		      msg.add(msgarr.length);
@@ -74,9 +59,9 @@ class OSCOut
 	        oscP5.send(msg, _bone);
 	      } 
 	      catch (Exception e) {
-	      	e.printStackTrace();
-	      } // ignore
-	      size=0;
+	      	//e.printStackTrace();
+	      }
+	      size=1;
 	    }
 	  }
 	}

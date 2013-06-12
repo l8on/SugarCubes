@@ -38,12 +38,16 @@ final int TARGET_FRAMERATE = 45;
 int startMillis, lastMillis;
 GLucose glucose;
 HeronLX lx;
+MappingTool mappingTool;
 LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
+ControlUI controlUI;
+MappingUI mappingUI;
 PandaDriver pandaFront;
 PandaDriver pandaRear;
+boolean mappingMode = false;
 
 boolean pandaBoardsEnabled = false;
 
@@ -64,6 +68,7 @@ void setup() {
   
   // Set the patterns
   glucose.lx.setPatterns(patterns = patterns(glucose));
+  mappingTool = new MappingTool(glucose);
   logTime("Built patterns");
   glucose.lx.addEffects(effects = effects(glucose));
   logTime("Built effects");
@@ -79,11 +84,12 @@ void setup() {
   logTime("Build PandaDriver");
   
   // Build overlay UI
-  ui = new OverlayUI();
+  ui = controlUI = new ControlUI();
+  mappingUI = new MappingUI(mappingTool);
   logTime("Built overlay UI");
     
   // MIDI devices
-  SCMidiDevices.initializeStandardDevices(glucose, ui.patternKnobs, ui.transitionKnobs, ui.effectKnobs);
+  SCMidiDevices.initializeStandardDevices(glucose, controlUI.patternKnobs, controlUI.transitionKnobs, controlUI.effectKnobs);
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
@@ -118,18 +124,37 @@ void drawUI() {
 }
 
 boolean uiOn = true;
-boolean knobsOn = true;
+int restoreToIndex = -1;
+
 void keyPressed() {
+  if (mappingMode) {
+    mappingTool.keyPressed();
+  }
   switch (key) {
+    case 'm':
+      mappingMode = !mappingMode;
+      if (mappingMode) {
+        LXPattern pattern = lx.getPattern();
+        for (int i = 0; i < patterns.length; ++i) {
+          if (pattern == patterns[i]) {
+            restoreToIndex = i;
+            break;
+          }
+        }
+        ui = mappingUI;
+        lx.setPatterns(new LXPattern[] { mappingTool });
+      } else {
+        ui = controlUI;
+        lx.setPatterns(patterns);
+        lx.goIndex(restoreToIndex);
+      }
+      break;
     case 'p':
       pandaBoardsEnabled = !pandaBoardsEnabled;
       println("PandaBoard Output: " + (pandaBoardsEnabled ? "ON" : "OFF"));
       break;
     case 'u':
       uiOn = !uiOn;
-      break;
-    case 'k':
-      knobsOn = !knobsOn;
       break;
   }
 }

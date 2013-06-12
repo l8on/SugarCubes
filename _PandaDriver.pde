@@ -23,7 +23,7 @@ public class PandaDriver {
   private final OscMessage message;
 
   // List of point indices on the board
-  private final List<Integer> points;
+  private final int[] points;
 
   // Bit for flipped status of each point index
   private final boolean[] flipped;
@@ -34,7 +34,12 @@ public class PandaDriver {
   public PandaDriver(NetAddress address, Model model, int[][] channelList, int[][] flippedList) {
     this.address = address;
     message = new OscMessage("/shady/pointbuffer");
-    points = buildMappedList(model, channelList);
+    List<Integer> pointList = buildMappedList(model, channelList);
+    points = new int[pointList.size()];
+    int i = 0;
+    for (int value : pointList) {
+      points[i++] = value;
+    }
     flipped = buildFlippedList(model, flippedList);
   }
 

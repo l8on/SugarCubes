@@ -70,12 +70,11 @@ public class PandaDriver {
       Cube cube = model.getCubeByRawIndex(cubeNumber);
       if (cube == null) {
         throw new RuntimeException("Non-existing cube specified in flipped RGB mapping (" + cubeNumber + ")");
-      } else {
-        for (int i = 1; i < cubeInfo.length; ++i) {
-          int stripIndex = cubeInfo[i];
-          for (Point p : cube.strips.get(stripIndex-1).points) {
-            flipped[p.index] = true;
-          }
+      }
+      for (int i = 1; i < cubeInfo.length; ++i) {
+        int stripIndex = cubeInfo[i];
+        for (Point p : cube.strips.get(stripIndex-1).points) {
+          flipped[p.index] = true;
         }
       }
     }

@@ -1,3 +1,5 @@
+import java.lang.reflect.*;
+
 /**
  *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
  *

@@ -29,7 +29,6 @@ import heronarts.lx.transition.*;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 import processing.opengl.*;
-import java.lang.reflect.*;
 import rwmidi.*;
 
 final int VIEWPORT_WIDTH = 900;
@@ -43,6 +42,11 @@ LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
+OscP5 osc;
+PandaDriver pandaFront;
+PandaDriver pandaRear;
+
+boolean pandaBoardsEnabled = false;
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -66,6 +70,14 @@ void setup() {
   logTime("Built effects");
   transitions = transitions(glucose);
   logTime("Built transitions");
+    
+  // Build output driver
+  int[][] frontChannels = glucose.mapping.buildFrontChannelList();
+  int[][] rearChannels = glucose.mapping.buildRearChannelList();
+  int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
+  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
+  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
+  logTime("Build PandaDriver");
   
   // Build overlay UI
   ui = new OverlayUI();
@@ -76,6 +88,7 @@ void setup() {
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
+  println("Hit the 'p' key to toggle Panda Board output");
 }
 
 void logTime(String evt) {
@@ -87,6 +100,13 @@ void logTime(String evt) {
 void draw() {
   // The glucose engine deals with the core simulation here, we don't need
   // to do anything specific. This method just needs to exist.
+  
+  // TODO(mcslee): move into GLucose engine
+  if (pandaBoardsEnabled) {
+    color[] colors = glucose.getColors();
+    pandaFront.send(colors);
+    pandaRear.send(colors);
+  }
 }
 
 void drawUI() {
@@ -102,6 +122,10 @@ boolean uiOn = true;
 boolean knobsOn = true;
 void keyPressed() {
   switch (key) {
+    case 'p':
+      pandaBoardsEnabled = !pandaBoardsEnabled;
+      println("PandaBoard Output: " + (pandaBoardsEnabled ? "ON" : "OFF"));
+      break;
     case 'u':
       uiOn = !uiOn;
       break;

@@ -42,7 +42,6 @@ LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
-OscP5 osc;
 PandaDriver pandaFront;
 PandaDriver pandaRear;
 

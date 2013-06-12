@@ -1,4 +1,13 @@
 /**
+ *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
+ *
+ *         //\\   //\\                 //\\   //\\  
+ *        ///\\\ ///\\\               ///\\\ ///\\\
+ *        \\\/// \\\///               \\\/// \\\///
+ *         \\//   \\//                 \\//   \\//
+ *
+ *        EXPERTS ONLY!!              EXPERTS ONLY!!
+ *
  * Overlay UI that indicates pattern control, etc. This will be moved
  * into the Processing library once it is stabilized and need not be
  * regularly modified.

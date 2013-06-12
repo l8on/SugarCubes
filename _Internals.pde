@@ -1,4 +1,13 @@
 /**
+ *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
+ *
+ *         //\\   //\\                 //\\   //\\  
+ *        ///\\\ ///\\\               ///\\\ ///\\\
+ *        \\\/// \\\///               \\\/// \\\///
+ *         \\//   \\//                 \\//   \\//
+ *
+ *        EXPERTS ONLY!!              EXPERTS ONLY!!
+ *
  * If you are an artist, you may ignore this file! It just sets
  * up the framework to run the patterns. Should not need modification
  * for general animation work.
@@ -46,7 +55,7 @@ void setup() {
   logTime("Created viewport");
 
   // Create the GLucose engine to run the cubes
-  glucose = new GLucose(this);
+  glucose = new GLucose(this, new SCMapping());
   lx = glucose.lx;
   logTime("Built GLucose engine");
   
@@ -61,7 +70,7 @@ void setup() {
   // Build overlay UI
   ui = new OverlayUI();
   logTime("Built overlay UI");
-  
+    
   // MIDI devices
   SCMidiDevices.initializeStandardDevices(glucose, ui.patternKnobs, ui.transitionKnobs, ui.effectKnobs);
   logTime("Setup MIDI devices");

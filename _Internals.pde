@@ -44,6 +44,8 @@ LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
 
+boolean debugMode = false;
+
 void setup() {
   startMillis = lastMillis = millis();
 
@@ -57,6 +59,7 @@ void setup() {
   // Create the GLucose engine to run the cubes
   glucose = new GLucose(this, new SCMapping());
   lx = glucose.lx;
+  lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
   
   // Set the patterns
@@ -64,7 +67,7 @@ void setup() {
   logTime("Built patterns");
   glucose.lx.addEffects(effects = effects(glucose));
   logTime("Built effects");
-  transitions = transitions(glucose);
+  glucose.setTransitions(transitions = transitions(glucose));
   logTime("Built transitions");
   
   // Build overlay UI
@@ -72,10 +75,31 @@ void setup() {
   logTime("Built overlay UI");
     
   // MIDI devices
-  SCMidiDevices.initializeStandardDevices(glucose, ui.patternKnobs, ui.transitionKnobs, ui.effectKnobs);
+  for (MidiInputDevice d : RWMidi.getInputDevices()) {
+    d.createInput(this);
+  }
+  SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
+}
+
+void controllerChangeReceived(rwmidi.Controller cc) {
+  if (debugMode) {
+    println("CC: " + cc.toString());
+  }
+}
+
+void noteOnReceived(Note note) {
+  if (debugMode) {
+    println("Note On: " + note.toString());
+  }
+}
+
+void noteOffReceived(Note note) {
+  if (debugMode) {
+    println("Note Off: " + note.toString());
+  }
 }
 
 void logTime(String evt) {
@@ -102,11 +126,12 @@ boolean uiOn = true;
 boolean knobsOn = true;
 void keyPressed() {
   switch (key) {
+    case 'd':
+      debugMode = !debugMode;
+      println("Debug output: " + (debugMode ? "ON" : "OFF"));
+      break;
     case 'u':
       uiOn = !uiOn;
-      break;
-    case 'k':
-      knobsOn = !knobsOn;
       break;
   }
 }

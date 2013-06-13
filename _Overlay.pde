@@ -49,17 +49,6 @@ class OverlayUI {
   private Method patternStateMethod;
   private Method transitionStateMethod;
   private Method effectStateMethod;
-  
-  private final int NUM_PATTERN_KNOBS = 8;
-  private final int NUM_TRANSITION_KNOBS = 4;
-  private final int NUM_EFFECT_KNOBS = 4;
-  
-  private int activeTransitionIndex = 0;
-  private int activeEffectIndex = 0;
-  
-  public final VirtualPatternKnob[] patternKnobs;
-  public final VirtualTransitionKnob[] transitionKnobs;
-  public final VirtualEffectKnob[] effectKnobs;
     
   OverlayUI() {
     leftPos = width - w;
@@ -69,21 +58,6 @@ class OverlayUI {
     patternNames = classNameArray(patterns, "Pattern");
     transitionNames = classNameArray(transitions, "Transition");
     effectNames = classNameArray(effects, "Effect");
-
-    patternKnobs = new VirtualPatternKnob[NUM_PATTERN_KNOBS];
-    for (int i = 0; i < patternKnobs.length; ++i) {
-      patternKnobs[i] = new VirtualPatternKnob(i);
-    }
-
-    transitionKnobs = new VirtualTransitionKnob[NUM_TRANSITION_KNOBS];
-    for (int i = 0; i < transitionKnobs.length; ++i) {
-      transitionKnobs[i] = new VirtualTransitionKnob(i);
-    }
-
-    effectKnobs = new VirtualEffectKnob[NUM_EFFECT_KNOBS];
-    for (int i = 0; i < effectKnobs.length; ++i) {
-      effectKnobs[i] = new VirtualEffectKnob(i);
-    }
 
     try {
       patternStateMethod = getClass().getMethod("getState", LXPattern.class);
@@ -114,9 +88,9 @@ class OverlayUI {
     yPos += controlSpacing;
     firstPatternKnobY = yPos;
     int xPos = leftTextPos;
-    for (int i = 0; i < NUM_PATTERN_KNOBS/2; ++i) {
-      drawKnob(xPos, yPos, knobSize, patternKnobs[i]);
-      drawKnob(xPos, yPos + knobSize + knobSpacing + knobLabelHeight, knobSize, patternKnobs[NUM_PATTERN_KNOBS/2 + i]);
+    for (int i = 0; i < glucose.NUM_PATTERN_KNOBS/2; ++i) {
+      drawKnob(xPos, yPos, knobSize, glucose.patternKnobs.get(i));
+      drawKnob(xPos, yPos + knobSize + knobSpacing + knobLabelHeight, knobSize, glucose.patternKnobs.get(glucose.NUM_PATTERN_KNOBS/2 + i));
       xPos += knobSize + knobSpacing;
     }
     yPos += 2*(knobSize + knobLabelHeight) + knobSpacing;
@@ -127,8 +101,8 @@ class OverlayUI {
     yPos += controlSpacing;
     firstTransitionKnobY = yPos;
     xPos = leftTextPos;
-    for (int i = 0; i < transitionKnobs.length; ++i) {
-      drawKnob(xPos, yPos, knobSize, transitionKnobs[i]);
+    for (VirtualTransitionKnob knob : glucose.transitionKnobs) {
+      drawKnob(xPos, yPos, knobSize, knob);
       xPos += knobSize + knobSpacing;
     }
     yPos += knobSize + knobLabelHeight;
@@ -139,8 +113,8 @@ class OverlayUI {
     yPos += controlSpacing;
     firstEffectKnobY = yPos;    
     xPos = leftTextPos;
-    for (int i = 0; i < effectKnobs.length; ++i) {
-      drawKnob(xPos, yPos, knobSize, effectKnobs[i]);
+    for (VirtualEffectKnob knob : glucose.effectKnobs) {    
+      drawKnob(xPos, yPos, knobSize, knob);
       xPos += knobSize + knobSpacing;
     }
     yPos += knobSize + knobLabelHeight;
@@ -193,7 +167,7 @@ class OverlayUI {
   public int getState(LXEffect e) {
     if (e.isEnabled()) {
       return STATE_PENDING;
-    } else if (effects[activeEffectIndex] == e) {
+    } else if (e == glucose.getSelectedEffect()) {
       return STATE_ACTIVE;
     }
     return STATE_DEFAULT;
@@ -202,7 +176,7 @@ class OverlayUI {
   public int getState(LXTransition t) {
     if (t == lx.getTransition()) {
       return STATE_PENDING;
-    } else if (t == transitions[activeTransitionIndex]) {
+    } else if (t == glucose.getSelectedTransition()) {
       return STATE_ACTIVE;
     }
     return STATE_DEFAULT;
@@ -324,54 +298,6 @@ class OverlayUI {
     }
     return s;
   }
-
-  class VirtualPatternKnob extends LXVirtualParameter {
-    private final int index;
-    
-    VirtualPatternKnob(int index) {
-      this.index = index;
-    }
-    
-    public LXParameter getRealParameter() {
-      List<LXParameter> parameters = glucose.getPattern().getParameters();
-      if (index < parameters.size()) {
-        return parameters.get(index);
-      }
-      return null;
-    }
-  }
-
-  class VirtualTransitionKnob extends LXVirtualParameter {
-    private final int index;
-    
-    VirtualTransitionKnob(int index) {
-      this.index = index;
-    }
-    
-    public LXParameter getRealParameter() {
-      List<LXParameter> parameters = transitions[activeTransitionIndex].getParameters();
-      if (index < parameters.size()) {
-        return parameters.get(index);
-      }
-      return null;
-    }
-  }
-
-  class VirtualEffectKnob extends LXVirtualParameter {
-    private final int index;
-    
-    VirtualEffectKnob(int index) {
-      this.index = index;
-    }
-    
-    public LXParameter getRealParameter() {
-      List<LXParameter> parameters = effects[activeEffectIndex].getParameters();
-      if (index < parameters.size()) {
-        return parameters.get(index);
-      }
-      return null;
-    }
-  }
   
   private int patternKnobIndex = -1;
   private int transitionKnobIndex = -1;
@@ -395,28 +321,27 @@ class OverlayUI {
     } else if (mouseY > firstEffectY) {
       int effectIndex = (mouseY - firstEffectY) / lineHeight;
       if (effectIndex < effects.length) {
-        if (activeEffectIndex == effectIndex) {
+        if (effects[effectIndex] == glucose.getSelectedEffect()) {
           effects[effectIndex].enable();
           releaseEffect = effectIndex;
         }
-        activeEffectIndex = effectIndex;        
+        glucose.setSelectedEffect(effectIndex);
       }
     } else if ((mouseY >= firstTransitionKnobY) && (mouseY < firstTransitionKnobY + knobSize + knobLabelHeight)) {
       transitionKnobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
     } else if (mouseY > firstTransitionY) {
       int transitionIndex = (mouseY - firstTransitionY) / lineHeight;
       if (transitionIndex < transitions.length) {
-        activeTransitionIndex = transitionIndex;
+        glucose.setSelectedTransition(transitionIndex);
       }
     } else if ((mouseY >= firstPatternKnobY) && (mouseY < firstPatternKnobY + 2*(knobSize+knobLabelHeight) + knobSpacing)) {
       patternKnobIndex = (mouseX - leftTextPos) / (knobSize + knobSpacing);
       if (mouseY >= firstPatternKnobY + knobSize + knobLabelHeight + knobSpacing) {
-        patternKnobIndex += NUM_PATTERN_KNOBS / 2;
+        patternKnobIndex += glucose.NUM_PATTERN_KNOBS / 2;
       }      
     } else if (mouseY > firstPatternY) {
       int patternIndex = (mouseY - firstPatternY) / lineHeight;
       if (patternIndex < patterns.length) {
-        patterns[patternIndex].setTransition(transitions[activeTransitionIndex]);
         lx.goIndex(patternIndex);
       }
     }
@@ -425,14 +350,14 @@ class OverlayUI {
   public void mouseDragged() {
     int dy = lastY - mouseY;
     lastY = mouseY;
-    if (patternKnobIndex >= 0 && patternKnobIndex < NUM_PATTERN_KNOBS) {
-      LXParameter p = patternKnobs[patternKnobIndex];
+    if (patternKnobIndex >= 0 && patternKnobIndex < glucose.NUM_PATTERN_KNOBS) {
+      LXParameter p = glucose.patternKnobs.get(patternKnobIndex);
       p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
-    } else if (effectKnobIndex >= 0 && effectKnobIndex < NUM_EFFECT_KNOBS) {
-      LXParameter p = effectKnobs[effectKnobIndex];
+    } else if (effectKnobIndex >= 0 && effectKnobIndex < glucose.NUM_EFFECT_KNOBS) {
+      LXParameter p = glucose.effectKnobs.get(effectKnobIndex);
       p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
-    } else if (transitionKnobIndex >= 0 && transitionKnobIndex < NUM_TRANSITION_KNOBS) {
-      LXParameter p = transitionKnobs[transitionKnobIndex];
+    } else if (transitionKnobIndex >= 0 && transitionKnobIndex < glucose.NUM_TRANSITION_KNOBS) {
+      LXParameter p = glucose.transitionKnobs.get(transitionKnobIndex);
       p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
     }
   }

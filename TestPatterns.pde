@@ -138,8 +138,12 @@ class MappingTool extends SCPattern {
     
   private int cubeIndex = 0;
   private int stripIndex = 0;
+  private int channelIndex = 0;
 
-  public boolean mappingModeSingleCube = true;
+  public final int MAPPING_MODE_ALL = 0;
+  public final int MAPPING_MODE_CHANNEL = 1;
+  public final int MAPPING_MODE_SINGLE_CUBE = 2;
+  public int mappingMode = MAPPING_MODE_ALL;
 
   public final int CUBE_MODE_ALL = 0;
   public final int CUBE_MODE_SINGLE_STRIP = 1;
@@ -150,8 +154,36 @@ class MappingTool extends SCPattern {
   public boolean channelModeGreen = false;
   public boolean channelModeBlue = false;
   
-  MappingTool(GLucose glucose) {
+  private final static int NUM_CHANNELS = 16;
+  
+  private final int[][] frontChannels;
+  private final int[][] rearChannels;
+  private int[] activeChannels;
+  
+  MappingTool(GLucose glucose, int[][]frontChannels, int[][]rearChannels) {
     super(glucose);
+    this.frontChannels = frontChannels;
+    this.rearChannels = rearChannels;
+    setChannel();
+  }
+  
+  private void setChannel() {
+    if (channelIndex < frontChannels.length) {
+      activeChannels = frontChannels[channelIndex];
+    } else {
+      activeChannels = rearChannels[channelIndex - frontChannels.length];
+    }
+  }
+  
+  private int cubeInChannel(Cube c) {
+    int i = 1;
+    for (int index : activeChannels) {
+      if (c == model.getCubeByRawIndex(index)) {
+        return i;
+      }
+      ++i;
+    }
+    return 0;
   }
   
   private void printInfo() {
@@ -182,8 +214,25 @@ class MappingTool extends SCPattern {
     
     int ci = 0;
     for (Cube cube : model.cubes) {
-      if (!mappingModeSingleCube || (cubeIndex == ci)) {
-        if (cubeMode == CUBE_MODE_STRIP_PATTERN) {
+      boolean cubeOn = false;
+      int channelIndex = cubeInChannel(cube);
+      switch (mappingMode) {
+        case MAPPING_MODE_ALL: cubeOn = true; break;
+        case MAPPING_MODE_SINGLE_CUBE: cubeOn = (cubeIndex == ci); break;
+        case MAPPING_MODE_CHANNEL: cubeOn = (channelIndex > 0); break;
+      }
+      if (cubeOn) {
+        if (mappingMode == MAPPING_MODE_CHANNEL) {
+          color cc = off;
+          switch (channelIndex) {
+            case 1: cc = r; break;
+            case 2: cc = r|g; break;
+            case 3: cc = g; break;
+            case 4: cc = b; break;
+            case 5: cc = r|b; break;
+          }
+          setColor(cube, cc);
+        } else if (cubeMode == CUBE_MODE_STRIP_PATTERN) {
           int si = 0;
           color sc = off;
           for (Strip strip : cube.strips) {
@@ -224,6 +273,19 @@ class MappingTool extends SCPattern {
       cubeIndex += model.cubes.size();
     }
   }
+
+  public void incChannel() {
+    channelIndex = (channelIndex + 1) % NUM_CHANNELS;
+    setChannel();
+  }
+  
+  public void decChannel() {
+    --channelIndex;
+    if (channelIndex < 0) {
+      channelIndex += NUM_CHANNELS;
+    }
+    setChannel();    
+  }
   
   public void incStrip() {
     int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
@@ -240,8 +302,8 @@ class MappingTool extends SCPattern {
   
   public void keyPressed() {
     switch (keyCode) {
-      case UP: incCube(); break;
-      case DOWN: decCube(); break;
+      case UP: if (mappingMode == MAPPING_MODE_CHANNEL) incChannel(); else incCube(); break;
+      case DOWN: if (mappingMode == MAPPING_MODE_CHANNEL) decChannel(); else decCube(); break;
       case LEFT: decStrip(); break;
       case RIGHT: incStrip(); break;
     }

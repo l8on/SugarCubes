@@ -475,10 +475,13 @@ class MappingUI extends OverlayUI {
   private MappingTool mappingTool;
   
   private final String MAPPING_MODE_ALL = "All On";
+  private final String MAPPING_MODE_CHANNEL = "Channel";
   private final String MAPPING_MODE_SINGLE_CUBE = "Single Cube";
+  
   private final String[] mappingModes = {
     MAPPING_MODE_ALL,
-    MAPPING_MODE_SINGLE_CUBE,
+    MAPPING_MODE_CHANNEL,
+    MAPPING_MODE_SINGLE_CUBE
   };
   private final Method mappingModeStateMethod;
   
@@ -505,11 +508,13 @@ class MappingUI extends OverlayUI {
   private int firstMappingY;
   private int firstCubeY;
   private int firstChannelY;
+  private int channelFieldY;
   private int cubeFieldY;
   private int stripFieldY;
   
   private boolean dragCube;
   private boolean dragStrip;
+  private boolean dragChannel;
 
   MappingUI(MappingTool mappingTool) {
     this.mappingTool = mappingTool;
@@ -523,7 +528,14 @@ class MappingUI extends OverlayUI {
   }
   
   public int getMappingState(Object mappingMode) {
-    boolean active = (mappingMode == MAPPING_MODE_SINGLE_CUBE) == mappingTool.mappingModeSingleCube;
+    boolean active = false;
+    if (mappingMode == MAPPING_MODE_ALL) {
+      active = mappingTool.mappingMode == mappingTool.MAPPING_MODE_ALL;
+    } else if (mappingMode == MAPPING_MODE_CHANNEL) {
+      active = mappingTool.mappingMode == mappingTool.MAPPING_MODE_CHANNEL;
+    } else if (mappingMode == MAPPING_MODE_SINGLE_CUBE) {
+      active = mappingTool.mappingMode == mappingTool.MAPPING_MODE_SINGLE_CUBE;
+    }
     return active ? STATE_ACTIVE : STATE_DEFAULT;
   }
   
@@ -565,6 +577,10 @@ class MappingUI extends OverlayUI {
     firstChannelY = yPos + lineHeight + 6;    
     yPos = drawObjectList(yPos, "CHANNELS", channelModes, channelModes, channelModeStateMethod);    
     yPos += sectionSpacing;
+    
+    channelFieldY = yPos + lineHeight + 6;
+    yPos = drawValueField(yPos, "CHANNEL ID", mappingTool.channelIndex + 1);
+    yPos += sectionSpacing;
 
     cubeFieldY = yPos + lineHeight + 6;
     yPos = drawValueField(yPos, "CUBE ID", glucose.model.getRawIndexForCube(mappingTool.cubeIndex));
@@ -598,7 +614,7 @@ class MappingUI extends OverlayUI {
   private int lastY;
   
   public void mousePressed() {
-    dragCube = dragStrip = false;
+    dragCube = dragStrip = dragChannel = false;
     lastY = mouseY;
     if (mouseY >= stripFieldY) {
       if (mouseY < stripFieldY + lineHeight) {
@@ -607,6 +623,10 @@ class MappingUI extends OverlayUI {
     } else if (mouseY >= cubeFieldY) {
       if (mouseY < cubeFieldY + lineHeight) {
         dragCube = true;
+      }
+    } else if (mouseY >= channelFieldY) {
+      if (mouseY < channelFieldY + lineHeight) {
+        dragChannel = true;
       }
     } else if (mouseY >= firstChannelY) {
       int index = objectClickIndex(firstChannelY);
@@ -624,8 +644,10 @@ class MappingUI extends OverlayUI {
       }
     } else if (mouseY >= firstMappingY) {
       int index = objectClickIndex(firstMappingY);
-      if (index < 2) {
-        mappingTool.mappingModeSingleCube = (index > 0);
+      switch (index) {
+        case 0: mappingTool.mappingMode = mappingTool.MAPPING_MODE_ALL; break;
+        case 1: mappingTool.mappingMode = mappingTool.MAPPING_MODE_CHANNEL; break;
+        case 2: mappingTool.mappingMode = mappingTool.MAPPING_MODE_SINGLE_CUBE; break;
       }
     }
   }
@@ -649,6 +671,12 @@ class MappingUI extends OverlayUI {
           mappingTool.decStrip();
         } else {
           mappingTool.incStrip();
+        }
+      } else if (dragChannel) {
+        if (dy < 0) {
+          mappingTool.decChannel();
+        } else {
+          mappingTool.incChannel();
         }
       }
     }

@@ -68,7 +68,6 @@ void setup() {
   
   // Set the patterns
   glucose.lx.setPatterns(patterns = patterns(glucose));
-  mappingTool = new MappingTool(glucose);
   logTime("Built patterns");
   glucose.lx.addEffects(effects = effects(glucose));
   logTime("Built effects");
@@ -79,6 +78,7 @@ void setup() {
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
   int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
+  mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
   pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
   pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
   logTime("Build PandaDriver");

@@ -76,7 +76,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[56] = new Cube(1, 53, 0, 40, 70, 70);
     cubes[57] = new Cube(-15, 24, 0, 15, 0, 0);
     //cubes[58] what the heck happened here? never noticed before 4/8/2013
-    //cubes[59] what the heck happened here? never noticed before 4/8/2013
+    cubes[59] = new Cube(40, 46, 100, 0, 0, 355, false, 2, 3); // copies from 75
     cubes[60] = new Cube(40, 164, 120, 0, 0, 12.5, false, 4, 3);
     cubes[61] = new Cube(32, 148, 100, 0, 0, 3, false, 4, 2);
     cubes[62] = new Cube(30, 132, 90, 10, 350, 5);
@@ -105,7 +105,7 @@ class SCMapping implements GLucose.Mapping {
       }
       , 
       {
-        30, 31, 32, 17, 3  // Pandaboard B, structural channel 2
+        31, 32, 17, 3, 0  // Pandaboard B, structural channel 2,  normally 30, 31, 32, 17, 3 (disconnected 30)
       }
       , 
       {
@@ -113,7 +113,7 @@ class SCMapping implements GLucose.Mapping {
       }
       , 
       {
-        69, 75, 74, 76, 73  // Pandaboard D, structural channel 4
+        69, 75, 74, 76, 73  // Pandaboard D, structural channel 4, normally 64 first
       }
       , 
       {
@@ -157,7 +157,7 @@ class SCMapping implements GLucose.Mapping {
       }
       , 
       {
-        64, 75, 72, 49, 50  // Pandaboard F, structural channel 14, right top backside
+        64, 59, 72, 49, 50  // Pandaboard F, structural channel 14, right top backside (second cube is missing from sim)
       }
       , 
       {
@@ -174,7 +174,7 @@ class SCMapping implements GLucose.Mapping {
     // syntax is {cube #, strip #, strip #, . . . }
     return new int[][] { 
       {
-        22, 4, 8
+        22, 4, 7
       }
       , 
       {
@@ -218,7 +218,7 @@ class SCMapping implements GLucose.Mapping {
       }
       , 
       {
-        15, 6, 8
+        15, 6, 8, 9
       }
       , 
       {
@@ -251,6 +251,22 @@ class SCMapping implements GLucose.Mapping {
       , 
       {
         74, 6, 7
+      }
+      , 
+      {
+        21, 10
+      }
+      , 
+      {
+        37, 11
+      }
+      , 
+      {
+        61, 5
+      }
+      , 
+      {
+        33, 12
       }
     };
   }

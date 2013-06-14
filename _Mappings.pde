@@ -39,7 +39,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[19] = new Cube(24, 2, 20, 0, 0, 25, true, 0, 3);
     cubes[20] = new Cube(26, 26, 20, 0, 0, 70, true, 2, 3);
     cubes[21] = new Cube(3.5, 10.5, 20, 0, 0, 35, true, 1, 0);
-    cubes[22] =  new Cube(63, 133, 20, 0, 0, 80, false, 0, 2);
+    cubes[22] = new Cube(63, 133, 20, 0, 0, 80, false, 0, 2);
     cubes[23] = new Cube(56, 159, 20, 0, 0, 65);
     cubes[24] = new Cube(68, 194, 20, 0, -45, 0);
     cubes[25] = new Cube(34, 194, 20, 20, 0, 35 );
@@ -87,7 +87,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[68] = new Cube(29, 94, 105, 15, 20, 10, false, 4, 0);
     cubes[69] = new Cube(30, 77, 100, 15, 345, 20, false, 2, 1);
     cubes[70] = new Cube(38, 96, 95, 30, 0, 355);
-    //cubes[71]= new Cube(38,96,95,30,0,355);
+    //cubes[71] = new Cube(38,96,95,30,0,355); //old power cube
     cubes[72] = new Cube(44, 20, 100, 0, 0, 345);
     cubes[73] = new Cube(28, 24, 100, 0, 0, 13, true, 5, 1);
     cubes[74] = new Cube(8, 38, 100, 10, 0, 0, true, 5, 1);

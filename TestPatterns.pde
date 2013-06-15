@@ -133,3 +133,184 @@ class TestProjectionPattern extends SCPattern {
     }
   } 
 }
+
+class MappingTool extends SCPattern {
+    
+  private int cubeIndex = 0;
+  private int stripIndex = 0;
+  private int channelIndex = 0;
+
+  public final int MAPPING_MODE_ALL = 0;
+  public final int MAPPING_MODE_CHANNEL = 1;
+  public final int MAPPING_MODE_SINGLE_CUBE = 2;
+  public int mappingMode = MAPPING_MODE_ALL;
+
+  public final int CUBE_MODE_ALL = 0;
+  public final int CUBE_MODE_SINGLE_STRIP = 1;
+  public final int CUBE_MODE_STRIP_PATTERN = 2;
+  public int cubeMode = CUBE_MODE_ALL;
+
+  public boolean channelModeRed = true;
+  public boolean channelModeGreen = false;
+  public boolean channelModeBlue = false;
+  
+  private final static int NUM_CHANNELS = 16;
+  
+  private final int[][] frontChannels;
+  private final int[][] rearChannels;
+  private int[] activeChannels;
+  
+  MappingTool(GLucose glucose, int[][]frontChannels, int[][]rearChannels) {
+    super(glucose);
+    this.frontChannels = frontChannels;
+    this.rearChannels = rearChannels;
+    setChannel();
+  }
+  
+  private void setChannel() {
+    if (channelIndex < frontChannels.length) {
+      activeChannels = frontChannels[channelIndex];
+    } else {
+      activeChannels = rearChannels[channelIndex - frontChannels.length];
+    }
+  }
+  
+  private int cubeInChannel(Cube c) {
+    int i = 1;
+    for (int index : activeChannels) {
+      if (c == model.getCubeByRawIndex(index)) {
+        return i;
+      }
+      ++i;
+    }
+    return 0;
+  }
+  
+  private void printInfo() {
+    println("Cube:" + cubeIndex + " Strip:" + (stripIndex+1));
+  }
+  
+  public void cube(int delta) {
+    int len = model.cubes.size();
+    cubeIndex = (len + cubeIndex + delta) % len;
+    printInfo();
+  }
+  
+  public void strip(int delta) {
+    int len = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    stripIndex = (len + stripIndex + delta) % len;
+    printInfo();
+  }
+  
+  public void run(int deltaMs) {
+    color off = color(0, 0, 0);
+    color c = off;
+    color r = #FF0000;
+    color g = #00FF00;
+    color b = #0000FF;
+    if (channelModeRed) c |= r;
+    if (channelModeGreen) c |= g;
+    if (channelModeBlue) c |= b;
+    
+    int ci = 0;
+    for (Cube cube : model.cubes) {
+      boolean cubeOn = false;
+      int channelIndex = cubeInChannel(cube);
+      switch (mappingMode) {
+        case MAPPING_MODE_ALL: cubeOn = true; break;
+        case MAPPING_MODE_SINGLE_CUBE: cubeOn = (cubeIndex == ci); break;
+        case MAPPING_MODE_CHANNEL: cubeOn = (channelIndex > 0); break;
+      }
+      if (cubeOn) {
+        if (mappingMode == MAPPING_MODE_CHANNEL) {
+          color cc = off;
+          switch (channelIndex) {
+            case 1: cc = r; break;
+            case 2: cc = r|g; break;
+            case 3: cc = g; break;
+            case 4: cc = b; break;
+            case 5: cc = r|b; break;
+          }
+          setColor(cube, cc);
+        } else if (cubeMode == CUBE_MODE_STRIP_PATTERN) {
+          int si = 0;
+          color sc = off;
+          for (Strip strip : cube.strips) {
+            int clipI = si / Clip.STRIPS_PER_CLIP;
+            switch (clipI) {
+              case 0: sc = r; break;
+              case 1: sc = g; break;
+              case 2: sc = b; break;
+              case 3: sc = r|g|b; break;
+            }
+            if (si % Clip.STRIPS_PER_CLIP == 2) {
+              sc = r|g;
+            }
+            setColor(strip, sc);
+            ++si;
+          }
+        } else if (cubeMode == CUBE_MODE_SINGLE_STRIP) {
+          setColor(cube, off);
+          setColor(cube.strips.get(stripIndex), c);
+        } else {
+          setColor(cube, c);
+        }
+      } else {
+        setColor(cube, off);
+      }
+      ++ci;
+    }
+    
+  }
+  
+  public void incCube() {
+    cubeIndex = (cubeIndex + 1) % model.cubes.size();
+  }
+  
+  public void decCube() {
+    --cubeIndex;
+    if (cubeIndex < 0) {
+      cubeIndex += model.cubes.size();
+    }
+  }
+
+  public void incChannel() {
+    channelIndex = (channelIndex + 1) % NUM_CHANNELS;
+    setChannel();
+  }
+  
+  public void decChannel() {
+    --channelIndex;
+    if (channelIndex < 0) {
+      channelIndex += NUM_CHANNELS;
+    }
+    setChannel();    
+  }
+  
+  public void incStrip() {
+    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    stripIndex = (stripIndex + 1) % stripsPerCube;
+  }
+  
+  public void decStrip() {
+    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    --stripIndex;
+    if (stripIndex < 0) {
+      stripIndex += stripsPerCube;
+    }
+  }
+  
+  public void keyPressed() {
+    switch (keyCode) {
+      case UP: if (mappingMode == MAPPING_MODE_CHANNEL) incChannel(); else incCube(); break;
+      case DOWN: if (mappingMode == MAPPING_MODE_CHANNEL) decChannel(); else decCube(); break;
+      case LEFT: decStrip(); break;
+      case RIGHT: incStrip(); break;
+    }
+    switch (key) {
+      case 'r': channelModeRed = !channelModeRed; break;
+      case 'g': channelModeGreen = !channelModeGreen; break;
+      case 'b': channelModeBlue = !channelModeBlue; break;
+    }
+  }
+}

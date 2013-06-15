@@ -39,7 +39,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[19] = new Cube(24, 2, 20, 0, 0, 25, true, 0, 3);
     cubes[20] = new Cube(26, 26, 20, 0, 0, 70, true, 2, 3);
     cubes[21] = new Cube(3.5, 10.5, 20, 0, 0, 35, true, 1, 0);
-    cubes[22] =  new Cube(63, 133, 20, 0, 0, 80, false, 0, 2);
+    cubes[22] = new Cube(63, 133, 20, 0, 0, 80, false, 0, 2);
     cubes[23] = new Cube(56, 159, 20, 0, 0, 65);
     cubes[24] = new Cube(68, 194, 20, 0, -45, 0);
     cubes[25] = new Cube(34, 194, 20, 20, 0, 35 );
@@ -76,7 +76,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[56] = new Cube(1, 53, 0, 40, 70, 70);
     cubes[57] = new Cube(-15, 24, 0, 15, 0, 0);
     //cubes[58] what the heck happened here? never noticed before 4/8/2013
-    //cubes[59] what the heck happened here? never noticed before 4/8/2013
+    cubes[59] = new Cube(40, 46, 100, 0, 0, 355, false, 2, 3); // copies from 75
     cubes[60] = new Cube(40, 164, 120, 0, 0, 12.5, false, 4, 3);
     cubes[61] = new Cube(32, 148, 100, 0, 0, 3, false, 4, 2);
     cubes[62] = new Cube(30, 132, 90, 10, 350, 5);
@@ -87,7 +87,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[68] = new Cube(29, 94, 105, 15, 20, 10, false, 4, 0);
     cubes[69] = new Cube(30, 77, 100, 15, 345, 20, false, 2, 1);
     cubes[70] = new Cube(38, 96, 95, 30, 0, 355);
-    //cubes[71]= new Cube(38,96,95,30,0,355);
+    //cubes[71] = new Cube(38,96,95,30,0,355); //old power cube
     cubes[72] = new Cube(44, 20, 100, 0, 0, 345);
     cubes[73] = new Cube(28, 24, 100, 0, 0, 13, true, 5, 1);
     cubes[74] = new Cube(8, 38, 100, 10, 0, 0, true, 5, 1);
@@ -96,6 +96,179 @@ class SCMapping implements GLucose.Mapping {
     cubes[77] = new Cube(50, 132, 80, 0, 0, 0, false, 0, 2); 
     cubes[78] = new Cube(20, 140, 80, 0, 0, 0, false, 0, 3);
     return cubes;
+  }
+
+  public int[][] buildFrontChannelList() {
+    return new int[][] {
+      {
+        1, 57, 56, 55, 0  // Pandaboard A, structural channel 1
+      }
+      , 
+      {
+        31, 32, 17, 3, 0  // Pandaboard B, structural channel 2,  normally 30, 31, 32, 17, 3 (disconnected 30)
+      }
+      , 
+      {
+        20, 21, 15, 19, 0  // Pandaboard C, structural channel 3
+      }
+      , 
+      {
+        69, 75, 74, 76, 73  // Pandaboard D, structural channel 4, normally 64 first
+      }
+      , 
+      {
+        16, 2, 5, 0, 0  // Pandaboard E, structural channel 5
+      }
+      , 
+      {
+        48, 47, 37, 29, 0  // Pandaboard F, structural channel 6 (is there a 5th?)
+      }
+      , 
+      {
+        68, 63, 62, 78, 45  // Pandaboard G, structural channel 7, left top front side
+      }
+      , 
+      {
+        18, 6, 7, 0, 0  // Pandaboard H, structural channel 8
+      }
+    };
+  }
+
+  public int[][] buildRearChannelList() {
+    return new int[][] {
+      {
+        22, 8, 14, 28, 0  // Pandaboard A, structural channel 9
+      }
+      , 
+      {
+        36, 34, 40, 52, 66  // Pandaboard B, structural channel 10
+      }
+      , 
+      {
+        65, 61, 60, 54, 51  // Pandaboard C, structural channel 11
+      }
+      , 
+      {
+        35, 25, 11, 10, 24  // Pandaboard D, structural channel 12
+      }
+      , 
+      {
+        23, 9, 13, 27, 12  // Pandaboard E, structural channel 13, missing taillight?
+      }
+      , 
+      {
+        64, 59, 72, 49, 50  // Pandaboard F, structural channel 14, right top backside (second cube is missing from sim)
+      }
+      , 
+      {
+        77, 39, 46, 33, 26  // Pandaboard G, structural channel 15
+      }
+      , 
+      {
+        44, 53, 42, 43, 41  // Pandaboard H, structural channel 16, last cube busted?
+      }
+    };
+  }
+
+  public int[][] buildFlippedRGBList() {
+    // syntax is {cube #, strip #, strip #, . . . }
+    return new int[][] { 
+      {
+        22, 4, 7
+      }
+      , 
+      {
+        50, 1, 3
+      }
+      , 
+      {
+        7, 1, 2, 11
+      }
+      , 
+      {
+        49, 1
+      }
+      , 
+      {
+        39, 1
+      }
+      , 
+      {
+        41, 1
+      }
+      , 
+      {
+        26, 3, 5
+      }
+      , 
+      {
+        64, 1
+      }
+      , 
+      {
+        32, 2
+      }
+      , 
+      {
+        20, 6, 7
+      }
+      , 
+      {
+        19, 1, 2
+      }
+      , 
+      {
+        15, 6, 8, 9
+      }
+      , 
+      {
+        29, 3, 10
+      }
+      , 
+      {
+        68, 4, 9
+      }
+      , 
+      {
+        18, 12
+      }
+      , 
+      {
+        6, 2, 4
+      }
+      , 
+      {
+        78, 11
+      }
+      , 
+      {
+        56, 2
+      }
+      , 
+      {
+        57, 3
+      }
+      , 
+      {
+        74, 6, 7
+      }
+      , 
+      {
+        21, 10
+      }
+      , 
+      {
+        37, 11
+      }
+      , 
+      {
+        61, 5
+      }
+      , 
+      {
+        33, 12
+      }
+    };
   }
 }
 

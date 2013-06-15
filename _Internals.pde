@@ -29,7 +29,6 @@ import heronarts.lx.transition.*;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 import processing.opengl.*;
-import java.lang.reflect.*;
 import rwmidi.*;
 
 final int VIEWPORT_WIDTH = 900;
@@ -39,10 +38,18 @@ final int TARGET_FRAMERATE = 45;
 int startMillis, lastMillis;
 GLucose glucose;
 HeronLX lx;
+MappingTool mappingTool;
 LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
 OverlayUI ui;
+ControlUI controlUI;
+MappingUI mappingUI;
+PandaDriver pandaFront;
+PandaDriver pandaRear;
+boolean mappingMode = false;
+
+boolean pandaBoardsEnabled = false;
 
 boolean debugMode = false;
 
@@ -69,9 +76,19 @@ void setup() {
   logTime("Built effects");
   glucose.setTransitions(transitions = transitions(glucose));
   logTime("Built transitions");
+    
+  // Build output driver
+  int[][] frontChannels = glucose.mapping.buildFrontChannelList();
+  int[][] rearChannels = glucose.mapping.buildRearChannelList();
+  int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
+  mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
+  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
+  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
+  logTime("Build PandaDriver");
   
   // Build overlay UI
-  ui = new OverlayUI();
+  ui = controlUI = new ControlUI();
+  mappingUI = new MappingUI(mappingTool);
   logTime("Built overlay UI");
     
   // MIDI devices
@@ -82,6 +99,7 @@ void setup() {
   logTime("Setup MIDI devices");
   
   println("Total setup: " + (millis() - startMillis) + "ms");
+  println("Hit the 'p' key to toggle Panda Board output");
 }
 
 void controllerChangeReceived(rwmidi.Controller cc) {
@@ -111,6 +129,13 @@ void logTime(String evt) {
 void draw() {
   // The glucose engine deals with the core simulation here, we don't need
   // to do anything specific. This method just needs to exist.
+  
+  // TODO(mcslee): move into GLucose engine
+  if (pandaBoardsEnabled) {
+    color[] colors = glucose.getColors();
+    pandaFront.send(colors);
+    pandaRear.send(colors);
+  }
 }
 
 void drawUI() {
@@ -123,12 +148,37 @@ void drawUI() {
 }
 
 boolean uiOn = true;
-boolean knobsOn = true;
+int restoreToIndex = -1;
+
 void keyPressed() {
+  if (mappingMode) {
+    mappingTool.keyPressed();
+  }
   switch (key) {
     case 'd':
       debugMode = !debugMode;
       println("Debug output: " + (debugMode ? "ON" : "OFF"));
+    case 'm':
+      mappingMode = !mappingMode;
+      if (mappingMode) {
+        LXPattern pattern = lx.getPattern();
+        for (int i = 0; i < patterns.length; ++i) {
+          if (pattern == patterns[i]) {
+            restoreToIndex = i;
+            break;
+          }
+        }
+        ui = mappingUI;
+        lx.setPatterns(new LXPattern[] { mappingTool });
+      } else {
+        ui = controlUI;
+        lx.setPatterns(patterns);
+        lx.goIndex(restoreToIndex);
+      }
+      break;
+    case 'p':
+      pandaBoardsEnabled = !pandaBoardsEnabled;
+      println("PandaBoard Output: " + (pandaBoardsEnabled ? "ON" : "OFF"));
       break;
     case 'u':
       uiOn = !uiOn;

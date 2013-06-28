@@ -55,8 +55,7 @@ boolean pandaBoardsEnabled = false;
 boolean debugMode = false;
 
 // Camera variables
-final float eyeR = -270;
-float eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
+float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -107,10 +106,16 @@ void setup() {
   midX = glucose.model.xMax/2 + 20;
   midY = glucose.model.yMax/2;
   midZ = glucose.model.zMax/2;
+  eyeR = -270;
   eyeA = .15;
   eyeY = midY + 20;
   eyeX = midX + eyeR*sin(eyeA);
   eyeZ = midZ + eyeR*cos(eyeA);
+  addMouseWheelListener(new java.awt.event.MouseWheelListener() { 
+    public void mouseWheelMoved(java.awt.event.MouseWheelEvent mwe) { 
+      mouseWheel(mwe.getWheelRotation());
+  }}); 
+  
   
   println("Total setup: " + (millis() - startMillis) + "ms");
   println("Hit the 'p' key to toggle Panda Board output");
@@ -269,5 +274,11 @@ void mouseReleased() {
   if (mouseX > ui.leftPos) {
     ui.mouseReleased();
   }
+}
+ 
+void mouseWheel(int delta) {
+  eyeR = constrain(eyeR - delta, -500, -80);
+  eyeX = midX + eyeR*sin(eyeA);
+  eyeZ = midZ + eyeR*cos(eyeA);
 }
 

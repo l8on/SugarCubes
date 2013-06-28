@@ -612,25 +612,5 @@ class MappingUI extends OverlayUI {
     }
     
   }
-
-
-}
-
-void mousePressed() {
-  if (mouseX > ui.leftPos) {
-    ui.mousePressed();
-  }
-}
-
-void mouseReleased() {
-  if (mouseX > ui.leftPos) {
-    ui.mouseReleased();
-  }
-}
-
-void mouseDragged() {
-  if (mouseX > ui.leftPos) {
-    ui.mouseDragged();
-  }
 }
 

@@ -34,7 +34,7 @@ import rwmidi.*;
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
 
-int targetFramerate = 30;
+int targetFramerate = 45;
 
 int startMillis, lastMillis;
 GLucose glucose;
@@ -53,6 +53,10 @@ boolean mappingMode = false;
 boolean pandaBoardsEnabled = false;
 
 boolean debugMode = false;
+
+// Camera variables
+final float eyeR = -270;
+float eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -99,6 +103,15 @@ void setup() {
   SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
   
+  // Setup camera
+  midX = glucose.model.xMax/2 + 20;
+  midY = glucose.model.yMax/2;
+  midZ = glucose.model.zMax/2;
+  eyeA = .15;
+  eyeY = midY + 20;
+  eyeX = midX + eyeR*sin(eyeA);
+  eyeZ = midZ + eyeR*cos(eyeA);
+  
   println("Total setup: " + (millis() - startMillis) + "ms");
   println("Hit the 'p' key to toggle Panda Board output");
 }
@@ -128,12 +141,43 @@ void logTime(String evt) {
 }
 
 void draw() {
-  // The glucose engine deals with the core simulation here, we don't need
-  // to do anything specific. This method just needs to exist.
+  // Draws the simulation and the 2D UI overlay
+  background(40);
+  color[] colors = glucose.getColors();
+  camera(
+    eyeX, eyeY, eyeZ,
+    midX, midY, midZ,
+    0, -1, 0
+  );
+  stroke(#333333);
+  fill(#292929);
+  float yFloor = -3;
+  beginShape();
+  vertex(0, yFloor, 0);
+  vertex(glucose.model.xMax, yFloor, 0);
+  vertex(glucose.model.xMax, yFloor, glucose.model.zMax);
+  vertex(0, yFloor, glucose.model.zMax);  
+  endShape(CLOSE);
+  
+  noFill();
+  strokeWeight(2);
+  beginShape(POINTS);
+  for (Point p : glucose.model.points) {
+    stroke(colors[p.index]);
+    vertex(p.fx, p.fy, p.fz);
+  }
+  endShape();
+  
+  // 2D Overlay
+  camera();
+  javax.media.opengl.GL gl= ((PGraphicsOpenGL)g).beginGL();
+  gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
+  ((PGraphicsOpenGL)g).endGL();
+  strokeWeight(1);
+  drawUI();
   
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
-    color[] colors = glucose.getColors();
     pandaFront.send(colors);
     pandaRear.send(colors);
   }
@@ -195,4 +239,35 @@ void keyPressed() {
   }
 }
 
+int mx, my;
+
+void mousePressed() {
+  if (mouseX > ui.leftPos) {
+    ui.mousePressed();
+  } else {
+    mx = mouseX;
+    my = mouseY;
+  }
+}
+
+void mouseDragged() {
+  if (mouseX > ui.leftPos) {
+    ui.mouseDragged();
+  } else {
+    int dx = mouseX - mx;
+    int dy = mouseY - my;
+    mx = mouseX;
+    my = mouseY;
+    eyeA += dx*.003;
+    eyeX = midX + eyeR*sin(eyeA);
+    eyeZ = midZ + eyeR*cos(eyeA);
+    eyeY += dy;
+  }
+}
+
+void mouseReleased() {
+  if (mouseX > ui.leftPos) {
+    ui.mouseReleased();
+  }
+}
 

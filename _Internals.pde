@@ -33,7 +33,8 @@ import rwmidi.*;
 
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
-final int TARGET_FRAMERATE = 45;
+
+int targetFramerate = 30;
 
 int startMillis, lastMillis;
 GLucose glucose;
@@ -58,7 +59,7 @@ void setup() {
 
   // Initialize the Processing graphics environment
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
-  frameRate(TARGET_FRAMERATE);
+  frameRate(targetFramerate);
   noSmooth();
   // hint(ENABLE_OPENGL_4X_SMOOTH); // no discernable improvement?
   logTime("Created viewport");
@@ -155,6 +156,14 @@ void keyPressed() {
     mappingTool.keyPressed();
   }
   switch (key) {
+    case '-':
+    case '_':
+      frameRate(--targetFramerate);
+      break;
+    case '=':
+    case '+':
+      frameRate(++targetFramerate);
+      break;
     case 'd':
       debugMode = !debugMode;
       println("Debug output: " + (debugMode ? "ON" : "OFF"));

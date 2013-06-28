@@ -70,7 +70,12 @@ abstract class OverlayUI {
     textFont(titleFont);
     textAlign(LEFT);
     fill(#666666);
-    text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);     
+    text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);
+    text("Target (-/+):", 50, height-6);
+    fill(#000000);
+    rect(104, height-16, 20, 12);
+    fill(#666666);
+    text("" + targetFramerate, 108, height-6);
   }
 
   protected int drawObjectList(int yPos, String title, Object[] items, Method stateMethod) {
@@ -148,7 +153,7 @@ abstract class OverlayUI {
     return (mouseY - firstItemY) / lineHeight;
   }
   
-  abstract public void draw();
+  abstract public void draw();  
   abstract public void mousePressed();
   abstract public void mouseDragged();
   abstract public void mouseReleased();

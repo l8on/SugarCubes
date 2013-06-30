@@ -53,6 +53,7 @@ boolean mappingMode = false;
 boolean pandaBoardsEnabled = false;
 
 boolean debugMode = false;
+DebugUI debugUI;
 
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
@@ -93,6 +94,7 @@ void setup() {
   // Build overlay UI
   ui = controlUI = new ControlUI();
   mappingUI = new MappingUI(mappingTool);
+  debugUI = new DebugUI(frontChannels, rearChannels);
   logTime("Built overlay UI");
     
   // MIDI devices
@@ -101,7 +103,7 @@ void setup() {
   }
   SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
-  
+    
   // Setup camera
   midX = glucose.model.xMax/2 + 20;
   midY = glucose.model.yMax/2;
@@ -149,6 +151,10 @@ void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
   color[] colors = glucose.getColors();
+  if (debugMode) {
+    debugUI.maskColors(colors);
+  }
+  
   camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
@@ -181,6 +187,10 @@ void draw() {
   strokeWeight(1);
   drawUI();
   
+  if (debugMode) {
+    debugUI.draw();
+  }
+    
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
     pandaFront.send(colors);
@@ -216,6 +226,7 @@ void keyPressed() {
     case 'd':
       debugMode = !debugMode;
       println("Debug output: " + (debugMode ? "ON" : "OFF"));
+      break;
     case 'm':
       mappingMode = !mappingMode;
       if (mappingMode) {
@@ -250,6 +261,9 @@ void mousePressed() {
   if (mouseX > ui.leftPos) {
     ui.mousePressed();
   } else {
+    if (debugMode) {
+      debugUI.mousePressed();
+    }    
     mx = mouseX;
     my = mouseY;
   }

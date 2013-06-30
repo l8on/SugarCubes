@@ -614,3 +614,148 @@ class MappingUI extends OverlayUI {
   }
 }
 
+class DebugUI {
+  
+  final int[][] channelList;
+  final int debugX = 10;
+  final int debugY = 42;
+  final int debugXSpacing = 28;
+  final int debugYSpacing = 22;
+  final int[][] debugState = new int[17][6];
+  
+  final int DEBUG_STATE_ANIM = 0;
+  final int DEBUG_STATE_WHITE = 1;
+  final int DEBUG_STATE_OFF = 2;
+  
+  DebugUI(int[][] frontChannels, int[][] rearChannels) {
+    channelList = new int[frontChannels.length + rearChannels.length][];
+    int channelIndex = 0;
+    for (int[] channel : frontChannels) {
+      channelList[channelIndex++] = channel;
+    }
+    for (int[] channel : rearChannels) {    
+      channelList[channelIndex++] = channel;
+    }
+    for (int i = 0; i < debugState.length; ++i) {
+      for (int j = 0; j < debugState[i].length; ++j) {
+        debugState[i][j] = DEBUG_STATE_ANIM;
+      }
+    }
+  }
+  
+  void draw() {
+    noStroke();
+    int xBase = debugX;
+    int yPos = debugY;
+    
+    fill(color(0, 0, 0, 80));
+    rect(4, 32, 172, 388);
+    
+    int channelNum = 0;
+    for (int[] channel : channelList) {
+      int xPos = xBase;
+      drawNumBox(xPos, yPos, channelNum+1, debugState[channelNum][0]);
+      
+      boolean first = true;
+      int cubeNum = 0;
+      for (int cube : channel) {
+        if (cube == 0) {
+          break;
+        }
+        xPos += debugXSpacing;
+        if (first) {
+          first = false;
+        } else {
+          stroke(#999999);          
+          line(xPos - 12, yPos + 8, xPos, yPos + 8);
+        }
+        drawNumBox(xPos, yPos, cube, debugState[channelNum][cubeNum+1]);
+        ++cubeNum;
+      }
+      
+      yPos += debugYSpacing;
+      ++channelNum;
+    }
+    drawNumBox(xBase, yPos, "A", debugState[channelNum][0]);
+  }
+  
+  void drawNumBox(int xPos, int yPos, int label, int state) {
+    drawNumBox(xPos, yPos, "" + label, state);
+  }
+  
+  void drawNumBox(int xPos, int yPos, String label, int state) {
+    noFill();
+    color textColor = #cccccc;
+    switch (state) {
+      case DEBUG_STATE_ANIM:
+        noStroke();
+        fill(#880000);
+        rect(xPos, yPos, 16, 8);
+        fill(#000088);
+        rect(xPos, yPos+8, 16, 8);
+        noFill();
+        stroke(textColor);
+        rect(xPos, yPos, 16, 16); 
+        break;
+      case DEBUG_STATE_WHITE:
+        stroke(textColor);
+        fill(#e9e9e9);
+        rect(xPos, yPos, 16, 16);
+        textColor = #333333;
+        break;
+      case DEBUG_STATE_OFF:
+        stroke(textColor);
+        rect(xPos, yPos, 16, 16);
+        break;
+    }
+    
+    noStroke();
+    fill(textColor);
+    text(label, xPos + 2, yPos + 12);
+  
+  }
+  
+  void maskColors(color[] colors) {
+    color white = #FFFFFF;
+    color off = #000000;
+    int channelIndex = 0;
+    for (int[] channel : channelList) {
+      int cubeIndex = 1;
+      for (int rawCubeIndex : channel) {
+        if (rawCubeIndex > 0) {
+          int state = debugState[channelIndex][cubeIndex];
+          if (state != DEBUG_STATE_ANIM) {
+            color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
+            Cube cube = glucose.model.getCubeByRawIndex(rawCubeIndex);
+            for (Point p : cube.points) {
+              colors[p.index] = debugColor;
+            }
+          }
+        }
+        ++cubeIndex;
+      }
+      ++channelIndex;
+    }
+  }
+  
+  void mousePressed() {
+    int dx = (mouseX - debugX) / debugXSpacing;
+    int dy = (mouseY - debugY) / debugYSpacing;
+    if ((dy >= 0) && (dy < debugState.length)) {
+      if ((dx >= 0) && (dx < debugState[dy].length)) {
+        int newState = debugState[dy][dx] = (debugState[dy][dx] + 1) % 3;
+        if (dy == 16) {
+          for (int[] states : debugState) {
+            for (int i = 0; i < states.length; ++i) {
+              states[i] = newState;
+            }
+          }
+        } else if (dx == 0) {
+          for (int i = 0; i < debugState[dy].length; ++i) {
+            debugState[dy][i] = newState;
+          }
+        }
+      }
+    }
+  }    
+}

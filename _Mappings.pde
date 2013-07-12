@@ -174,9 +174,9 @@ class SCMapping implements GLucose.Mapping {
   public int[][] buildOffList() {
     return new int [][] {
       {
-        1,1,1
+        1 ,1,2,3,4,5,6,7,8,9,10,11,12
       }
-    }
+    };
   }
 
   public int[][] buildFlippedRGBList() {
@@ -277,7 +277,7 @@ class SCMapping implements GLucose.Mapping {
       {
         33, 12
       }
-    }
+    };
   }
 }
 

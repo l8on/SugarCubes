@@ -86,7 +86,7 @@ void setup() {
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
   int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
-  int[][] offList = glucose.mapping.buildOffList();
+  int[][] offList = new SCMapping().buildOffList();
   mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
   pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB, offList);
   pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB, offList);

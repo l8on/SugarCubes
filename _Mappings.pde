@@ -170,6 +170,15 @@ class SCMapping implements GLucose.Mapping {
     };
   }
 
+  // syntax is {cube #, strip #, strip #, . . . }
+  public int[][] buildOffList() {
+    return new int [][] {
+      {
+        1,1,1
+      }
+    }
+  }
+
   public int[][] buildFlippedRGBList() {
     // syntax is {cube #, strip #, strip #, . . . }
     return new int[][] { 
@@ -268,7 +277,7 @@ class SCMapping implements GLucose.Mapping {
       {
         33, 12
       }
-    };
+    }
   }
 }
 

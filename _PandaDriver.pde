@@ -28,10 +28,13 @@ public class PandaDriver {
   // Bit for flipped status of each point index
   private final boolean[] flipped;
 
+  //Bit for off status of each point index
+  private final boolean[] off;
+
   // Packet data
   private final byte[] packet = new byte[4*352]; // TODO: de-magic-number
 
-  public PandaDriver(NetAddress address, Model model, int[][] channelList, int[][] flippedList) {
+  public PandaDriver(NetAddress address, Model model, int[][] channelList, int[][] flippedList, int [][] offList) {
     this.address = address;
     message = new OscMessage("/shady/pointbuffer");
     List<Integer> pointList = buildMappedList(model, channelList);
@@ -41,6 +44,7 @@ public class PandaDriver {
       points[i++] = value;
     }
     flipped = buildFlippedList(model, flippedList);
+    off = buildOffList(model, offList);
   }
 
   private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {
@@ -86,6 +90,27 @@ public class PandaDriver {
     return flipped;
   } 
 
+  private boolean[] buildOffList(Model model, int[][] offList) {
+    boolean[] off = new boolean[model.points.size()];
+    for (int i = 0; i < off.length; ++i) {
+      off[i] = false;
+    }
+    for (int[] cubeInfo : offList) {
+      int cubeNumber = cubeInfo[0];
+      Cube cube = model.getCubeByRawIndex(cubeNumber);
+      if (cube == null) {
+        throw new RuntimeException("Non-existing cube specified in off mapping (" + cubeNumber + ")");
+      }
+      for (int i = 1; i < cubeInfo.length; ++i) {
+        int stripIndex = cubeInfo[i];
+        for (Point p : cube.strips.get(stripIndex-1).points) {
+          off[p.index] = true;
+        }
+      }
+    }
+    return off;
+  } 
+
   public final void send(int[] colors) {
     int len = 0;
     int packetNum = 0;
@@ -94,7 +119,12 @@ public class PandaDriver {
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);
-      if (flipped[index]) {
+      if(off[index])
+      {
+        r = 0;
+        b = 0;
+        g = 0;
+      } else if (flipped[index]) {
         byte tmp = r;
         r = g;
         g = tmp;

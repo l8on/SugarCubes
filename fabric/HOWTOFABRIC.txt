@@ -1,0 +1,55 @@
+Using fabric:
+
+Install:
+(http://docs.fabfile.org/en/1.7/installation.html)
+
+pip install fabric
+
+Tutorial:
+
+http://docs.fabfile.org/en/1.4.0/index.html#tutorial
+
+Usage:
+
+write a python file called fabfile.py (or add to the current one)
+
+annotate tasks with @task
+
+e.g:
+
+from fabric.api import run,env,task,sudo,cd
+
+@task
+def sayHelloAll():
+	print "Hello local"
+	run("echo Hello Remote")
+
+then from the command line:
+
+#shows all commands
+
+fab list
+
+# run a command
+
+fab sayHello
+
+# run command on specific host
+
+fab sayHello:host=192.168.1.29
+
+# run a command on a specific host with a specific user
+
+fab -u someUser startBoard:host=192.168.1.29
+
+Run multiple:
+
+fab task1 task2
+
+Run arbitrary remote command:
+
+ fab [options] -- [shell command]
+
+
+
+

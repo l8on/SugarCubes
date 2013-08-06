@@ -34,6 +34,16 @@ import rwmidi.*;
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
 
+final float TRAILER_WIDTH = 240;
+final float TRAILER_DEPTH = 97;
+final float TRAILER_HEIGHT = 33;
+
+final float BASS_WIDTH = 124;
+final float BASS_HEIGHT = 31.5;
+final float BASS_DEPTH = 66;
+final float BASS_X = (TRAILER_WIDTH - BASS_WIDTH) / 2.;
+final float BASS_Z = (TRAILER_DEPTH - BASS_DEPTH) / 2.;
+
 int targetFramerate = 60;
 
 int startMillis, lastMillis;
@@ -163,23 +173,21 @@ void draw() {
     0, -1, 0
   );
 
-  float trailerWidth = 20*FEET;
-  float trailerDepth = 8*FEET;
-  float trailerHeight = 2*FEET;
   noStroke();
   fill(#141414);
-  drawBox(0, -trailerHeight, 0, 0, 0, 0, trailerWidth, trailerHeight, trailerDepth, trailerHeight/2.);
+  drawBox(0, -TRAILER_HEIGHT, 0, 0, 0, 0, TRAILER_WIDTH, TRAILER_HEIGHT, TRAILER_DEPTH, TRAILER_HEIGHT/2.);
   fill(#070707);
   stroke(#222222);
   beginShape();
   vertex(0, 0, 0);
-  vertex(trailerWidth, 0, 0);
-  vertex(trailerWidth, 0, trailerDepth);
-  vertex(0, 0, trailerDepth);
+  vertex(TRAILER_WIDTH, 0, 0);
+  vertex(TRAILER_WIDTH, 0, TRAILER_DEPTH);
+  vertex(0, 0, TRAILER_DEPTH);
   endShape();
   
   noStroke();
   fill(#292929);
+  drawBox(BASS_X, 0, BASS_Z, 0, 0, 0, BASS_WIDTH, BASS_HEIGHT, BASS_DEPTH, Cube.CHANNEL_WIDTH);
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
   }
@@ -196,7 +204,6 @@ void draw() {
   
   // 2D Overlay
   camera();
-  noLights();
   javax.media.opengl.GL gl= ((PGraphicsOpenGL)g).beginGL();
   gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
   ((PGraphicsOpenGL)g).endGL();

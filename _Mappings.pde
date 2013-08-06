@@ -26,11 +26,40 @@ class SCMapping implements GLucose.Mapping {
     cubes[cubeIndex++] = new Cube(0, 2*Cube.EDGE_HEIGHT, -6, 0, 0, 0);
     cubes[cubeIndex++] = new Cube(-5, 3*Cube.EDGE_HEIGHT, -2, 0, -20, 0);
 
-    cubes[cubeIndex++] = new Cube(40, 0, 20, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(45, Cube.EDGE_HEIGHT, 10, 0, 20, 0);
-    cubes[cubeIndex++] = new Cube(40, 2*Cube.EDGE_HEIGHT, 14, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(35, 3*Cube.EDGE_HEIGHT, 18, 0, -20, 0);
-    cubes[cubeIndex++] = new Cube(40, 4*Cube.EDGE_HEIGHT, 13, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(40, 5, 20, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(45, 5+Cube.EDGE_HEIGHT, 10, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(40, 5+2*Cube.EDGE_HEIGHT, 14, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(35, 5+3*Cube.EDGE_HEIGHT, 18, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(40, 5+4*Cube.EDGE_HEIGHT, 13, 0, 0, 0);
+
+    cubes[cubeIndex++] = new Cube(80, 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(85, Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(80, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(75, 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(80, 4*Cube.EDGE_HEIGHT, 3, 0, 0, 0);
+
+    cubes[cubeIndex++] = new Cube(120, 10, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(125, 10+Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(120, 10+2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(115, 10+3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(120, 10+4*Cube.EDGE_HEIGHT, 3, 0, 0, 0);
+
+    cubes[cubeIndex++] = new Cube(160, 0, 30, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(165, Cube.EDGE_HEIGHT, 20, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(160, 2*Cube.EDGE_HEIGHT, 24, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(155, 3*Cube.EDGE_HEIGHT, 28, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(160, 4*Cube.EDGE_HEIGHT, 23, 0, 0, 0);
+
+    cubes[cubeIndex++] = new Cube(200, 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(205, Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(200, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(195, 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(200, 4*Cube.EDGE_HEIGHT, 3, 0, 0, 0);
+
+    cubes[cubeIndex++] = new Cube(200, 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(205, Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(200, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(195, 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
 
         
     if (true) {

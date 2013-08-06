@@ -34,7 +34,7 @@ import rwmidi.*;
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
 
-int targetFramerate = 45;
+int targetFramerate = 60;
 
 int startMillis, lastMillis;
 GLucose glucose;
@@ -57,6 +57,8 @@ DebugUI debugUI;
 
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
+
+final float FEET = 12;
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -154,22 +156,34 @@ void draw() {
   if (debugMode) {
     debugUI.maskColors(colors);
   }
-  
+
   camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
     0, -1, 0
   );
-  stroke(#333333);
-  fill(#292929);
-  float yFloor = -2;
+
+  float trailerWidth = 20*FEET;
+  float trailerDepth = 8*FEET;
+  float trailerHeight = 2*FEET;
+  noStroke();
+  fill(#141414);
+  drawBox(0, -trailerHeight, 0, 0, 0, 0, trailerWidth, trailerHeight, trailerDepth, trailerHeight/2.);
+  fill(#070707);
+  stroke(#222222);
   beginShape();
-  vertex(0, yFloor, 0);
-  vertex(glucose.model.xMax, yFloor, 0);
-  vertex(glucose.model.xMax, yFloor, glucose.model.zMax);
-  vertex(0, yFloor, glucose.model.zMax);  
-  endShape(CLOSE);
+  vertex(0, 0, 0);
+  vertex(trailerWidth, 0, 0);
+  vertex(trailerWidth, 0, trailerDepth);
+  vertex(0, 0, trailerDepth);
+  endShape();
   
+  noStroke();
+  fill(#292929);
+  for (Cube c : glucose.model.cubes) {
+    drawCube(c);
+  }
+
   noFill();
   strokeWeight(2);
   beginShape(POINTS);
@@ -182,6 +196,7 @@ void draw() {
   
   // 2D Overlay
   camera();
+  noLights();
   javax.media.opengl.GL gl= ((PGraphicsOpenGL)g).beginGL();
   gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
   ((PGraphicsOpenGL)g).endGL();
@@ -197,6 +212,42 @@ void draw() {
     pandaFront.send(colors);
     pandaRear.send(colors);
   }
+}
+
+void drawCube(Cube c) {
+  drawBox(c.x, c.y, c.z, c.rx, c.ry, c.rz, Cube.EDGE_WIDTH, Cube.EDGE_HEIGHT, Cube.EDGE_WIDTH, Strip.CHANNEL_WIDTH);
+}
+
+void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {
+  pushMatrix();
+  translate(x, y, z);
+  rotate(rx, 1, 0, 0);
+  rotate(ry / 180. * PI, 0, -1, 0);
+  rotate(rz, 0, 0, 1);
+  for (int i = 0; i < 4; ++i) {
+    float wid = (i % 2 == 0) ? xd : zd;
+    
+    beginShape();
+    vertex(0, 0);
+    vertex(wid, 0);
+    vertex(wid, yd);
+    vertex(wid - sw, yd);
+    vertex(wid - sw, sw);
+    vertex(0, sw);
+    endShape();
+    beginShape();
+    vertex(0, sw);
+    vertex(0, yd);
+    vertex(wid - sw, yd);
+    vertex(wid - sw, yd - sw);
+    vertex(sw, yd - sw);
+    vertex(sw, sw);
+    endShape();
+
+    translate(wid, 0, 0);
+    rotate(HALF_PI, 0, -1, 0);
+  }
+  popMatrix();
 }
 
 void drawUI() {

@@ -162,7 +162,7 @@ void draw() {
   );
   stroke(#333333);
   fill(#292929);
-  float yFloor = -3;
+  float yFloor = -2;
   beginShape();
   vertex(0, yFloor, 0);
   vertex(glucose.model.xMax, yFloor, 0);
@@ -176,6 +176,7 @@ void draw() {
   for (Point p : glucose.model.points) {
     stroke(colors[p.index]);
     vertex(p.fx, p.fy, p.fz);
+    // println(p.fx + ":" + p.fy + ":" + p.fz);
   }
   endShape();
   
@@ -190,7 +191,7 @@ void draw() {
   if (debugMode) {
     debugUI.draw();
   }
-    
+  
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
     pandaFront.send(colors);

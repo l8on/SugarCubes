@@ -197,7 +197,7 @@ class MappingTool extends SCPattern {
   }
   
   public void strip(int delta) {
-    int len = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int len = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     stripIndex = (len + stripIndex + delta) % len;
     printInfo();
   }
@@ -236,14 +236,14 @@ class MappingTool extends SCPattern {
           int si = 0;
           color sc = off;
           for (Strip strip : cube.strips) {
-            int clipI = si / Clip.STRIPS_PER_CLIP;
-            switch (clipI) {
+            int faceI = si / Face.STRIPS_PER_FACE;
+            switch (faceI) {
               case 0: sc = r; break;
               case 1: sc = g; break;
               case 2: sc = b; break;
               case 3: sc = r|g|b; break;
             }
-            if (si % Clip.STRIPS_PER_CLIP == 2) {
+            if (si % Face.STRIPS_PER_FACE == 2) {
               sc = r|g;
             }
             setColor(strip, sc);
@@ -288,12 +288,12 @@ class MappingTool extends SCPattern {
   }
   
   public void incStrip() {
-    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     stripIndex = (stripIndex + 1) % stripsPerCube;
   }
   
   public void decStrip() {
-    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     --stripIndex;
     if (stripIndex < 0) {
       stripIndex += stripsPerCube;

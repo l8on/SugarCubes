@@ -48,7 +48,7 @@ public class PandaDriver {
     for (int[] channel : channelList) {
       for (int cubeNumber : channel) {
         if (cubeNumber == 0) {
-          for (int i = 0; i < (Cube.CLIPS_PER_CUBE*Clip.STRIPS_PER_CLIP*Strip.POINTS_PER_STRIP); ++i) {
+          for (int i = 0; i < (Cube.FACES_PER_CUBE*Face.STRIPS_PER_FACE*Strip.POINTS_PER_STRIP); ++i) {
             points.add(0);
           }
         } else {

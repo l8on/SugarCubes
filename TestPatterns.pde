@@ -134,6 +134,31 @@ class TestProjectionPattern extends SCPattern {
   } 
 }
 
+class TestCubePattern extends SCPattern {
+  
+  private int POINTS_PER_CUBE = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE * Strip.POINTS_PER_STRIP;
+  private SawLFO index = new SawLFO(0, POINTS_PER_CUBE, POINTS_PER_CUBE*60);
+  
+  TestCubePattern(GLucose glucose) {
+    super(glucose);
+    addModulator(index).start();
+  }
+  
+  public void run(int deltaMs) {
+    for (Cube c : model.cubes) {
+      int i = 0;
+      for (Point p : c.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - 80.*abs(i - index.getValuef()))
+        );
+        ++i;
+      }
+    }
+  }
+}
+
 class MappingTool extends SCPattern {
     
   private int cubeIndex = 0;

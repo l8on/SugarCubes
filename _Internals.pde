@@ -220,7 +220,8 @@ void draw() {
 }
 
 void drawCube(Cube c) {
-  drawBox(c.x, c.y, c.z, c.rx, c.ry, c.rz, Cube.EDGE_WIDTH, Cube.EDGE_HEIGHT, Cube.EDGE_WIDTH, Cube.CHANNEL_WIDTH);
+  float in = .15;
+  drawBox(c.x+in, c.y+in, c.z+in, c.rx, c.ry, c.rz, Cube.EDGE_WIDTH-in*2, Cube.EDGE_HEIGHT-in*2, Cube.EDGE_WIDTH-in*2, Cube.CHANNEL_WIDTH-in);
 }
 
 void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {

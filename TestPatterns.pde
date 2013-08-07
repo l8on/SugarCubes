@@ -112,7 +112,7 @@ class TestProjectionPattern extends SCPattern {
     projection.reset(model)
     
       // Translate so the center of the car is the origin, offset by yPos
-      .translateCenter(0, yPos.getValuef(), 0)
+      .translateCenter(model, 0, yPos.getValuef(), 0)
 
       // Rotate around the origin (now the center of the car) about an X-vector
       .rotate(angle.getValuef(), 1, 0, 0)

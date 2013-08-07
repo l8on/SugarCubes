@@ -68,8 +68,6 @@ DebugUI debugUI;
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
 
-final float FEET = 12;
-
 void setup() {
   startMillis = lastMillis = millis();
 
@@ -117,10 +115,10 @@ void setup() {
   logTime("Setup MIDI devices");
     
   // Setup camera
-  midX = glucose.model.xMax/2 + 20;
+  midX = TRAILER_WIDTH/2. + 20;
   midY = glucose.model.yMax/2;
-  midZ = glucose.model.zMax/2;
-  eyeR = -270;
+  midZ = TRAILER_DEPTH/2.;
+  eyeR = -290;
   eyeA = .15;
   eyeY = midY + 20;
   eyeX = midX + eyeR*sin(eyeA);
@@ -204,7 +202,7 @@ void draw() {
   
   // 2D Overlay
   camera();
-  javax.media.opengl.GL gl= ((PGraphicsOpenGL)g).beginGL();
+  javax.media.opengl.GL gl = ((PGraphicsOpenGL)g).beginGL();
   gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
   ((PGraphicsOpenGL)g).endGL();
   strokeWeight(1);
@@ -228,9 +226,9 @@ void drawCube(Cube c) {
 void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {
   pushMatrix();
   translate(x, y, z);
-  rotate(rx, 1, 0, 0);
+  rotate(rx / 180. * PI, -1, 0, 0);
   rotate(ry / 180. * PI, 0, -1, 0);
-  rotate(rz, 0, 0, 1);
+  rotate(rz / 180. * PI, 0, 0, -1);
   for (int i = 0; i < 4; ++i) {
     float wid = (i % 2 == 0) ? xd : zd;
     

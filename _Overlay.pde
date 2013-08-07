@@ -76,6 +76,12 @@ abstract class OverlayUI {
     rect(104, height-16, 20, 12);
     fill(#666666);
     text("" + targetFramerate, 108, height-6);
+    text("PandaOutput (p):", 134, height-6);
+    fill(#000000);
+    rect(214, height-16, 26, 12);
+    fill(#666666);
+    text(pandaBoardsEnabled ? "ON" : "OFF", 218, height-6);
+
   }
 
   protected int drawObjectList(int yPos, String title, Object[] items, Method stateMethod) {

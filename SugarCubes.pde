@@ -36,10 +36,10 @@ LXPattern[] patterns(GLucose glucose) {
     new PianoKeyPattern(glucose),
     
     // Basic test patterns for reference, not art    
-//    new TestCubePattern(glucose),
+    new TestCubePattern(glucose),
 //    new TestHuePattern(glucose),
 //    new TestXPattern(glucose),
-//    new TestYPattern(glucose),
+    new TestYPattern(glucose),
 //    new TestZPattern(glucose),
 //    new TestProjectionPattern(glucose),
 

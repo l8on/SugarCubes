@@ -95,10 +95,9 @@ void setup() {
   // Build output driver
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
-  int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
   mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
-  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
+  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels);
+  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels);
   logTime("Build PandaDriver");
   
   // Build overlay UI
@@ -215,7 +214,7 @@ void draw() {
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
     pandaFront.send(colors);
-    pandaRear.send(colors);
+    // pandaRear.send(colors);
   }
 }
 

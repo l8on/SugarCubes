@@ -112,7 +112,7 @@ class TestProjectionPattern extends SCPattern {
     projection.reset(model)
     
       // Translate so the center of the car is the origin, offset by yPos
-      .translateCenter(0, yPos.getValuef(), 0)
+      .translateCenter(model, 0, yPos.getValuef(), 0)
 
       // Rotate around the origin (now the center of the car) about an X-vector
       .rotate(angle.getValuef(), 1, 0, 0)
@@ -132,6 +132,31 @@ class TestProjectionPattern extends SCPattern {
       );
     }
   } 
+}
+
+class TestCubePattern extends SCPattern {
+  
+  private int POINTS_PER_CUBE = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE * Strip.POINTS_PER_STRIP;
+  private SawLFO index = new SawLFO(0, POINTS_PER_CUBE, POINTS_PER_CUBE*60);
+  
+  TestCubePattern(GLucose glucose) {
+    super(glucose);
+    addModulator(index).start();
+  }
+  
+  public void run(int deltaMs) {
+    for (Cube c : model.cubes) {
+      int i = 0;
+      for (Point p : c.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - 80.*abs(i - index.getValuef()))
+        );
+        ++i;
+      }
+    }
+  }
 }
 
 class MappingTool extends SCPattern {
@@ -197,7 +222,7 @@ class MappingTool extends SCPattern {
   }
   
   public void strip(int delta) {
-    int len = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int len = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     stripIndex = (len + stripIndex + delta) % len;
     printInfo();
   }
@@ -236,14 +261,14 @@ class MappingTool extends SCPattern {
           int si = 0;
           color sc = off;
           for (Strip strip : cube.strips) {
-            int clipI = si / Clip.STRIPS_PER_CLIP;
-            switch (clipI) {
+            int faceI = si / Face.STRIPS_PER_FACE;
+            switch (faceI) {
               case 0: sc = r; break;
               case 1: sc = g; break;
               case 2: sc = b; break;
               case 3: sc = r|g|b; break;
             }
-            if (si % Clip.STRIPS_PER_CLIP == 2) {
+            if (si % Face.STRIPS_PER_FACE == 2) {
               sc = r|g;
             }
             setColor(strip, sc);
@@ -288,12 +313,12 @@ class MappingTool extends SCPattern {
   }
   
   public void incStrip() {
-    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     stripIndex = (stripIndex + 1) % stripsPerCube;
   }
   
   public void decStrip() {
-    int stripsPerCube = Cube.CLIPS_PER_CUBE * Clip.STRIPS_PER_CLIP;
+    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     --stripIndex;
     if (stripIndex < 0) {
       stripIndex += stripsPerCube;

@@ -348,8 +348,12 @@ void mouseReleased() {
 }
  
 void mouseWheel(int delta) {
-  eyeR = constrain(eyeR - delta, -500, -80);
-  eyeX = midX + eyeR*sin(eyeA);
-  eyeZ = midZ + eyeR*cos(eyeA);
+  if (mouseX > ui.leftPos) {
+    ui.mouseWheel(delta);
+  } else {
+    eyeR = constrain(eyeR - delta, -500, -80);
+    eyeX = midX + eyeR*sin(eyeA);
+    eyeZ = midZ + eyeR*cos(eyeA);
+  }
 }
 

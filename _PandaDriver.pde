@@ -82,21 +82,21 @@ public class PandaDriver {
 
       // Flush once packet is full buffer size
       if (len >= packet.length) {
-        sendPacket(packetNum++, len);
+        sendPacket(packetNum++);
         len = 0;
       }
     }
 
     // Flush any remaining data
     if (len > 0) {
-      sendPacket(packetNum++, len);
+      sendPacket(packetNum++);
     }
   }
   
-  private void sendPacket(int packetNum, int len) {
+  private void sendPacket(int packetNum) {
     message.clearArguments();
     message.add(packetNum);
-    message.add(len);
+    message.add(packet.length);
     message.add(packet);
     try {
       OscP5.flush(message, address);

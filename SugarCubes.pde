@@ -34,6 +34,8 @@ LXPattern[] patterns(GLucose glucose) {
     new Psychedelia(glucose),
     new CubeEQ(glucose),
     new PianoKeyPattern(glucose),
+    new WarmPlasma(glucose),
+    new FireTest(glucose),
     
     // Basic test patterns for reference, not art    
 //    new TestCubePattern(glucose),

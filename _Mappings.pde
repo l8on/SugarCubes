@@ -25,31 +25,77 @@ class SCMapping implements GLucose.Mapping {
     cubes[cubeIndex++] = new Cube(5, Cube.EDGE_HEIGHT, -10, 0, 20, 0);
     cubes[cubeIndex++] = new Cube(0, 2*Cube.EDGE_HEIGHT, -6, 0, 0, 0);
     cubes[cubeIndex++] = new Cube(-5, 3*Cube.EDGE_HEIGHT, -2, 0, -20, 0);
+    
+    cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 0, 0, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, Cube.EDGE_HEIGHT, 5, 0, 10, 0);
+    cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 2*Cube.EDGE_HEIGHT, 2, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 3*Cube.EDGE_HEIGHT, 0, 0, 30, 0);
+    
+    //Back Cubes behind DJ platform (in order of increasing x)
+    cubes[cubeIndex++] = new Cube(50, 0, BASS_DEPTH, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(52,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(48, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(45,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(48,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0);
+    
+    cubes[cubeIndex++] = new Cube(79, 0, BASS_DEPTH, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(81,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(83, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(81,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(79,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0);
+    
+    cubes[cubeIndex++] = new Cube(107, 0, BASS_DEPTH, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(111,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(113, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(110,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0);
+    //cubes[cubeIndex++] = new Cube(115,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0);
+    
+    cubes[cubeIndex++] = new Cube(133, 0, BASS_DEPTH, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(131,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(133, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(135,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0);
+    //cubes[cubeIndex++] = new Cube(137,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0);
+    
+    cubes[cubeIndex++] = new Cube(165, 0, BASS_DEPTH, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(164,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(167, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube(163,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0);
+    cubes[cubeIndex++] = new Cube(168,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0);
+    
+    //front DJ cubes
+    cubes[cubeIndex++] = new Cube( (TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT + 3, BASS_HEIGHT, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT + 2, BASS_HEIGHT+Cube.EDGE_HEIGHT, 0, 0, 20, 0);
+    
 
-    cubes[cubeIndex++] = new Cube(40, BASS_HEIGHT + 5, 20, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(45, BASS_HEIGHT + 5+Cube.EDGE_HEIGHT, 10, 0, 20, 0);
-    cubes[cubeIndex++] = new Cube(40, BASS_HEIGHT + 5+2*Cube.EDGE_HEIGHT, 14, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(35, BASS_HEIGHT + 5+3*Cube.EDGE_HEIGHT, 18, 0, -20, 0);
-    cubes[cubeIndex++] = new Cube(40, BASS_HEIGHT + 5+4*Cube.EDGE_HEIGHT, 13, 0, 0, 0);
-
-    cubes[cubeIndex++] = new Cube(80, BASS_HEIGHT + 0, 10, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(85, BASS_HEIGHT + Cube.EDGE_HEIGHT, 0, 0, 20, 0);
-    cubes[cubeIndex++] = new Cube(80, BASS_HEIGHT + 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(75, BASS_HEIGHT + 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
-    cubes[cubeIndex++] = new Cube(80, BASS_HEIGHT + 4*Cube.EDGE_HEIGHT, 3, 0, 0, 0);
-
-    cubes[cubeIndex++] = new Cube(120, BASS_HEIGHT + 10, 10, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(125, BASS_HEIGHT + 10+Cube.EDGE_HEIGHT, 0, 0, 20, 0);
-    cubes[cubeIndex++] = new Cube(120, BASS_HEIGHT + 10+2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(115, BASS_HEIGHT + 10+3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
-    cubes[cubeIndex++] = new Cube(120, BASS_HEIGHT + 10+4*Cube.EDGE_HEIGHT, 3, 0, 0, 0);
-
-    cubes[cubeIndex++] = new Cube(160, BASS_HEIGHT + 0, 30, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(165, BASS_HEIGHT + Cube.EDGE_HEIGHT, 20, 0, 20, 0);
-    cubes[cubeIndex++] = new Cube(160, BASS_HEIGHT + 2*Cube.EDGE_HEIGHT, 24, 0, 0, 0);
-    cubes[cubeIndex++] = new Cube(155, BASS_HEIGHT + 3*Cube.EDGE_HEIGHT, 28, 0, -20, 0);
-    cubes[cubeIndex++] = new Cube(160, BASS_HEIGHT + 4*Cube.EDGE_HEIGHT, 23, 0, 0, 0);
-
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BASS_HEIGHT + 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 6, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 10, 0);
+   
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BASS_HEIGHT + 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 8, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 0, 0);
+    
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, 10, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 14, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 0, 0);
+    
+    // left dj cubes
+    
+    cubes[cubeIndex++] = new Cube( (TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, Cube.EDGE_HEIGHT + 2, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 4, 0, 20, 0);
+    
+    cubes[cubeIndex++] = new Cube( (TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, 2*Cube.EDGE_HEIGHT + 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 6, 0, 20, 0);
+    
+    // right dj cubes
+    
+    cubes[cubeIndex++] = new Cube( (TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, Cube.EDGE_HEIGHT + 2, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 4, 0, 20, 0);
+    
+    cubes[cubeIndex++] = new Cube( (TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, 2*Cube.EDGE_HEIGHT + 4, 0, 0, 0);
+    cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 6, 0, 20, 0);
+   
+   // 
     cubes[cubeIndex++] = new Cube(200, 0, 10, 0, 0, 0);
     cubes[cubeIndex++] = new Cube(205, Cube.EDGE_HEIGHT, 0, 0, 20, 0);
     cubes[cubeIndex++] = new Cube(200, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
@@ -60,8 +106,34 @@ class SCMapping implements GLucose.Mapping {
     cubes[cubeIndex++] = new Cube(205, Cube.EDGE_HEIGHT, 0, 0, 20, 0);
     cubes[cubeIndex++] = new Cube(200, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0);
     cubes[cubeIndex++] = new Cube(195, 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0);
-
-        
+     
+    cubes[cubeIndex++] = new Cube(10, 0 , Cube.EDGE_HEIGHT + 10, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(3,  Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 8, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(0, 2*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(0, 3*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 60, 0);
+    cubes[cubeIndex++] = new Cube(0,  4*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 40, 0);
+    
+    cubes[cubeIndex++] = new Cube(20, 0 ,   2*Cube.EDGE_HEIGHT + 18, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(30,  Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(25, 2*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(30, 3*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 60, 0);
+    cubes[cubeIndex++] = new Cube(32,  4*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 40, 0);
+    
+    cubes[cubeIndex++] = new Cube(210, 0 , Cube.EDGE_HEIGHT + 15, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(215,  Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(218, 2*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(213, 3*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 60, 0);
+    cubes[cubeIndex++] = new Cube(210,  4*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 40, 0);
+    
+    cubes[cubeIndex++] = new Cube(210,      0 ,           2*Cube.EDGE_HEIGHT + 25, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(215,  Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 20, 0);
+    cubes[cubeIndex++] = new Cube(212, 2*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0);
+    cubes[cubeIndex++] = new Cube(215, 3*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 60, 0);
+    cubes[cubeIndex++] = new Cube(210,  4*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0);
+     
+    //bridge cubes
+     
+     
     if (true) {
       return cubes;
     }

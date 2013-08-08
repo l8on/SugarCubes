@@ -25,8 +25,6 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    new WarmPlasma(glucose),
-    new FireTest(glucose),
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
@@ -36,6 +34,8 @@ LXPattern[] patterns(GLucose glucose) {
     new Psychedelia(glucose),
     new CubeEQ(glucose),
     new PianoKeyPattern(glucose),
+    new WarmPlasma(glucose),
+    new FireTest(glucose),
     
     // Basic test patterns for reference, not art
 //    new TestHuePattern(glucose),

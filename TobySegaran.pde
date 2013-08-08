@@ -32,6 +32,7 @@ class WarmPlasma extends SCPattern {
   }
 }
 
+// This is very much a work in progress. Trying to get a flame effect.
 class FireTest extends SCPattern {
   private float[][] intensity;
   private float hotspot;

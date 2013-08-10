@@ -34,7 +34,7 @@ LXPattern[] patterns(GLucose glucose) {
     new Psychedelia(glucose),
     new CubeEQ(glucose),
     new PianoKeyPattern(glucose),
-    new WarmPlasma(glucose),
+    new GlitchPlasma(glucose),
     new FireEffect(glucose),
     new StripBounce(glucose),
     //new SineSphere(glucose),

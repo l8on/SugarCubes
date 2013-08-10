@@ -1,4 +1,4 @@
-class WarmPlasma extends SCPattern {
+class GlitchPlasma extends SCPattern {
   private int pos = 0;
   private float satu = 100;
   private float speed = 1;
@@ -7,7 +7,7 @@ class WarmPlasma extends SCPattern {
   BasicParameter speedParameter = new BasicParameter("SPEED", 0.1);
   BasicParameter glitchParameter = new BasicParameter("GLITCH", 0.0);
   
-  public WarmPlasma(GLucose glucose) {
+  public GlitchPlasma(GLucose glucose) {
     super(glucose);
     addParameter(saturationParameter);
     addParameter(speedParameter);
@@ -17,7 +17,7 @@ class WarmPlasma extends SCPattern {
     if (parameter == saturationParameter) {
       satu = 100*parameter.getValuef();
     } else if (parameter == speedParameter) {
-      speed = 10*parameter.getValuef();
+      speed = 8*parameter.getValuef();
     } else if (parameter == glitchParameter) {
       glitch = parameter.getValuef();
     }
@@ -32,8 +32,8 @@ class WarmPlasma extends SCPattern {
       float bv = 100;
       colors[p.index] = color((hv+2)*25, satu, bv);
     }
-    if (random(1.0)<glitch/10) {
-      pos=pos-20;
+    if (random(1.0)<glitch/20) {
+      pos=pos-int(random(10,30));
     }
     pos+=speed;
     if (pos >= MAX_INT-1) pos=0;    
@@ -116,11 +116,7 @@ class StripBounce extends SCPattern {
     for (Strip strip : model.strips) {
       for (int i=0;i<numOsc;i++) {
         float avgdist=0.0;
-        for (Point p : strip.points) {
-          avgdist+=dist(p.fx,p.fy,p.fz,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
-        }
-        avgdist/=Strip.POINTS_PER_STRIP;
-        //println(avgdist);
+        avgdist = dist(strip.points.get(8).fx,strip.points.get(8).fy,strip.points.get(8).fz,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
         boolean on = avgdist<30;
         float hv = (lx.getBaseHuef()+colorOffset[i])%100;
         float br = max(0,100-avgdist*4);

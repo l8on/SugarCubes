@@ -34,7 +34,17 @@ import rwmidi.*;
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
 
-int targetFramerate = 45;
+final float TRAILER_WIDTH = 240;
+final float TRAILER_DEPTH = 97;
+final float TRAILER_HEIGHT = 33;
+
+final float BASS_WIDTH = 124;
+final float BASS_HEIGHT = 31.5;
+final float BASS_DEPTH = 66;
+final float BASS_X = (TRAILER_WIDTH - BASS_WIDTH) / 2.;
+final float BASS_Z = (TRAILER_DEPTH - BASS_DEPTH) / 2.;
+
+int targetFramerate = 60;
 
 int startMillis, lastMillis;
 GLucose glucose;
@@ -85,10 +95,9 @@ void setup() {
   // Build output driver
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
-  int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
   mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
-  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
+  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels);
+  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels);
   logTime("Build PandaDriver");
   
   // Build overlay UI
@@ -105,10 +114,10 @@ void setup() {
   logTime("Setup MIDI devices");
     
   // Setup camera
-  midX = glucose.model.xMax/2 + 20;
+  midX = TRAILER_WIDTH/2. + 20;
   midY = glucose.model.yMax/2;
-  midZ = glucose.model.zMax/2;
-  eyeR = -270;
+  midZ = TRAILER_DEPTH/2.;
+  eyeR = -290;
   eyeA = .15;
   eyeY = midY + 20;
   eyeX = midX + eyeR*sin(eyeA);
@@ -154,34 +163,45 @@ void draw() {
   if (debugMode) {
     debugUI.maskColors(colors);
   }
-  
+
   camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
     0, -1, 0
   );
-  stroke(#333333);
-  fill(#292929);
-  float yFloor = -3;
+
+  noStroke();
+  fill(#141414);
+  drawBox(0, -TRAILER_HEIGHT, 0, 0, 0, 0, TRAILER_WIDTH, TRAILER_HEIGHT, TRAILER_DEPTH, TRAILER_HEIGHT/2.);
+  fill(#070707);
+  stroke(#222222);
   beginShape();
-  vertex(0, yFloor, 0);
-  vertex(glucose.model.xMax, yFloor, 0);
-  vertex(glucose.model.xMax, yFloor, glucose.model.zMax);
-  vertex(0, yFloor, glucose.model.zMax);  
-  endShape(CLOSE);
+  vertex(0, 0, 0);
+  vertex(TRAILER_WIDTH, 0, 0);
+  vertex(TRAILER_WIDTH, 0, TRAILER_DEPTH);
+  vertex(0, 0, TRAILER_DEPTH);
+  endShape();
   
+  noStroke();
+  fill(#292929);
+  drawBox(BASS_X, 0, BASS_Z, 0, 0, 0, BASS_WIDTH, BASS_HEIGHT, BASS_DEPTH, Cube.CHANNEL_WIDTH);
+  for (Cube c : glucose.model.cubes) {
+    drawCube(c);
+  }
+
   noFill();
   strokeWeight(2);
   beginShape(POINTS);
   for (Point p : glucose.model.points) {
     stroke(colors[p.index]);
     vertex(p.fx, p.fy, p.fz);
+    // println(p.fx + ":" + p.fy + ":" + p.fz);
   }
   endShape();
   
   // 2D Overlay
   camera();
-  javax.media.opengl.GL gl= ((PGraphicsOpenGL)g).beginGL();
+  javax.media.opengl.GL gl = ((PGraphicsOpenGL)g).beginGL();
   gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
   ((PGraphicsOpenGL)g).endGL();
   strokeWeight(1);
@@ -190,12 +210,49 @@ void draw() {
   if (debugMode) {
     debugUI.draw();
   }
-    
+  
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
     pandaFront.send(colors);
-    pandaRear.send(colors);
+    // pandaRear.send(colors);
   }
+}
+
+void drawCube(Cube c) {
+  float in = .15;
+  drawBox(c.x+in, c.y+in, c.z+in, c.rx, c.ry, c.rz, Cube.EDGE_WIDTH-in*2, Cube.EDGE_HEIGHT-in*2, Cube.EDGE_WIDTH-in*2, Cube.CHANNEL_WIDTH-in);
+}
+
+void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {
+  pushMatrix();
+  translate(x, y, z);
+  rotate(rx / 180. * PI, -1, 0, 0);
+  rotate(ry / 180. * PI, 0, -1, 0);
+  rotate(rz / 180. * PI, 0, 0, -1);
+  for (int i = 0; i < 4; ++i) {
+    float wid = (i % 2 == 0) ? xd : zd;
+    
+    beginShape();
+    vertex(0, 0);
+    vertex(wid, 0);
+    vertex(wid, yd);
+    vertex(wid - sw, yd);
+    vertex(wid - sw, sw);
+    vertex(0, sw);
+    endShape();
+    beginShape();
+    vertex(0, sw);
+    vertex(0, yd);
+    vertex(wid - sw, yd);
+    vertex(wid - sw, yd - sw);
+    vertex(sw, yd - sw);
+    vertex(sw, sw);
+    endShape();
+
+    translate(wid, 0, 0);
+    rotate(HALF_PI, 0, -1, 0);
+  }
+  popMatrix();
 }
 
 void drawUI() {
@@ -291,8 +348,12 @@ void mouseReleased() {
 }
  
 void mouseWheel(int delta) {
-  eyeR = constrain(eyeR - delta, -500, -80);
-  eyeX = midX + eyeR*sin(eyeA);
-  eyeZ = midZ + eyeR*cos(eyeA);
+  if (mouseX > ui.leftPos) {
+    ui.mouseWheel(delta);
+  } else {
+    eyeR = constrain(eyeR - delta, -500, -80);
+    eyeX = midX + eyeR*sin(eyeA);
+    eyeZ = midZ + eyeR*cos(eyeA);
+  }
 }
 

@@ -37,12 +37,13 @@ LXPattern[] patterns(GLucose glucose) {
     new WarmPlasma(glucose),
     new FireTest(glucose),
     
-    // Basic test patterns for reference, not art
-//    new TestHuePattern(glucose),
+    // Basic test patterns for reference, not art    
+    new TestCubePattern(glucose),
+    new TestHuePattern(glucose),
+    new TestProjectionPattern(glucose),
 //    new TestXPattern(glucose),
 //    new TestYPattern(glucose),
 //    new TestZPattern(glucose),
-//    new TestProjectionPattern(glucose),
 
   };
 }

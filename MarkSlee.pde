@@ -335,7 +335,7 @@ public class PianoKeyPattern extends SCPattern {
     for (Cube c : model.cubes) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
       setColor(c, color(
-        (huef + 20*v + abs(c.fx-model.xMax/2.)*.3 + c.fy) % 360,
+        (huef + 20*v + abs(c.cx-model.xMax/2.)*.3 + c.cy) % 360,
         min(100, 120*v),
         100*v
       ));

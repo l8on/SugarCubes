@@ -29,13 +29,16 @@ LXPattern[] patterns(GLucose glucose) {
     new AskewPlanes(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
+    new Pong(glucose),
+    new Noise(glucose),
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
     new CubeEQ(glucose),
     new PianoKeyPattern(glucose),
     new WarmPlasma(glucose),
-    new FireTest(glucose),
+    // new FireTest(glucose),
+    // new SineSphere(glucose),
     
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),

@@ -125,8 +125,7 @@ class SCMapping implements GLucose.Mapping {
     cubes[cubeIndex++] = new Cube(212, 2*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0);
     cubes[cubeIndex++] = new Cube(215, 3*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 60, 0);
     cubes[cubeIndex++] = new Cube(210, 4*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0);
-     
-    
+         
     return cubes;
   }
 

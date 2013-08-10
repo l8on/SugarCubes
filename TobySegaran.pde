@@ -2,19 +2,24 @@ class WarmPlasma extends SCPattern {
   private int pos = 0;
   private float satu = 100;
   private float speed = 1;
+  private float glitch = 0;
   BasicParameter saturationParameter = new BasicParameter("SATU", 1.0);
   BasicParameter speedParameter = new BasicParameter("SPEED", 0.1);
+  BasicParameter glitchParameter = new BasicParameter("GLITCH", 0.0);
   
   public WarmPlasma(GLucose glucose) {
     super(glucose);
     addParameter(saturationParameter);
     addParameter(speedParameter);
+    addParameter(glitchParameter);
   }
   public void onParameterChanged(LXParameter parameter) {
     if (parameter == saturationParameter) {
       satu = 100*parameter.getValuef();
     } else if (parameter == speedParameter) {
       speed = 10*parameter.getValuef();
+    } else if (parameter == glitchParameter) {
+      glitch = parameter.getValuef();
     }
   }
 
@@ -27,13 +32,16 @@ class WarmPlasma extends SCPattern {
       float bv = 100;
       colors[p.index] = color((hv+2)*25, satu, bv);
     }
+    if (random(1.0)<glitch/10) {
+      pos=pos-20;
+    }
     pos+=speed;
-    if (pos >= MAX_INT-1) pos=0;
+    if (pos >= MAX_INT-1) pos=0;    
   }
 }
 
 // This is very much a work in progress. Trying to get a flame effect.
-class FireTest extends SCPattern {
+class FireEffect extends SCPattern {
   private float[][] intensity;
   private float hotspot;
   private float decay = 0.3;
@@ -41,7 +49,7 @@ class FireTest extends SCPattern {
   private int ym;
   BasicParameter decayParameter = new BasicParameter("DECAY", 0.3);
   
-  public FireTest(GLucose glucose) {
+  public FireEffect(GLucose glucose) {
     super(glucose);
     xm = int(model.xMax);
     ym = int(model.yMax);
@@ -74,9 +82,10 @@ class FireTest extends SCPattern {
     }
     
     for (Point p : model.points) {
-      int x = (int(p.fx)+int(p.fz))%xm;
-      int y = min(ym-int(p.fy),ym-1);
+      int x = max(0,(int(p.fx)+int(p.fz))%xm);
+      int y = constrain(ym-int(p.fy),0,ym-1);
       colors[p.index] = flameColor(intensity[x][y]);
     }
   }
 }
+

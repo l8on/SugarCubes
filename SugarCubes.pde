@@ -36,6 +36,7 @@ LXPattern[] patterns(GLucose glucose) {
     new PianoKeyPattern(glucose),
     new WarmPlasma(glucose),
     new FireEffect(glucose),
+    new StripBounce(glucose),
     //new SineSphere(glucose),
     
     // Basic test patterns for reference, not art    

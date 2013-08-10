@@ -89,3 +89,53 @@ class FireEffect extends SCPattern {
   }
 }
 
+class StripBounce extends SCPattern {
+  private final int numOsc = 30;
+  SinLFO[] fX = new SinLFO[numOsc]; //new SinLFO(0, model.xMax, 5000);
+  SinLFO[] fY = new SinLFO[numOsc]; //new SinLFO(0, model.yMax, 4000);
+  SinLFO[] fZ = new SinLFO[numOsc]; //new SinLFO(0, model.yMax, 3000);
+  SinLFO[] sat = new SinLFO[numOsc];
+  float[] colorOffset = new float[numOsc];
+  
+  public StripBounce(GLucose glucose) {
+    super(glucose);
+    for (int i=0;i<numOsc;i++) {
+      fX[i] = new SinLFO(0, model.xMax, random(2000,20000)); 
+      fY[i] = new SinLFO(0, model.yMax, random(2000,20000)); 
+      fZ[i] = new SinLFO(0, model.zMax, random(2000,20000)); 
+      sat[i] = new SinLFO(60, 100, random(2000,50000)); 
+      addModulator(fX[i]).trigger();      
+      addModulator(fY[i]).trigger();
+      addModulator(fZ[i]).trigger();
+      colorOffset[i]=random(0,100);
+    }
+  }
+  
+  public void run(int deltaMs) {
+    float[] bright = new float[model.points.size()];
+    for (Strip strip : model.strips) {
+      for (int i=0;i<numOsc;i++) {
+        float avgdist=0.0;
+        for (Point p : strip.points) {
+          avgdist+=dist(p.fx,p.fy,p.fz,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
+        }
+        avgdist/=Strip.POINTS_PER_STRIP;
+        //println(avgdist);
+        boolean on = avgdist<30;
+        float hv = (lx.getBaseHuef()+colorOffset[i])%100;
+        float br = max(0,100-avgdist*4);
+        for (Point p : strip.points) {
+          if (on && br>bright[p.index]) {
+            colors[p.index] = color(hv,sat[i].getValuef(),br);
+            bright[p.index] = br;
+          }
+        }
+      }
+    }
+    for (Point p : model.points) {
+      if (bright[p.index]==0) {
+        colors[p.index]=color(0,0,0);
+      }
+    }
+  }
+}

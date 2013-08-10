@@ -96,8 +96,8 @@ void setup() {
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
   mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels);
-  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels);
+  pandaFront = new PandaDriver(new NetAddress("10.200.1.28", 9001), glucose.model, frontChannels);
+  pandaRear = new PandaDriver(new NetAddress("10.200.1.29", 9001), glucose.model, rearChannels);
   logTime("Build PandaDriver");
   
   // Build overlay UI

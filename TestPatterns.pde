@@ -187,23 +187,13 @@ class MappingTool extends SCPattern {
   MappingTool(GLucose glucose, PandaMapping[] pandaMappings) {
     super(glucose);
     this.pandaMappings = pandaMappings;
-    int totalChannels = 0;
-    for (PandaMapping pm : pandaMappings) {
-       totalChannels += pm.channelList.length;
-    }
-    numChannels = totalChannels;
+    numChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
     setChannel();
   }
   
   private void setChannel() {
-    mappingChannelIndex = channelIndex;
-    for (PandaMapping pm : pandaMappings) {
-      if (mappingChannelIndex < pm.channelList.length) {
-        activeMapping = pm;
-        break;
-      }
-      mappingChannelIndex -= pm.channelList.length;
-    }
+    mappingChannelIndex = channelIndex % PandaMapping.CHANNELS_PER_BOARD;
+    activeMapping = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
   }
   
   private int cubeInChannel(Cube c) {

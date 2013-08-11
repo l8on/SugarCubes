@@ -713,10 +713,7 @@ class DebugUI {
   final int DEBUG_STATE_OFF = 2;
   
   DebugUI(PandaMapping[] pandaMappings) {
-    int totalChannels = 0;
-    for (PandaMapping pm : pandaMappings) {
-      totalChannels += pm.channelList.length;
-    }
+    int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
     channelList = new int[totalChannels][];
     int channelIndex = 0;
     for (PandaMapping pm : pandaMappings) {
@@ -731,7 +728,7 @@ class DebugUI {
     }
   }
   
-  void draw() {
+  void draw() {    
     noStroke();
     int xBase = debugX;
     int yPos = debugY;

@@ -75,6 +75,35 @@ class TestZPattern extends SCPattern {
 }
 
 /**
+ * This shows how to iterate over towers, enumerated in the model.
+ */
+class TestTowerPattern extends SCPattern {
+  private final SawLFO towerIndex = new SawLFO(0, model.towers.size(), 1000*model.towers.size());
+  
+  public TestTowerPattern(GLucose glucose) {
+    super(glucose);
+    addModulator(towerIndex).trigger();
+    towerIndex.setValue(9);
+  }
+
+  public void run(int deltaMs) {
+    println((int)towerIndex.getValuef());
+    int ti = 0;
+    for (Tower t : model.towers) {
+      for (Point p : t.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - 80*abs(ti - towerIndex.getValuef()))
+        );
+      }
+      ++ti;
+    }
+  }
+  
+}
+
+/**
  * This is a demonstration of how to use the projection library. A projection
  * creates a mutation of the coordinates of all the points in the model, creating
  * virtual x,y,z coordinates. In effect, this is like virtually rotating the entire

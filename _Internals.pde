@@ -47,7 +47,6 @@ final float BASS_Z = (TRAILER_DEPTH - BASS_DEPTH) / 2.;
 int targetFramerate = 60;
 
 int startMillis, lastMillis;
-SCMapping mapping;
 GLucose glucose;
 HeronLX lx;
 MappingTool mappingTool;
@@ -76,8 +75,7 @@ void setup() {
   logTime("Created viewport");
 
   // Create the GLucose engine to run the cubes
-  mapping = new SCMapping();
-  glucose = new GLucose(this, mapping);
+  glucose = new GLucose(this, buildModel());
   lx = glucose.lx;
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
@@ -91,7 +89,7 @@ void setup() {
   logTime("Built transitions");
     
   // Build output driver
-  PandaMapping[] pandaMappings = mapping.buildPandaList();
+  PandaMapping[] pandaMappings = buildPandaList();
   pandaBoards = new PandaDriver[pandaMappings.length];
   int pbi = 0;
   for (PandaMapping pm : pandaMappings) {

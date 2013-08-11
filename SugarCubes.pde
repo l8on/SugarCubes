@@ -42,11 +42,12 @@ LXPattern[] patterns(GLucose glucose) {
     
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),
-    new TestHuePattern(glucose),
+    new TestTowerPattern(glucose),
     new TestProjectionPattern(glucose),
-//    new TestXPattern(glucose),
-//    new TestYPattern(glucose),
-//    new TestZPattern(glucose),
+    // new TestHuePattern(glucose),
+    // new TestXPattern(glucose),
+    // new TestYPattern(glucose),
+    // new TestZPattern(glucose),
 
   };
 }

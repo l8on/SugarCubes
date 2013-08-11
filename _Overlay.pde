@@ -40,6 +40,11 @@ abstract class OverlayUI {
   protected final int STATE_ACTIVE = 1;
   protected final int STATE_PENDING = 2;
   
+  protected int[] pandaLeft = new int[pandaBoards.length];
+  protected final int pandaWidth = 56;
+  protected final int pandaHeight = 13;
+  protected final int pandaTop = height-16;
+  
   protected OverlayUI() {
     leftPos = width - w;
     leftTextPos = leftPos + 4;
@@ -74,14 +79,20 @@ abstract class OverlayUI {
     text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);
     text("Target (-/+):", 50, height-6);
     fill(#000000);
-    rect(104, height-16, 20, 12);
+    rect(104, height-16, 20, 13);
     fill(#666666);
     text("" + targetFramerate, 108, height-6);
     text("PandaOutput (p):", 134, height-6);
-    fill(#000000);
-    rect(214, height-16, 26, 12);
-    fill(#666666);
-    text(pandaBoardsEnabled ? "ON" : "OFF", 218, height-6);
+    int lPos = 214;
+    int pi = 0;
+    for (PandaDriver p : pandaBoards) {
+      pandaLeft[pi++] = lPos;
+      fill(p.enabled ? #666666 : #000000);
+      rect(lPos, pandaTop, pandaWidth, pandaHeight);
+      fill(p.enabled ? #000000 : #666666);
+      text(p.ip, lPos + 4, height-6);
+      lPos += 60;
+    }
 
   }
 
@@ -370,6 +381,21 @@ class ControlUI extends OverlayUI {
     patternKnobIndex = transitionKnobIndex = effectKnobIndex = -1;
     releaseEffect = -1;
     patternScrolling = false;
+    
+    for (int p = 0; p < pandaLeft.length; ++p) {
+      int xp = pandaLeft[p];
+      if ((mouseX >= xp) &&
+          (mouseX < xp + pandaWidth) &&
+          (mouseY >= pandaTop) &&
+          (mouseY < pandaTop + pandaHeight)) {
+          pandaBoards[p].toggle();
+      }
+    }
+    
+    if (mouseX < leftPos) {
+      return;
+    }
+    
     if (mouseY > tempoY) {
       if (mouseY - tempoY < tempoHeight) {
         lx.tempo.tap();
@@ -600,6 +626,11 @@ class MappingUI extends OverlayUI {
   public void mousePressed() {
     dragCube = dragStrip = dragChannel = false;
     lastY = mouseY;
+    
+    if (mouseX < leftPos) {
+      return;
+    }
+    
     if (mouseY >= stripFieldY) {
       if (mouseY < stripFieldY + lineHeight) {
         dragStrip = true;

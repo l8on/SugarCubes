@@ -16,8 +16,14 @@ import oscP5.*;
  */
 public class PandaDriver {
 
+  // IP address
+  public final String ip;
+  
   // Address to send to
   private final NetAddress address;
+  
+  // Whether board output is enabled
+  private boolean enabled = false;
   
   // OSC message
   private final OscMessage message;
@@ -34,8 +40,9 @@ public class PandaDriver {
   // Packet data
   private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
 
-  public PandaDriver(NetAddress address, Model model, int[][] channelList) {
-    this.address = address;
+  public PandaDriver(String ip, Model model, int[][] channelList) {
+    this.ip = ip;
+    this.address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
     List<Integer> pointList = buildMappedList(model, channelList);
     points = new int[pointList.size()];
@@ -44,6 +51,11 @@ public class PandaDriver {
       points[i++] = value;
     }
   }
+  
+  public void toggle() {
+    enabled = !enabled;
+    println("PandaBoard/" + ip + " Output: " + (enabled ? "ON" : "OFF"));    
+  } 
 
   private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {
     ArrayList<Integer> points = new ArrayList<Integer>();
@@ -76,6 +88,9 @@ public class PandaDriver {
   }
 
   public final void send(int[] colors) {
+    if (!enabled) {
+      return;
+    }
     int len = 0;
     int packetNum = 0;
     for (int index : points) {

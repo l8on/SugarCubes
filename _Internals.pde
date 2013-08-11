@@ -56,12 +56,8 @@ LXEffect[] effects;
 OverlayUI ui;
 ControlUI controlUI;
 MappingUI mappingUI;
-PandaDriver pandaFront;
-PandaDriver pandaRear;
+PandaDriver[] pandaBoards;
 boolean mappingMode = false;
-
-boolean pandaBoardsEnabled = false;
-
 boolean debugMode = false;
 DebugUI debugUI;
 
@@ -96,8 +92,10 @@ void setup() {
   int[][] frontChannels = glucose.mapping.buildFrontChannelList();
   int[][] rearChannels = glucose.mapping.buildRearChannelList();
   mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaFront = new PandaDriver(new NetAddress("10.200.1.28", 9001), glucose.model, frontChannels);
-  pandaRear = new PandaDriver(new NetAddress("10.200.1.29", 9001), glucose.model, rearChannels);
+  pandaBoards = new PandaDriver[] {
+    new PandaDriver("10.200.1.28", glucose.model, frontChannels),
+    new PandaDriver("10.200.1.29", glucose.model, rearChannels),
+  };
   logTime("Build PandaDriver");
   
   // Build overlay UI
@@ -212,9 +210,8 @@ void draw() {
   }
   
   // TODO(mcslee): move into GLucose engine
-  if (pandaBoardsEnabled) {
-    // pandaFront.send(colors);
-    pandaRear.send(colors);
+  for (PandaDriver p : pandaBoards) {
+    p.send(colors);
   }
 }
 
@@ -303,8 +300,9 @@ void keyPressed() {
       }
       break;
     case 'p':
-      pandaBoardsEnabled = !pandaBoardsEnabled;
-      println("PandaBoard Output: " + (pandaBoardsEnabled ? "ON" : "OFF"));
+      for (PandaDriver p : pandaBoards) {
+        p.toggle();
+      }
       break;
     case 'u':
       uiOn = !uiOn;
@@ -313,11 +311,9 @@ void keyPressed() {
 }
 
 int mx, my;
-
 void mousePressed() {
-  if (mouseX > ui.leftPos) {
-    ui.mousePressed();
-  } else {
+  ui.mousePressed();
+  if (mouseX < ui.leftPos) {
     if (debugMode) {
       debugUI.mousePressed();
     }    
@@ -342,9 +338,7 @@ void mouseDragged() {
 }
 
 void mouseReleased() {
-  if (mouseX > ui.leftPos) {
-    ui.mouseReleased();
-  }
+  ui.mouseReleased();
 }
  
 void mouseWheel(int delta) {

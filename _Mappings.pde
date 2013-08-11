@@ -13,157 +13,195 @@
  * when physical changes or tuning is being done to the structure.
  */
 
+class TowerMapping {
+  public final float x, y, z;
+  public final float[][] cubePositions;
+  
+  TowerMapping(float x, float y, float z, float[][] cubePositions) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.cubePositions = cubePositions;
+  }
+}
+
 public Model buildModel() {
-  // TODO(mcslee): find a cleaner way of representing this data, probably
-  // serialized in some more neutral form. also figure out what's going on
-  // with the indexing starting at 1 and some indices missing.
+  // The model is represented as an array of towers. The cubes in the tower
+  // are represenented relatively. Each tower has an x, y, z reference position,
+  // which is typically the base cube's bottom left corner.
+  //
+  // Following that is an array of floats. A 2-d array contains an x-offset
+  // and a z-offset from the reference position. Typically the first cube
+  // will just be {0, 0}.
+  //
+  // A 3-d array contains an x-offset, a z-offset, and a rotation about the
+  // y-axis.
+  //
+  // The cubes automatically increment their y-position by Cube.EDGE_HEIGHT.
+  TowerMapping[] mapping = new TowerMapping[] {
+    
+    new TowerMapping(0, 0, 0, new float[][] {
+      {0, 0},
+      {5, -10, 20},
+      {0, -6},
+      {-5, -2, -20},
+    }),
+
+    new TowerMapping(Cube.EDGE_WIDTH + 2, 0, 0, new float[][] {
+      {0, 0},
+      {0, 5, 10},
+      {0, 2, 20},
+      {0, 0, 30},
+    }),
+    
+    // Back Cubes behind DJ platform (in order of increasing x)
+    new TowerMapping(50, 5, BASS_DEPTH, new float[][] {
+      {0, 0},
+      {2, 0, 20},
+      {-2, 10},
+      {-5, 15, -20},
+      {-2, 13},
+    }),
+    
+    new TowerMapping(79, 5, BASS_DEPTH, new float[][] {
+      {0, 0},
+      {2, 0, 20},
+      {4, 10},
+      {2, 15, -20},
+      {0, 13},
+    }),
+    
+    new TowerMapping(107, 5, BASS_DEPTH, new float[][] {
+      {0, 0},
+      {4, 0, 20},
+      {6, 10},
+      {3, 15, -20},
+      // {8,  13},
+    }),
+    
+    new TowerMapping(133, 5, BASS_DEPTH, new float[][] {
+      {0, 0},
+      {-2, 0, 20},
+      {0, 10},
+      {2, 15, -20},
+      // {4, 13}
+    }),
+    
+    new TowerMapping(165, 5, BASS_DEPTH, new float[][] {
+      {0, 0},
+      {-1, 20},
+      {2, 10},
+      {-2, 15, -20},
+      {3, 13},
+    }),
+    
+    // front DJ cubes
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 10, new float[][] {
+      {0, 0},
+      {0, -10, 20},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT, BASS_HEIGHT, 10, new float[][] {
+      {3, 0},
+      {2, -10, 20},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BASS_HEIGHT, 10, new float[][] {
+      {0, 0},
+      {1, 0, 10},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BASS_HEIGHT, 10, new float[][] {
+      {0, 0},
+      {-1, 0},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 10, new float[][] {
+      {0, 0},
+      {-1, 0},
+    }),
+    
+    // left dj cubes    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+      {0, 0},
+      {0, 2, 20},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+      {0, 0},
+      {0, 2, 20},
+    }),
+    
+    // right dj cubes    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+      {0, 0},
+      {0, 2, 20},
+    }),
+    
+    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+      {0, 0},
+      {0, 2, 20},
+    }),
+
+    new TowerMapping(200, 0, 0, new float[][] {
+      {0, 10},
+      {5, 0, 20},
+      {0, 4},
+      {-5, 8, -20},
+      {0, 3},
+    }),
+    
+    new TowerMapping(0, 0, Cube.EDGE_HEIGHT + 10, new float[][] {
+      {10, 0, 40},
+      {3, -2, 20},
+      {0, 0, 40},
+      {0, 0, 60},
+      {0, 0, 40},
+    }),
+    
+    new TowerMapping(20, 0, 2*Cube.EDGE_HEIGHT + 18, new float[][] {
+      {0, 0, 40},
+      {10, 0, 20},
+      {5, 0, 40},
+      {10, 0, 60},
+      {12, 0, 40},
+    }),
+    
+    new TowerMapping(210, 0, Cube.EDGE_HEIGHT + 15, new float[][] {
+      {0, 0, 40},
+      {5, 0, 20},
+      {8, 0, 40},
+      {3, 0, 60},
+      {0, 0, 40},
+    }),
+    
+    new TowerMapping(210, 0, 2*Cube.EDGE_HEIGHT + 25, new float[][] {
+      {0, 0, 40},
+      {5, 0, 20},
+      {2, 0, 40},
+      {5, 0, 60},
+      {0, 0, 40},
+    }),
+    
+  };
+
   ArrayList<Tower> towerList = new ArrayList<Tower>();
   ArrayList<Cube> tower;
   Cube[] cubes = new Cube[79];
-  int cubeIndex = 1;
-
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube(0, 0, 0, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(5, Cube.EDGE_HEIGHT, -10, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(0, 2*Cube.EDGE_HEIGHT, -6, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(-5, 3*Cube.EDGE_HEIGHT, -2, 0, -20, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 0, 0, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, Cube.EDGE_HEIGHT, 5, 0, 10, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 2*Cube.EDGE_HEIGHT, 2, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(Cube.EDGE_WIDTH + 2, 3*Cube.EDGE_HEIGHT, 0, 0, 30, 0));
-  towerList.add(new Tower(tower));
-  
-  // Back Cubes behind DJ platform (in order of increasing x)
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube(50, 0, BASS_DEPTH, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(52,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(48, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(45,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(48,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube(79, 0, BASS_DEPTH, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(81,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(83, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(81,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(79,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube(107, 0, BASS_DEPTH, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(111,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(113, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(110,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0));
-  // tower.add(cubes[cubeIndex++] = new Cube(115,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube(133, 0, BASS_DEPTH, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(131,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(133, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(135,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0));
-  // tower.add(cubes[cubeIndex++] = new Cube(137,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube(165, 0, BASS_DEPTH, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(164,  5+Cube.EDGE_HEIGHT, BASS_DEPTH, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(167, 5+2*Cube.EDGE_HEIGHT, BASS_DEPTH + 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(163,   5+3*Cube.EDGE_HEIGHT, BASS_DEPTH + 15, 0, -20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(168,  5+4*Cube.EDGE_HEIGHT, BASS_DEPTH + 13, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  // front DJ cubes
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, 0, 0, 20, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT + 2, BASS_HEIGHT+Cube.EDGE_HEIGHT, 0, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT + 3, BASS_HEIGHT, 10, 0, 0, 0));
-  towerList.add(new Tower(tower));
-
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BASS_HEIGHT + 0, 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 6, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 10, 0));
-  towerList.add(new Tower(tower));
- 
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BASS_HEIGHT + 0, 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 8, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 14, BASS_HEIGHT + Cube.EDGE_HEIGHT, 10, 0, 0, 0));
-  towerList.add(new Tower(tower));
-  
-  // left dj cubes
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, Cube.EDGE_HEIGHT + 2, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 4, 0, 20, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + 0, 2*Cube.EDGE_HEIGHT + 4, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT + Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 6, 0, 20, 0));
-  towerList.add(new Tower(tower));
-  
-  // right dj cubes    
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, Cube.EDGE_HEIGHT + 2, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 4, 0, 20, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + 0, 2*Cube.EDGE_HEIGHT + 4, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT + Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 6, 0, 20, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube(200, 0, 10, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(205, Cube.EDGE_HEIGHT, 0, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(200, 2*Cube.EDGE_HEIGHT, 4, 0, 0, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(195, 3*Cube.EDGE_HEIGHT, 8, 0, -20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(200, 4*Cube.EDGE_HEIGHT, 3, 0, 0, 0));
-  towerList.add(new Tower(tower));
-   
-  tower = new ArrayList<Cube>();
-  tower.add(cubes[cubeIndex++] = new Cube(10, 0 , Cube.EDGE_HEIGHT + 10, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(3, Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 8, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(0, 2*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(0, 3*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 60, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(0, 4*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 10, 0, 40, 0));
-  towerList.add(new Tower(tower));
-
-  tower = new ArrayList<Cube>();  
-  tower.add(cubes[cubeIndex++] = new Cube(20, 0, 2*Cube.EDGE_HEIGHT + 18, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(30, Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(25, 2*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(30, 3*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 60, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(32, 4*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 18, 0, 40, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();    
-  tower.add(cubes[cubeIndex++] = new Cube(210, 0, Cube.EDGE_HEIGHT + 15, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(215, Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(218, 2*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(213, 3*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 60, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(210, 4*Cube.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 15, 0, 40, 0));
-  towerList.add(new Tower(tower));
-  
-  tower = new ArrayList<Cube>();    
-  tower.add(cubes[cubeIndex++] = new Cube(210, 0, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(215, Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 20, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(212, 2*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(215, 3*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 60, 0));
-  tower.add(cubes[cubeIndex++] = new Cube(210, 4*Cube.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 25, 0, 40, 0));
-  towerList.add(new Tower(tower));
+  int cubeIndex = 1;  
+  float x, y, z, ry;
+  for (TowerMapping tm : mapping) {
+    tower = new ArrayList<Cube>();
+    x = tm.x;
+    y = tm.y;
+    z = tm.z;
+    for (float[] cp : tm.cubePositions) {
+      ry = (cp.length >= 3) ? cp[2] : 0;
+      tower.add(cubes[cubeIndex++] = new Cube(x + cp[0], y, z + cp[1], 0, ry, 0));
+      y += Cube.EDGE_HEIGHT;
+    }
+    towerList.add(new Tower(tower));
+  }
        
   return new Model(towerList, cubes);
 }

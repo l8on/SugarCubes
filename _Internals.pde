@@ -181,7 +181,7 @@ void draw() {
   endShape();
   
   noStroke();
-  fill(#292929);
+  fill(#393939);
   drawBox(BASS_X, 0, BASS_Z, 0, 0, 0, BASS_WIDTH, BASS_HEIGHT, BASS_DEPTH, Cube.CHANNEL_WIDTH);
   for (Cube c : glucose.model.cubes) {
     drawCube(c);

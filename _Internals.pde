@@ -213,8 +213,8 @@ void draw() {
   
   // TODO(mcslee): move into GLucose engine
   if (pandaBoardsEnabled) {
-    pandaFront.send(colors);
-    // pandaRear.send(colors);
+    // pandaFront.send(colors);
+    pandaRear.send(colors);
   }
 }
 

@@ -83,18 +83,16 @@ class TestTowerPattern extends SCPattern {
   public TestTowerPattern(GLucose glucose) {
     super(glucose);
     addModulator(towerIndex).trigger();
-    towerIndex.setValue(9);
   }
 
   public void run(int deltaMs) {
-    println((int)towerIndex.getValuef());
     int ti = 0;
     for (Tower t : model.towers) {
       for (Point p : t.points) {
         colors[p.index] = color(
           lx.getBaseHuef(),
           100,
-          max(0, 100 - 80*abs(ti - towerIndex.getValuef()))
+          max(0, 100 - 80*LXUtils.wrapdistf(ti, towerIndex.getValuef(), model.towers.size()))
         );
       }
       ++ti;

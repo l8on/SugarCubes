@@ -95,7 +95,7 @@ void setup() {
   pandaBoards = new PandaDriver[pandaMappings.length];
   int pbi = 0;
   for (PandaMapping pm : pandaMappings) {
-    pandaBoards[pbi++] = new PandaDriver(pm.ip, glucose.model, pm.channelList);
+    pandaBoards[pbi++] = new PandaDriver(pm.ip, glucose.model, pm);
   }
   mappingTool = new MappingTool(glucose, pandaMappings);
   logTime("Built PandaDriver");

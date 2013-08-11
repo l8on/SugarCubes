@@ -30,20 +30,30 @@ public class PandaDriver {
 
   // List of point indices on the board
   private final int[] points;
-  
+    
   // Packet data
   private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
 
-  public PandaDriver(String ip, Model model, int[][] channelList) {
+  public PandaDriver(String ip) {
     this.ip = ip;
     this.address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
-    List<Integer> pointList = buildMappedList(model, channelList);
-    points = new int[pointList.size()];
-    int i = 0;
-    for (int value : pointList) {
-      points[i++] = value;
+    points = new int[PandaMapping.PIXELS_PER_BOARD];
+    for (int i = 0; i < points.length; ++i) {
+      points[i] = 0;
     }
+  }
+
+  public PandaDriver(String ip, int[] pointList) {
+    this(ip);
+    for (int i = 0; i < pointList.length && i < points.length; ++i) {
+      this.points[i] = pointList[i];
+    }
+  }
+
+  public PandaDriver(String ip, Model model, PandaMapping pm) {
+    this(ip);
+    buildPointList(model, pm);
   }
   
   public void toggle() {
@@ -51,13 +61,13 @@ public class PandaDriver {
     println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
   } 
 
-  private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {
-    ArrayList<Integer> points = new ArrayList<Integer>();
-    for (int[] channel : channelList) {
+  private void buildPointList(Model model, PandaMapping pm) {
+    int pi = 0;
+    for (int[] channel : pm.channelList) {
       for (int cubeNumber : channel) {
-        if (cubeNumber == 0) {
+        if (cubeNumber <= 0) {
           for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
-            points.add(0);
+            points[pi++] = 0;
           }
         } else {
           Cube cube = model.getCubeByRawIndex(cubeNumber);
@@ -70,13 +80,12 @@ public class PandaDriver {
           for (int stripIndex : stripOrder) {
             Strip s = cube.strips.get(stripIndex);
             for (int j = s.points.size() - 1; j >= 0; --j) {
-              points.add(s.points.get(j).index);
+              points[pi++] = s.points.get(j).index;
             }
           }
         }
       }
     }
-    return points;
   }
 
   public final void send(int[] colors) {

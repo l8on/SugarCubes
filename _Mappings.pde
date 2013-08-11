@@ -168,6 +168,12 @@ class PandaMapping {
   // How many cubes per channel xc_PB is configured for
   public final static int CUBES_PER_CHANNEL = 4;
   
+  // How many total pixels on each channel
+  public final static int PIXELS_PER_CHANNEL = Cube.POINTS_PER_CUBE * CUBES_PER_CHANNEL;
+  
+  // How many total pixels on the whole board
+  public final static int PIXELS_PER_BOARD = PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;
+  
   final String ip;
   final int[][] channelList = new int[CHANNELS_PER_BOARD][CUBES_PER_CHANNEL];
   

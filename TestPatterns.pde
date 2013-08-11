@@ -136,8 +136,7 @@ class TestProjectionPattern extends SCPattern {
 
 class TestCubePattern extends SCPattern {
   
-  private int POINTS_PER_CUBE = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE * Strip.POINTS_PER_STRIP;
-  private SawLFO index = new SawLFO(0, POINTS_PER_CUBE, POINTS_PER_CUBE*60);
+  private SawLFO index = new SawLFO(0, Cube.POINTS_PER_CUBE, Cube.POINTS_PER_CUBE*60);
   
   TestCubePattern(GLucose glucose) {
     super(glucose);

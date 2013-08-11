@@ -52,7 +52,7 @@ public class PandaDriver {
       for (int ci = 0; ci < CUBES_PER_CHANNEL; ++ci) {
         int cubeNumber = (ci < channel.length) ? channel[ci] : 0;
         if (cubeNumber == 0) {
-          for (int i = 0; i < (Cube.FACES_PER_CUBE*Face.STRIPS_PER_FACE*Strip.POINTS_PER_STRIP); ++i) {
+          for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
             points.add(0);
           }
         } else {

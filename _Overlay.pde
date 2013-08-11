@@ -744,7 +744,7 @@ class DebugUI {
       boolean first = true;
       int cubeNum = 0;
       for (int cube : channel) {
-        if (cube == 0) {
+        if (cube <= 0) {
           break;
         }
         xPos += debugXSpacing;

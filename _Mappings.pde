@@ -13,6 +13,7 @@
  * when physical changes or tuning is being done to the structure.
  */
 class SCMapping implements GLucose.Mapping {
+
   public Cube[] buildCubeArray() {
     // TODO(mcslee): find a cleaner way of representing this data, probably
     // serialized in some more neutral form. also figure out what's going on
@@ -129,30 +130,45 @@ class SCMapping implements GLucose.Mapping {
     return cubes;
   }
 
-  public int[][] buildFrontChannelList() {
-    return new int[][] {
-      {  1,  2,  3,  4 }, // ch1
-      {  5,  6,  7,  8 }, // ch2
-      {  9, 10, 11, 12 }, // ch3
-      { 13, 14, 15, 16 }, // ch4
-      { 17, 18, 19, 20 }, // ch5
-      { 21, 22, 23, 24 }, // ch6
-      { 25, 26, 27, 28 }, // ch7
-      { 29, 30, 31, 32 }, // ch8 
-    };
-  }
+  public PandaMapping[] buildPandaList() {
+    return new PandaMapping[] {
+      new PandaMapping(
+        "10.200.1.28", new int[][] {
+        {  1,  2,  3,  4 }, // ch1
+        {  5,  6,  7,  8 }, // ch2
+        {  9, 10, 11, 12 }, // ch3
+        { 13, 14, 15, 16 }, // ch4
+        { 17, 18, 19, 20 }, // ch5
+        { 21, 22, 23, 24 }, // ch6
+        { 25, 26, 27, 28 }, // ch7
+        { 29, 30, 31, 32 }, // ch8
+      }),
 
-  public int[][] buildRearChannelList() {
-    return new int[][] {
-      { 33, 34, 35, 36 }, // ch9
-      { 37, 38, 39, 40 }, // ch10
-      { 41, 42, 43, 44 }, // ch11
-      { 45, 46, 47, 48 }, // ch12
-      { 49, 50, 51, 52 }, // ch13
-      { 53, 54, 55, 56 }, // ch14
-      { 57, 58, 59, 60 }, // ch15
-      { 61, 62, 63, 64 }, // ch16
+      new PandaMapping(
+        "10.200.1.29", new int[][] {
+        { 33, 34, 35, 36 }, // ch9
+        { 37, 38, 39, 40 }, // ch10
+        { 41, 42, 43, 44 }, // ch11
+        { 45, 46, 47, 48 }, // ch12
+        { 49, 50, 51, 52 }, // ch13
+        { 53, 54, 55, 56 }, // ch14
+        { 57, 58, 59, 60 }, // ch15
+        { 61, 62, 63, 64 }, // ch16
+      }),
+      
     };
   }
 }
+
+class PandaMapping {
+  
+  final String ip;
+  final int[][] channelList;
+  
+  PandaMapping(String ip, int[][] channelList) {
+    this.ip = ip;
+    this.channelList = channelList;
+  }
+}
+
 

@@ -178,30 +178,37 @@ class MappingTool extends SCPattern {
   public boolean channelModeGreen = false;
   public boolean channelModeBlue = false;
   
-  private final static int NUM_CHANNELS = 16;
+  private final int numChannels;
   
-  private final int[][] frontChannels;
-  private final int[][] rearChannels;
-  private int[] activeChannels;
+  private final PandaMapping[] pandaMappings;
+  private PandaMapping activeMapping;
+  private int mappingChannelIndex;
   
-  MappingTool(GLucose glucose, int[][]frontChannels, int[][]rearChannels) {
+  MappingTool(GLucose glucose, PandaMapping[] pandaMappings) {
     super(glucose);
-    this.frontChannels = frontChannels;
-    this.rearChannels = rearChannels;
+    this.pandaMappings = pandaMappings;
+    int totalChannels = 0;
+    for (PandaMapping pm : pandaMappings) {
+       totalChannels += pm.channelList.length;
+    }
+    numChannels = totalChannels;
     setChannel();
   }
   
   private void setChannel() {
-    if (channelIndex < frontChannels.length) {
-      activeChannels = frontChannels[channelIndex];
-    } else {
-      activeChannels = rearChannels[channelIndex - frontChannels.length];
+    mappingChannelIndex = channelIndex;
+    for (PandaMapping pm : pandaMappings) {
+      if (mappingChannelIndex < pm.channelList.length) {
+        activeMapping = pm;
+        break;
+      }
+      mappingChannelIndex -= pm.channelList.length;
     }
   }
   
   private int cubeInChannel(Cube c) {
     int i = 1;
-    for (int index : activeChannels) {
+    for (int index : activeMapping.channelList[mappingChannelIndex]) {
       if (c == model.getCubeByRawIndex(index)) {
         return i;
       }
@@ -221,7 +228,7 @@ class MappingTool extends SCPattern {
   }
   
   public void strip(int delta) {
-    int len = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
+    int len = Cube.STRIPS_PER_CUBE;
     stripIndex = (len + stripIndex + delta) % len;
     printInfo();
   }
@@ -299,14 +306,14 @@ class MappingTool extends SCPattern {
   }
 
   public void incChannel() {
-    channelIndex = (channelIndex + 1) % NUM_CHANNELS;
+    channelIndex = (channelIndex + 1) % numChannels;
     setChannel();
   }
   
   public void decChannel() {
     --channelIndex;
     if (channelIndex < 0) {
-      channelIndex += NUM_CHANNELS;
+      channelIndex += numChannels;
     }
     setChannel();    
   }

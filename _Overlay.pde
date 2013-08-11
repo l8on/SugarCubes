@@ -712,14 +712,17 @@ class DebugUI {
   final int DEBUG_STATE_WHITE = 1;
   final int DEBUG_STATE_OFF = 2;
   
-  DebugUI(int[][] frontChannels, int[][] rearChannels) {
-    channelList = new int[frontChannels.length + rearChannels.length][];
-    int channelIndex = 0;
-    for (int[] channel : frontChannels) {
-      channelList[channelIndex++] = channel;
+  DebugUI(PandaMapping[] pandaMappings) {
+    int totalChannels = 0;
+    for (PandaMapping pm : pandaMappings) {
+      totalChannels += pm.channelList.length;
     }
-    for (int[] channel : rearChannels) {    
-      channelList[channelIndex++] = channel;
+    channelList = new int[totalChannels][];
+    int channelIndex = 0;
+    for (PandaMapping pm : pandaMappings) {
+      for (int[] channel : pm.channelList) {
+        channelList[channelIndex++] = channel;
+      }
     }
     for (int i = 0; i < debugState.length; ++i) {
       for (int j = 0; j < debugState[i].length; ++j) {

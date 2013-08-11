@@ -47,6 +47,7 @@ final float BASS_Z = (TRAILER_DEPTH - BASS_DEPTH) / 2.;
 int targetFramerate = 60;
 
 int startMillis, lastMillis;
+SCMapping mapping;
 GLucose glucose;
 HeronLX lx;
 MappingTool mappingTool;
@@ -75,7 +76,8 @@ void setup() {
   logTime("Created viewport");
 
   // Create the GLucose engine to run the cubes
-  glucose = new GLucose(this, new SCMapping());
+  mapping = new SCMapping();
+  glucose = new GLucose(this, mapping);
   lx = glucose.lx;
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
@@ -89,19 +91,19 @@ void setup() {
   logTime("Built transitions");
     
   // Build output driver
-  int[][] frontChannels = glucose.mapping.buildFrontChannelList();
-  int[][] rearChannels = glucose.mapping.buildRearChannelList();
-  mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaBoards = new PandaDriver[] {
-    new PandaDriver("10.200.1.28", glucose.model, frontChannels),
-    new PandaDriver("10.200.1.29", glucose.model, rearChannels),
-  };
-  logTime("Build PandaDriver");
+  PandaMapping[] pandaMappings = mapping.buildPandaList();
+  pandaBoards = new PandaDriver[pandaMappings.length];
+  int pbi = 0;
+  for (PandaMapping pm : pandaMappings) {
+    pandaBoards[pbi++] = new PandaDriver(pm.ip, glucose.model, pm.channelList);
+  }
+  mappingTool = new MappingTool(glucose, pandaMappings);
+  logTime("Built PandaDriver");
   
   // Build overlay UI
   ui = controlUI = new ControlUI();
   mappingUI = new MappingUI(mappingTool);
-  debugUI = new DebugUI(frontChannels, rearChannels);
+  debugUI = new DebugUI(pandaMappings);
   logTime("Built overlay UI");
     
   // MIDI devices

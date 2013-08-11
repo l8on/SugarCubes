@@ -54,7 +54,7 @@ public class PandaDriver {
   
   public void toggle() {
     enabled = !enabled;
-    println("PandaBoard/" + ip + " Output: " + (enabled ? "ON" : "OFF"));    
+    println("PandaBoard Output/" + ip + ": " + (enabled ? "ON" : "OFF"));    
   } 
 
   private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {

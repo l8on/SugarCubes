@@ -162,12 +162,23 @@ class SCMapping implements GLucose.Mapping {
 
 class PandaMapping {
   
-  final String ip;
-  final int[][] channelList;
+  // How many channels are on the panda board
+  public final static int CHANNELS_PER_BOARD = 8;
   
-  PandaMapping(String ip, int[][] channelList) {
+  // How many cubes per channel xc_PB is configured for
+  public final static int CUBES_PER_CHANNEL = 4;
+  
+  final String ip;
+  final int[][] channelList = new int[CHANNELS_PER_BOARD][CUBES_PER_CHANNEL];
+  
+  PandaMapping(String ip, int[][] rawChannelList) {
     this.ip = ip;
-    this.channelList = channelList;
+    for (int chi = 0; chi < CHANNELS_PER_BOARD; ++chi) {
+      int[] cubes = (chi < rawChannelList.length) ? rawChannelList[chi] : new int[]{};
+      for (int cui = 0; cui < CUBES_PER_CHANNEL; ++cui) {
+        channelList[chi][cui] = (cui < cubes.length) ? cubes[cui] : 0;
+      }
+    }
   }
 }
 

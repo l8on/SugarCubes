@@ -31,12 +31,6 @@ public class PandaDriver {
   // List of point indices on the board
   private final int[] points;
   
-  // How many channels are on the panda board
-  private final static int CHANNELS_PER_BOARD = 8;
-  
-  // How many cubes per channel xc_PB is configured for
-  private final static int CUBES_PER_CHANNEL = 4;
-
   // Packet data
   private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
 
@@ -54,15 +48,13 @@ public class PandaDriver {
   
   public void toggle() {
     enabled = !enabled;
-    println("PandaBoard Output/" + ip + ": " + (enabled ? "ON" : "OFF"));    
+    println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
   } 
 
   private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {
     ArrayList<Integer> points = new ArrayList<Integer>();
-    for (int chi = 0; chi < CHANNELS_PER_BOARD; ++chi) {
-      int[] channel = (chi < channelList.length) ? channelList[chi] : new int[]{};
-      for (int ci = 0; ci < CUBES_PER_CHANNEL; ++ci) {
-        int cubeNumber = (ci < channel.length) ? channel[ci] : 0;
+    for (int[] channel : channelList) {
+      for (int cubeNumber : channel) {
         if (cubeNumber == 0) {
           for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
             points.add(0);

@@ -25,6 +25,7 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
+    new HelixPattern(glucose),
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),

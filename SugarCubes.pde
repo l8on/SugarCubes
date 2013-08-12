@@ -29,6 +29,8 @@ LXPattern[] patterns(GLucose glucose) {
     new AskewPlanes(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
+    new Pong(glucose),
+    new Noise(glucose),
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
@@ -38,15 +40,15 @@ LXPattern[] patterns(GLucose glucose) {
     new FireEffect(glucose),
     new StripBounce(glucose),
     new SoundCubes(glucose),
-    //new SineSphere(glucose),
     
     // Basic test patterns for reference, not art    
-//    new TestCubePattern(glucose),
-//    new TestHuePattern(glucose),
-//    new TestXPattern(glucose),
-//    new TestYPattern(glucose),
-//    new TestZPattern(glucose),
-//    new TestProjectionPattern(glucose),
+    new TestCubePattern(glucose),
+    new TestTowerPattern(glucose),
+    new TestProjectionPattern(glucose),
+    // new TestHuePattern(glucose),
+    // new TestXPattern(glucose),
+    // new TestYPattern(glucose),
+    // new TestZPattern(glucose),
 
   };
 }

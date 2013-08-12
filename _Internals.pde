@@ -56,12 +56,8 @@ LXEffect[] effects;
 OverlayUI ui;
 ControlUI controlUI;
 MappingUI mappingUI;
-PandaDriver pandaFront;
-PandaDriver pandaRear;
+PandaDriver[] pandaBoards;
 boolean mappingMode = false;
-
-boolean pandaBoardsEnabled = false;
-
 boolean debugMode = false;
 DebugUI debugUI;
 
@@ -79,7 +75,7 @@ void setup() {
   logTime("Created viewport");
 
   // Create the GLucose engine to run the cubes
-  glucose = new GLucose(this, new SCMapping());
+  glucose = new GLucose(this, buildModel());
   lx = glucose.lx;
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
@@ -93,18 +89,19 @@ void setup() {
   logTime("Built transitions");
     
   // Build output driver
-  int[][] frontChannels = glucose.mapping.buildFrontChannelList();
-  int[][] rearChannels = glucose.mapping.buildRearChannelList();
-  int[][] flippedRGB = glucose.mapping.buildFlippedRGBList();
-  mappingTool = new MappingTool(glucose, frontChannels, rearChannels);
-  pandaFront = new PandaDriver(new NetAddress("192.168.1.28", 9001), glucose.model, frontChannels, flippedRGB);
-  pandaRear = new PandaDriver(new NetAddress("192.168.1.29", 9001), glucose.model, rearChannels, flippedRGB);
-  logTime("Build PandaDriver");
+  PandaMapping[] pandaMappings = buildPandaList();
+  pandaBoards = new PandaDriver[pandaMappings.length];
+  int pbi = 0;
+  for (PandaMapping pm : pandaMappings) {
+    pandaBoards[pbi++] = new PandaDriver(pm.ip, glucose.model, pm);
+  }
+  mappingTool = new MappingTool(glucose, pandaMappings);
+  logTime("Built PandaDriver");
   
   // Build overlay UI
   ui = controlUI = new ControlUI();
   mappingUI = new MappingUI(mappingTool);
-  debugUI = new DebugUI(frontChannels, rearChannels);
+  debugUI = new DebugUI(pandaMappings);
   logTime("Built overlay UI");
     
   // MIDI devices
@@ -184,7 +181,7 @@ void draw() {
   endShape();
   
   noStroke();
-  fill(#292929);
+  fill(#393939);
   drawBox(BASS_X, 0, BASS_Z, 0, 0, 0, BASS_WIDTH, BASS_HEIGHT, BASS_DEPTH, Cube.CHANNEL_WIDTH);
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
@@ -213,9 +210,8 @@ void draw() {
   }
   
   // TODO(mcslee): move into GLucose engine
-  if (pandaBoardsEnabled) {
-    pandaFront.send(colors);
-    pandaRear.send(colors);
+  for (PandaDriver p : pandaBoards) {
+    p.send(colors);
   }
 }
 
@@ -304,8 +300,9 @@ void keyPressed() {
       }
       break;
     case 'p':
-      pandaBoardsEnabled = !pandaBoardsEnabled;
-      println("PandaBoard Output: " + (pandaBoardsEnabled ? "ON" : "OFF"));
+      for (PandaDriver p : pandaBoards) {
+        p.toggle();
+      }
       break;
     case 'u':
       uiOn = !uiOn;
@@ -314,11 +311,9 @@ void keyPressed() {
 }
 
 int mx, my;
-
 void mousePressed() {
-  if (mouseX > ui.leftPos) {
-    ui.mousePressed();
-  } else {
+  ui.mousePressed();
+  if (mouseX < ui.leftPos) {
     if (debugMode) {
       debugUI.mousePressed();
     }    
@@ -343,14 +338,16 @@ void mouseDragged() {
 }
 
 void mouseReleased() {
-  if (mouseX > ui.leftPos) {
-    ui.mouseReleased();
-  }
+  ui.mouseReleased();
 }
  
 void mouseWheel(int delta) {
-  eyeR = constrain(eyeR - delta, -500, -80);
-  eyeX = midX + eyeR*sin(eyeA);
-  eyeZ = midZ + eyeR*cos(eyeA);
+  if (mouseX > ui.leftPos) {
+    ui.mouseWheel(delta);
+  } else {
+    eyeR = constrain(eyeR - delta, -500, -80);
+    eyeX = midX + eyeR*sin(eyeA);
+    eyeZ = midZ + eyeR*cos(eyeA);
+  }
 }
 

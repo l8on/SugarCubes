@@ -30,6 +30,7 @@ abstract class OverlayUI {
   protected final float knobIndent = .4;  
   protected final int knobSpacing = 6;
   protected final int knobLabelHeight = 14;
+  protected final int scrollWidth = 14;
   protected final color lightBlue = #666699;
   protected final color lightGreen = #669966;
   
@@ -38,6 +39,11 @@ abstract class OverlayUI {
   protected final int STATE_DEFAULT = 0;
   protected final int STATE_ACTIVE = 1;
   protected final int STATE_PENDING = 2;
+  
+  protected int[] pandaLeft = new int[pandaBoards.length];
+  protected final int pandaWidth = 56;
+  protected final int pandaHeight = 13;
+  protected final int pandaTop = height-16;
   
   protected OverlayUI() {
     leftPos = width - w;
@@ -73,16 +79,38 @@ abstract class OverlayUI {
     text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);
     text("Target (-/+):", 50, height-6);
     fill(#000000);
-    rect(104, height-16, 20, 12);
+    rect(104, height-16, 20, 13);
     fill(#666666);
     text("" + targetFramerate, 108, height-6);
+    text("PandaOutput (p):", 134, height-6);
+    int lPos = 214;
+    int pi = 0;
+    for (PandaDriver p : pandaBoards) {
+      pandaLeft[pi++] = lPos;
+      fill(p.enabled ? #666666 : #000000);
+      rect(lPos, pandaTop, pandaWidth, pandaHeight);
+      fill(p.enabled ? #000000 : #666666);
+      text(p.ip, lPos + 4, height-6);
+      lPos += 60;
+    }
+
   }
 
   protected int drawObjectList(int yPos, String title, Object[] items, Method stateMethod) {
-    return drawObjectList(yPos, title, items, classNameArray(items, null), stateMethod);
+    int sz = (items != null) ? items.length : 0;
+    return drawObjectList(yPos, title, items, stateMethod, sz, 0);
+  }
+
+  protected int drawObjectList(int yPos, String title, Object[] items, Method stateMethod, int scrollLength, int scrollPos) {
+    return drawObjectList(yPos, title, items, classNameArray(items, null), stateMethod, scrollLength, scrollPos);
+  }
+
+  protected int drawObjectList(int yPos, String title, Object[] items, String[] names, Method stateMethod) {
+    int sz = (items != null) ? items.length : 0;
+    return drawObjectList(yPos, title, items, names, stateMethod, sz, 0);
   }
   
-  protected int drawObjectList(int yPos, String title, Object[] items, String[] names, Method stateMethod) {
+  protected int drawObjectList(int yPos, String title, Object[] items, String[] names, Method stateMethod, int scrollLength, int scrollPos) {
     noStroke();
     fill(titleColor);
     textFont(titleFont);
@@ -92,7 +120,8 @@ abstract class OverlayUI {
       textFont(itemFont);
       color textColor;      
       boolean even = true;
-      for (int i = 0; i < items.length; ++i) {
+      int yTop = yPos+6;
+      for (int i = scrollPos; i < items.length && i < (scrollPos + scrollLength); ++i) {
         Object o = items[i];
         int state = STATE_DEFAULT;
         try {
@@ -114,11 +143,21 @@ abstract class OverlayUI {
             fill(even ? #666666 : #777777);
             break;
         }
-        rect(leftPos, yPos+6, width, lineHeight);
+        rect(leftPos, yPos+6, w, lineHeight);
         fill(textColor);
         text(names[i], leftTextPos, yPos += lineHeight);
         even = !even;       
       }
+      if ((scrollPos > 0) || (scrollLength < items.length)) {
+        int yHere = yPos+6;
+        noStroke();
+        fill(color(0, 0, 0, 50));
+        rect(leftPos + w - scrollWidth, yTop, scrollWidth, yHere - yTop);
+        fill(#666666);
+        rect(leftPos + w - scrollWidth + 2, yTop + (yHere-yTop) * (scrollPos / (float)items.length), scrollWidth - 4, (yHere - yTop) * (scrollLength / (float)items.length));
+        
+      }
+      
     }
     return yPos;
   }
@@ -157,6 +196,7 @@ abstract class OverlayUI {
   abstract public void mousePressed();
   abstract public void mouseDragged();
   abstract public void mouseReleased();
+  abstract public void mouseWheel(int delta);
 }
 
 /**
@@ -173,6 +213,9 @@ class ControlUI extends OverlayUI {
   private int firstTransitionKnobY;
   private int firstEffectY;
   private int firstEffectKnobY;
+  
+  private final int PATTERN_LIST_LENGTH = 8;
+  private int patternScrollPos = 0;
 
   private int tempoY;
   
@@ -198,7 +241,7 @@ class ControlUI extends OverlayUI {
     drawLogoAndBackground();
     int yPos = 0;
     firstPatternY = yPos + lineHeight + 6;
-    yPos = drawObjectList(yPos, "PATTERN", patterns, patternNames, patternStateMethod);
+    yPos = drawObjectList(yPos, "PATTERN", patterns, patternNames, patternStateMethod, PATTERN_LIST_LENGTH, patternScrollPos);
     yPos += controlSpacing;
     firstPatternKnobY = yPos;
     int xPos = leftTextPos;
@@ -327,6 +370,7 @@ class ControlUI extends OverlayUI {
   private int patternKnobIndex = -1;
   private int transitionKnobIndex = -1;
   private int effectKnobIndex = -1;
+  private boolean patternScrolling = false;
   
   private int lastY;
   private int releaseEffect = -1;
@@ -336,6 +380,22 @@ class ControlUI extends OverlayUI {
     lastY = mouseY;
     patternKnobIndex = transitionKnobIndex = effectKnobIndex = -1;
     releaseEffect = -1;
+    patternScrolling = false;
+    
+    for (int p = 0; p < pandaLeft.length; ++p) {
+      int xp = pandaLeft[p];
+      if ((mouseX >= xp) &&
+          (mouseX < xp + pandaWidth) &&
+          (mouseY >= pandaTop) &&
+          (mouseY < pandaTop + pandaHeight)) {
+          pandaBoards[p].toggle();
+      }
+    }
+    
+    if (mouseX < leftPos) {
+      return;
+    }
+    
     if (mouseY > tempoY) {
       if (mouseY - tempoY < tempoHeight) {
         lx.tempo.tap();
@@ -365,15 +425,21 @@ class ControlUI extends OverlayUI {
         patternKnobIndex += glucose.NUM_PATTERN_KNOBS / 2;
       }      
     } else if (mouseY > firstPatternY) {
-      int patternIndex = objectClickIndex(firstPatternY);
-      if (patternIndex < patterns.length) {
-        lx.goIndex(patternIndex);
+      if ((patterns.length > PATTERN_LIST_LENGTH) && (mouseX > width - scrollWidth)) {
+        patternScrolling = true;
+      } else {
+        int patternIndex = objectClickIndex(firstPatternY);
+        if (patternIndex < patterns.length) {
+          lx.goIndex(patternIndex + patternScrollPos);
+        }
       }
     }
   }
   
+  int scrolldy = 0;
   public void mouseDragged() {
     int dy = lastY - mouseY;
+    scrolldy += dy;
     lastY = mouseY;
     if (patternKnobIndex >= 0 && patternKnobIndex < glucose.NUM_PATTERN_KNOBS) {
       LXParameter p = glucose.patternKnobs.get(patternKnobIndex);
@@ -384,14 +450,28 @@ class ControlUI extends OverlayUI {
     } else if (transitionKnobIndex >= 0 && transitionKnobIndex < glucose.NUM_TRANSITION_KNOBS) {
       LXParameter p = glucose.transitionKnobs.get(transitionKnobIndex);
       p.setValue(constrain(p.getValuef() + dy*.01, 0, 1));
+    } else if (patternScrolling) {
+      int scroll = scrolldy / lineHeight;
+      scrolldy = scrolldy % lineHeight;
+      patternScrollPos = constrain(patternScrollPos - scroll, 0, patterns.length - PATTERN_LIST_LENGTH);
     }
   }
     
   public void mouseReleased() {
+    patternScrolling = false;
     tempoDown = false;
     if (releaseEffect >= 0) {
       effects[releaseEffect].trigger();
       releaseEffect = -1;      
+    }
+  }
+  
+  public void mouseWheel(int delta) {
+    if (mouseY > firstPatternY) {
+      int patternIndex = objectClickIndex(firstPatternY);
+      if (patternIndex < PATTERN_LIST_LENGTH) {
+        patternScrollPos = constrain(patternScrollPos + delta, 0, patterns.length - PATTERN_LIST_LENGTH);
+      }
     }
   }
   
@@ -546,6 +626,11 @@ class MappingUI extends OverlayUI {
   public void mousePressed() {
     dragCube = dragStrip = dragChannel = false;
     lastY = mouseY;
+    
+    if (mouseX < leftPos) {
+      return;
+    }
+    
     if (mouseY >= stripFieldY) {
       if (mouseY < stripFieldY + lineHeight) {
         dragStrip = true;
@@ -582,8 +667,8 @@ class MappingUI extends OverlayUI {
     }
   }
 
-  public void mouseReleased() {
-  }
+  public void mouseReleased() {}
+  public void mouseWheel(int delta) {}
 
   public void mouseDragged() {
     final int DRAG_THRESHOLD = 5;
@@ -627,14 +712,14 @@ class DebugUI {
   final int DEBUG_STATE_WHITE = 1;
   final int DEBUG_STATE_OFF = 2;
   
-  DebugUI(int[][] frontChannels, int[][] rearChannels) {
-    channelList = new int[frontChannels.length + rearChannels.length][];
+  DebugUI(PandaMapping[] pandaMappings) {
+    int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
+    channelList = new int[totalChannels][];
     int channelIndex = 0;
-    for (int[] channel : frontChannels) {
-      channelList[channelIndex++] = channel;
-    }
-    for (int[] channel : rearChannels) {    
-      channelList[channelIndex++] = channel;
+    for (PandaMapping pm : pandaMappings) {
+      for (int[] channel : pm.channelList) {
+        channelList[channelIndex++] = channel;
+      }
     }
     for (int i = 0; i < debugState.length; ++i) {
       for (int j = 0; j < debugState[i].length; ++j) {
@@ -643,7 +728,7 @@ class DebugUI {
     }
   }
   
-  void draw() {
+  void draw() {    
     noStroke();
     int xBase = debugX;
     int yPos = debugY;
@@ -659,7 +744,7 @@ class DebugUI {
       boolean first = true;
       int cubeNum = 0;
       for (int cube : channel) {
-        if (cube == 0) {
+        if (cube <= 0) {
           break;
         }
         xPos += debugXSpacing;

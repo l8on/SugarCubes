@@ -75,6 +75,33 @@ class TestZPattern extends SCPattern {
 }
 
 /**
+ * This shows how to iterate over towers, enumerated in the model.
+ */
+class TestTowerPattern extends SCPattern {
+  private final SawLFO towerIndex = new SawLFO(0, model.towers.size(), 1000*model.towers.size());
+  
+  public TestTowerPattern(GLucose glucose) {
+    super(glucose);
+    addModulator(towerIndex).trigger();
+  }
+
+  public void run(int deltaMs) {
+    int ti = 0;
+    for (Tower t : model.towers) {
+      for (Point p : t.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - 80*LXUtils.wrapdistf(ti, towerIndex.getValuef(), model.towers.size()))
+        );
+      }
+      ++ti;
+    }
+  }
+  
+}
+
+/**
  * This is a demonstration of how to use the projection library. A projection
  * creates a mutation of the coordinates of all the points in the model, creating
  * virtual x,y,z coordinates. In effect, this is like virtually rotating the entire
@@ -136,8 +163,7 @@ class TestProjectionPattern extends SCPattern {
 
 class TestCubePattern extends SCPattern {
   
-  private int POINTS_PER_CUBE = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE * Strip.POINTS_PER_STRIP;
-  private SawLFO index = new SawLFO(0, POINTS_PER_CUBE, POINTS_PER_CUBE*60);
+  private SawLFO index = new SawLFO(0, Cube.POINTS_PER_CUBE, Cube.POINTS_PER_CUBE*60);
   
   TestCubePattern(GLucose glucose) {
     super(glucose);
@@ -179,30 +205,27 @@ class MappingTool extends SCPattern {
   public boolean channelModeGreen = false;
   public boolean channelModeBlue = false;
   
-  private final static int NUM_CHANNELS = 16;
+  private final int numChannels;
   
-  private final int[][] frontChannels;
-  private final int[][] rearChannels;
-  private int[] activeChannels;
+  private final PandaMapping[] pandaMappings;
+  private PandaMapping activeMapping;
+  private int mappingChannelIndex;
   
-  MappingTool(GLucose glucose, int[][]frontChannels, int[][]rearChannels) {
+  MappingTool(GLucose glucose, PandaMapping[] pandaMappings) {
     super(glucose);
-    this.frontChannels = frontChannels;
-    this.rearChannels = rearChannels;
+    this.pandaMappings = pandaMappings;
+    numChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
     setChannel();
   }
   
   private void setChannel() {
-    if (channelIndex < frontChannels.length) {
-      activeChannels = frontChannels[channelIndex];
-    } else {
-      activeChannels = rearChannels[channelIndex - frontChannels.length];
-    }
+    mappingChannelIndex = channelIndex % PandaMapping.CHANNELS_PER_BOARD;
+    activeMapping = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
   }
   
   private int cubeInChannel(Cube c) {
     int i = 1;
-    for (int index : activeChannels) {
+    for (int index : activeMapping.channelList[mappingChannelIndex]) {
       if (c == model.getCubeByRawIndex(index)) {
         return i;
       }
@@ -222,7 +245,7 @@ class MappingTool extends SCPattern {
   }
   
   public void strip(int delta) {
-    int len = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
+    int len = Cube.STRIPS_PER_CUBE;
     stripIndex = (len + stripIndex + delta) % len;
     printInfo();
   }
@@ -300,14 +323,14 @@ class MappingTool extends SCPattern {
   }
 
   public void incChannel() {
-    channelIndex = (channelIndex + 1) % NUM_CHANNELS;
+    channelIndex = (channelIndex + 1) % numChannels;
     setChannel();
   }
   
   public void decChannel() {
     --channelIndex;
     if (channelIndex < 0) {
-      channelIndex += NUM_CHANNELS;
+      channelIndex += numChannels;
     }
     setChannel();    
   }

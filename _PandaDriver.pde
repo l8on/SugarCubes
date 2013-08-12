@@ -16,77 +16,82 @@ import oscP5.*;
  */
 public class PandaDriver {
 
+  // IP address
+  public final String ip;
+  
   // Address to send to
   private final NetAddress address;
+  
+  // Whether board output is enabled
+  private boolean enabled = false;
   
   // OSC message
   private final OscMessage message;
 
   // List of point indices on the board
   private final int[] points;
-
-  // Bit for flipped status of each point index
-  private final boolean[] flipped;
-
+    
   // Packet data
-  private final byte[] packet = new byte[4*352]; // TODO: de-magic-number
+  private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
 
-  public PandaDriver(NetAddress address, Model model, int[][] channelList, int[][] flippedList) {
-    this.address = address;
+  public PandaDriver(String ip) {
+    this.ip = ip;
+    this.address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
-    List<Integer> pointList = buildMappedList(model, channelList);
-    points = new int[pointList.size()];
-    int i = 0;
-    for (int value : pointList) {
-      points[i++] = value;
+    points = new int[PandaMapping.PIXELS_PER_BOARD];
+    for (int i = 0; i < points.length; ++i) {
+      points[i] = 0;
     }
-    flipped = buildFlippedList(model, flippedList);
   }
 
-  private ArrayList<Integer> buildMappedList(Model model, int[][] channelList) {
-    ArrayList<Integer> points = new ArrayList<Integer>();
-    for (int[] channel : channelList) {
+  public PandaDriver(String ip, int[] pointList) {
+    this(ip);
+    for (int i = 0; i < pointList.length && i < points.length; ++i) {
+      this.points[i] = pointList[i];
+    }
+  }
+
+  public PandaDriver(String ip, Model model, PandaMapping pm) {
+    this(ip);
+    buildPointList(model, pm);
+  }
+  
+  public void toggle() {
+    enabled = !enabled;
+    println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
+  } 
+
+  private void buildPointList(Model model, PandaMapping pm) {
+    int pi = 0;
+    for (int[] channel : pm.channelList) {
       for (int cubeNumber : channel) {
-        if (cubeNumber == 0) {
-          for (int i = 0; i < (Cube.FACES_PER_CUBE*Face.STRIPS_PER_FACE*Strip.POINTS_PER_STRIP); ++i) {
-            points.add(0);
+        if (cubeNumber <= 0) {
+          for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
+            points[pi++] = 0;
           }
         } else {
           Cube cube = model.getCubeByRawIndex(cubeNumber);
           if (cube == null) {
             throw new RuntimeException("Non-zero, non-existing cube specified in channel mapping (" + cubeNumber + ")");
           }
-          for (Point p : cube.points) {
-            points.add(p.index);
+          final int[] stripOrder = new int[] {
+            2, 1, 0, 3, 13, 12, 15, 14, 4, 7, 6, 5, 11, 10, 9, 8
+          };
+          for (int stripIndex : stripOrder) {
+            Strip s = cube.strips.get(stripIndex);
+            for (int j = s.points.size() - 1; j >= 0; --j) {
+              points[pi++] = s.points.get(j).index;
+            }
           }
         }
       }
     }
-    return points;
   }
 
-  private boolean[] buildFlippedList(Model model, int[][] flippedRGBList) {
-    boolean[] flipped = new boolean[model.points.size()];
-    for (int i = 0; i < flipped.length; ++i) {
-      flipped[i] = false;
-    }
-    for (int[] cubeInfo : flippedRGBList) {
-      int cubeNumber = cubeInfo[0];
-      Cube cube = model.getCubeByRawIndex(cubeNumber);
-      if (cube == null) {
-        throw new RuntimeException("Non-existing cube specified in flipped RGB mapping (" + cubeNumber + ")");
-      }
-      for (int i = 1; i < cubeInfo.length; ++i) {
-        int stripIndex = cubeInfo[i];
-        for (Point p : cube.strips.get(stripIndex-1).points) {
-          flipped[p.index] = true;
-        }
-      }
-    }
-    return flipped;
-  } 
-
   public final void send(int[] colors) {
+    if (!enabled) {
+      return;
+    }
     int len = 0;
     int packetNum = 0;
     for (int index : points) {
@@ -94,11 +99,6 @@ public class PandaDriver {
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);
-      if (flipped[index]) {
-        byte tmp = r;
-        r = g;
-        g = tmp;
-      }
       packet[len++] = 0;
       packet[len++] = r;
       packet[len++] = g;
@@ -106,24 +106,24 @@ public class PandaDriver {
 
       // Flush once packet is full buffer size
       if (len >= packet.length) {
-        sendPacket(packetNum++, len);
+        sendPacket(packetNum++);
         len = 0;
       }
     }
 
     // Flush any remaining data
     if (len > 0) {
-      sendPacket(packetNum++, len);
+      sendPacket(packetNum++);
     }
   }
   
-  private void sendPacket(int packetNum, int len) {
+  private void sendPacket(int packetNum) {
     message.clearArguments();
     message.add(packetNum);
-    message.add(len);
+    message.add(packet.length);
     message.add(packet);
     try {
-      OscP5.flush(message, address);     
+      OscP5.flush(message, address);
     } catch (Exception x) {
       x.printStackTrace();
     }

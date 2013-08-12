@@ -128,10 +128,41 @@ class StripBounce extends SCPattern {
         }
       }
     }
-    for (Point p : model.points) {
-      if (bright[p.index]==0) {
-        colors[p.index]=color(0,0,0);
+  }
+}
+
+class SoundCubes extends SCPattern {
+
+  private FFT fft = null; 
+  private LinearEnvelope[] bandVals = null;
+  private int avgSize;
+    
+  public SoundCubes(GLucose glucose) {
+    super(glucose);
+  }
+
+  protected void onActive() {
+    if (this.fft == null) {
+      this.fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
+      this.fft.window(FFT.HAMMING);
+      this.fft.logAverages(40, 1);
+      this.avgSize = this.fft.avgSize();
+      this.bandVals = new LinearEnvelope[this.avgSize];
+      for (int i = 0; i < this.bandVals.length; ++i) {
+        this.addModulator(this.bandVals[i] = (new LinearEnvelope(0, 0, 700+i*4))).trigger();
       }
     }
   }
+  
+  public void run(int deltaMs) {
+    this.fft.forward(this.lx.audioInput().mix);
+
+    for (int i = 0; i < avgSize; ++i) {
+      float value = this.fft.getAvg(i);
+      this.bandVals[i].setEndVal(value,40).trigger();
+    }
+    for (Point p : model.points) {
+      colors[p.index] = color(100,0,bandVals[1].getValuef()*25 );
+    }
+  }  
 }

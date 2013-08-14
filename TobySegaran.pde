@@ -135,10 +135,13 @@ class SoundCubes extends SCPattern {
 
   private FFT fft = null; 
   private LinearEnvelope[] bandVals = null;
+  private float[] lightVals = null;
   private int avgSize;
-    
+  SawLFO pos = new SawLFO(0, 9, 8000);
+  
   public SoundCubes(GLucose glucose) {
     super(glucose);
+    addModulator(pos).trigger();
   }
 
   protected void onActive() {
@@ -151,18 +154,31 @@ class SoundCubes extends SCPattern {
       for (int i = 0; i < this.bandVals.length; ++i) {
         this.addModulator(this.bandVals[i] = (new LinearEnvelope(0, 0, 700+i*4))).trigger();
       }
+      lightVals = new float[avgSize];
     }
   }
   
   public void run(int deltaMs) {
     this.fft.forward(this.lx.audioInput().mix);
-
     for (int i = 0; i < avgSize; ++i) {
       float value = this.fft.getAvg(i);
       this.bandVals[i].setEndVal(value,40).trigger();
+      float lv = min(value*25,100);
+      if (lv>lightVals[i]-6) {
+        lightVals[i]=lv;
+      } else {
+        lightVals[i]=lightVals[i]-6;
+      }
     }
-    for (Point p : model.points) {
-      colors[p.index] = color(100,0,bandVals[1].getValuef()*25 );
+    for (int i=0; i<model.strips.size(); i++) {
+      //Cube c = model.cubes.get(i);
+      Strip c = model.strips.get(i);
+      int seq=(i+int(pos.getValuef()))%avgSize;
+      float mult = 100.0/avgSize;
+      for (Point p : c.points) {
+        //colors[p.index] = color((avgSize-seq)*mult+bandVals[seq].getValuef(),bandVals[seq].getValuef()*25,bandVals[seq].getValuef()*20+10 );
+        colors[p.index] = color((avgSize-seq)*mult,100-lightVals[seq],lightVals[seq]);
+      }
     }
   }  
 }

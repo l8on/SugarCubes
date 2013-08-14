@@ -120,9 +120,11 @@ class HelixPattern extends SCPattern {
       // the helix.  Figure out if the current point is inside that
       // region.
       float d = PVector.dist(p, toroidPoint);
-      boolean inToroid = abs(d) < girth;
+      boolean inToroid = d < girth;
       
-      return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, (inToroid ? 100 : 0), (inToroid ? 100 : 0));
+      // Soften edges by fading brightness
+      float b = constrain(100*(1 - ((d-.5*girth)/(girth*.5))), 0, 100);
+      return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, (inToroid ? 80 : 0), b);
     }
   }
 
@@ -158,6 +160,7 @@ class HelixPattern extends SCPattern {
     // parameterized t value.  select base pairs and
     // associated colors.  lerp between colors for each
     // base pair to produce a DNA effect.
+    
   }
   
   void run(int deltaMs) {

@@ -185,8 +185,8 @@ class SoundRain extends SCPattern {
         Strip s = c.strips.get(j);
         if (j%4!=0 && j%4!=2) {
           for (Point p : s.points) {
-            int seq = int(p.fy*avgSize/model.yMax+pos.getValuef())%avgSize;
-            seq=abs(seq-(avgSize/2));
+            int seq = int(p.fy*avgSize/model.yMax+pos.getValuef()+sin(p.fx+p.fz)*2)%avgSize;
+            seq=min(abs(seq-(avgSize/2)),avgSize-1);
             colors[p.index] = color(200,max(0,100-abs(p.fx-col1.getValuef())/2),lightVals[seq]);
           }
         }

@@ -30,7 +30,7 @@ class GlitchPlasma extends SCPattern {
 	  + sin(dist(p.fx, p.fy + pos / 7, 192.0, 64.0) / 7.0)
 	  + sin(dist(p.fx, p.fz + pos, 192.0, 100.0) / 8.0);
       float bv = 100;
-      colors[p.index] = color((hv+2)*25, satu, bv);
+      colors[p.index] = color((hv+2)*50, satu, bv);
     }
     if (random(1.0)<glitch/20) {
       pos=pos-int(random(10,30));
@@ -107,7 +107,7 @@ class StripBounce extends SCPattern {
       addModulator(fX[i]).trigger();      
       addModulator(fY[i]).trigger();
       addModulator(fZ[i]).trigger();
-      colorOffset[i]=random(0,100);
+      colorOffset[i]=random(0,256);
     }
   }
   
@@ -118,7 +118,7 @@ class StripBounce extends SCPattern {
         float avgdist=0.0;
         avgdist = dist(strip.points.get(8).fx,strip.points.get(8).fy,strip.points.get(8).fz,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
         boolean on = avgdist<30;
-        float hv = (lx.getBaseHuef()+colorOffset[i])%100;
+        float hv = (lx.getBaseHuef()+colorOffset[i])%360;
         float br = max(0,100-avgdist*4);
         for (Point p : strip.points) {
           if (on && br>bright[p.index]) {
@@ -131,7 +131,7 @@ class StripBounce extends SCPattern {
   }
 }
 
-class SoundCubes extends SCPattern {
+class SoundRain extends SCPattern {
 
   private FFT fft = null; 
   private LinearEnvelope[] bandVals = null;
@@ -139,7 +139,7 @@ class SoundCubes extends SCPattern {
   private int avgSize;
   SawLFO pos = new SawLFO(0, 9, 8000);
   
-  public SoundCubes(GLucose glucose) {
+  public SoundRain(GLucose glucose) {
     super(glucose);
     addModulator(pos).trigger();
   }
@@ -164,21 +164,54 @@ class SoundCubes extends SCPattern {
       float value = this.fft.getAvg(i);
       this.bandVals[i].setEndVal(value,40).trigger();
       float lv = min(value*25,100);
-      if (lv>lightVals[i]-6) {
-        lightVals[i]=lv;
+      if (lv>lightVals[i]) {
+        lightVals[i]=min(lightVals[i]+10,lv,100);
       } else {
-        lightVals[i]=lightVals[i]-6;
+        lightVals[i]=max(lv,lightVals[i]-5,0);
       }
     }
     for (int i=0; i<model.strips.size(); i++) {
       //Cube c = model.cubes.get(i);
       Strip c = model.strips.get(i);
-      int seq=(i+int(pos.getValuef()))%avgSize;
+      //int seq=(i+int(pos.getValuef()))%avgSize;
       float mult = 100.0/avgSize;
       for (Point p : c.points) {
+        int seq = int(p.fy*avgSize/model.yMax+pos.getValuef())%avgSize;
+        seq=abs(seq-(avgSize/2));
         //colors[p.index] = color((avgSize-seq)*mult+bandVals[seq].getValuef(),bandVals[seq].getValuef()*25,bandVals[seq].getValuef()*20+10 );
-        colors[p.index] = color((avgSize-seq)*mult,100-lightVals[seq],lightVals[seq]);
+        colors[p.index] = color(200,lightVals[seq],lightVals[seq]);
       }
     }
   }  
+}
+
+class FaceSync extends SCPattern {
+  SinLFO xosc = new SinLFO(-10, 10, 3000);
+  SinLFO zosc = new SinLFO(-10, 10, 3000);
+
+  public FaceSync(GLucose glucose) {
+    super(glucose);
+    addModulator(xosc).trigger();
+    addModulator(zosc).trigger();
+    zosc.setValue(0);
+  }
+
+  public void run(int deltaMs) {
+    int i=0;
+    for (Cube c : model.cubes) {
+      i++;
+      for (Point p : c.points) {
+        float dx, dz;
+        if (i%2==0) {
+          dx = p.fx - (c.cx+xosc.getValuef());
+          dz = p.fz - (c.cz+zosc.getValuef());
+        } else {
+          dx = p.fx - (c.cx+zosc.getValuef());
+          dz = p.fz - (c.cz+xosc.getValuef());
+        }                
+        //println(dx);
+        colors[p.index] = color(100,0,100-abs(dx*5)-abs(dz*5));
+      }
+    }
+  }
 }

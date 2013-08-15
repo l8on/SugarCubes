@@ -137,16 +137,23 @@ class SoundRain extends SCPattern {
   private LinearEnvelope[] bandVals = null;
   private float[] lightVals = null;
   private int avgSize;
+  private float gain = 25;
   SawLFO pos = new SawLFO(0, 9, 8000);
   SinLFO col1 = new SinLFO(0, model.xMax, 5000);
-
+  BasicParameter gainParameter = new BasicParameter("GAIN", 0.5);
   
   public SoundRain(GLucose glucose) {
     super(glucose);
     addModulator(pos).trigger();
     addModulator(col1).trigger();
+    addParameter(gainParameter);
   }
 
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == gainParameter) {
+      gain = 50*parameter.getValuef();
+    }
+  }
   protected void onActive() {
     if (this.fft == null) {
       this.fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
@@ -166,7 +173,7 @@ class SoundRain extends SCPattern {
     for (int i = 0; i < avgSize; ++i) {
       float value = this.fft.getAvg(i);
       this.bandVals[i].setEndVal(value,40).trigger();
-      float lv = min(value*25,100);
+      float lv = min(value*gain,100);
       if (lv>lightVals[i]) {
         lightVals[i]=min(lightVals[i]+10,lv,100);
       } else {

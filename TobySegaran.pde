@@ -138,10 +138,13 @@ class SoundRain extends SCPattern {
   private float[] lightVals = null;
   private int avgSize;
   SawLFO pos = new SawLFO(0, 9, 8000);
+  SinLFO col1 = new SinLFO(0, model.xMax, 5000);
+
   
   public SoundRain(GLucose glucose) {
     super(glucose);
     addModulator(pos).trigger();
+    addModulator(col1).trigger();
   }
 
   protected void onActive() {
@@ -170,16 +173,16 @@ class SoundRain extends SCPattern {
         lightVals[i]=max(lv,lightVals[i]-5,0);
       }
     }
-    for (int i=0; i<model.strips.size(); i++) {
-      //Cube c = model.cubes.get(i);
-      Strip c = model.strips.get(i);
-      //int seq=(i+int(pos.getValuef()))%avgSize;
-      float mult = 100.0/avgSize;
-      for (Point p : c.points) {
-        int seq = int(p.fy*avgSize/model.yMax+pos.getValuef())%avgSize;
-        seq=abs(seq-(avgSize/2));
-        //colors[p.index] = color((avgSize-seq)*mult+bandVals[seq].getValuef(),bandVals[seq].getValuef()*25,bandVals[seq].getValuef()*20+10 );
-        colors[p.index] = color(200,lightVals[seq],lightVals[seq]);
+    for (Cube c : model.cubes) {
+      for (int j=0; j<c.strips.size(); j++) {
+        Strip s = c.strips.get(j);
+        if (j%4!=0 && j%4!=2) {
+          for (Point p : s.points) {
+            int seq = int(p.fy*avgSize/model.yMax+pos.getValuef())%avgSize;
+            seq=abs(seq-(avgSize/2));
+            colors[p.index] = color(200,max(0,100-abs(p.fx-col1.getValuef())/2),lightVals[seq]);
+          }
+        }
       }
     }
   }  
@@ -188,12 +191,17 @@ class SoundRain extends SCPattern {
 class FaceSync extends SCPattern {
   SinLFO xosc = new SinLFO(-10, 10, 3000);
   SinLFO zosc = new SinLFO(-10, 10, 3000);
+  SinLFO col1 = new SinLFO(0, model.xMax, 5000);
+  SinLFO col2 = new SinLFO(0, model.xMax, 4000);
 
   public FaceSync(GLucose glucose) {
     super(glucose);
     addModulator(xosc).trigger();
     addModulator(zosc).trigger();
     zosc.setValue(0);
+    addModulator(col1).trigger();
+    addModulator(col2).trigger();    
+    col2.setValue(model.xMax);
   }
 
   public void run(int deltaMs) {
@@ -210,7 +218,11 @@ class FaceSync extends SCPattern {
           dz = p.fz - (c.cz+xosc.getValuef());
         }                
         //println(dx);
-        colors[p.index] = color(100,0,100-abs(dx*5)-abs(dz*5));
+        float a1=max(0,100-abs(p.fx-col1.getValuef()));
+        float a2=max(0,100-abs(p.fx-col2.getValuef()));        
+        float sat = max(a1,a2);
+        float h = (359*a1+200*a2) / (a1+a2);
+        colors[p.index] = color(h,sat,100-abs(dx*5)-abs(dz*5));
       }
     }
   }

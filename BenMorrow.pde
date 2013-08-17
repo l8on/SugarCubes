@@ -1,7 +1,7 @@
 class Sandbox extends SCPattern
 {
 
-	LetsTry(GLucose glucose) {
+	Sandbox(GLucose glucose) {
 		super(glucose);
 	}
 	int c=0;

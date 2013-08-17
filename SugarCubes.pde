@@ -41,6 +41,7 @@ LXPattern[] patterns(GLucose glucose) {
     new FireEffect(glucose),
     new StripBounce(glucose),
     new SoundRain(glucose),
+    new SoundSpikes(glucose),
     new FaceSync(glucose),
     
     // Basic test patterns for reference, not art    

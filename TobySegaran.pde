@@ -175,7 +175,7 @@ class SoundRain extends SCPattern {
       this.bandVals[i].setEndVal(value,40).trigger();
       float lv = min(value*gain,100);
       if (lv>lightVals[i]) {
-        lightVals[i]=min(lightVals[i]+10,lv,100);
+        lightVals[i]=min(lightVals[i]+15,lv,100);
       } else {
         lightVals[i]=max(lv,lightVals[i]-5,0);
       }
@@ -234,3 +234,69 @@ class FaceSync extends SCPattern {
     }
   }
 }
+
+class SoundSpikes extends SCPattern {
+  private FFT fft = null; 
+  private LinearEnvelope[] bandVals = null;
+  private float[] lightVals = null;
+  private int avgSize;
+  private float gain = 25;
+  BasicParameter gainParameter = new BasicParameter("GAIN", 0.5);
+  SawLFO pos = new SawLFO(0, model.xMax, 8000);
+
+  public SoundSpikes(GLucose glucose) {
+    super(glucose);
+    addParameter(gainParameter);
+    addModulator(pos).trigger();
+  }
+
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == gainParameter) {
+      gain = 50*parameter.getValuef();
+    }
+  }
+  protected void onActive() {
+    if (this.fft == null) {
+      this.fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
+      this.fft.window(FFT.HAMMING);
+      this.fft.logAverages(40, 1);
+      this.avgSize = this.fft.avgSize();
+      this.bandVals = new LinearEnvelope[this.avgSize];
+      for (int i = 0; i < this.bandVals.length; ++i) {
+        this.addModulator(this.bandVals[i] = (new LinearEnvelope(0, 0, 700+i*4))).trigger();
+      }
+      lightVals = new float[avgSize];
+    }
+  }
+  
+  public void run(int deltaMs) {
+    this.fft.forward(this.lx.audioInput().mix);
+    for (int i = 0; i < avgSize; ++i) {
+      float value = this.fft.getAvg(i);
+      this.bandVals[i].setEndVal(value,40).trigger();
+      float lv = min(value*gain,model.yMax+10);
+      if (lv>lightVals[i]) {
+        lightVals[i]=min(lightVals[i]+30,lv,model.yMax+10);
+      } else {
+        lightVals[i]=max(lv,lightVals[i]-10,0);
+      }
+    }
+    int i = 0;
+    for (Cube c : model.cubes) {
+      for (int j=0; j<c.strips.size(); j++) {
+        Strip s = c.strips.get(j);
+        if (j%4!=0 && j%4!=2) {
+          for (Point p : s.points) {
+            float dis = (abs(p.fx-model.xMax/2)+pos.getValuef())%model.xMax/2;
+            int seq = int((dis*avgSize*2)/model.xMax);
+            if (seq>avgSize) seq=avgSize-seq;
+            seq=constrain(seq,0,avgSize-1);
+            float br=max(0, lightVals[seq]-p.fy);
+            colors[p.index] = color((dis*avgSize*65)/model.xMax,90,br);
+          }
+        }
+      }
+    }
+  }  
+}
+

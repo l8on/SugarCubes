@@ -473,7 +473,7 @@ class ControlUI extends OverlayUI {
       } else {
         int patternIndex = objectClickIndex(firstPatternY);
         if (patternIndex < patterns.length) {
-          if (mouseX > eligibleLeft) {
+          if (lx.isAutoTransitionEnabled() && (mouseX > eligibleLeft)) {
             patterns[patternIndex + patternScrollPos].toggleEligible();
           } else { 
             lx.goIndex(patternIndex + patternScrollPos);

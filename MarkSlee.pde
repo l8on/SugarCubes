@@ -499,10 +499,10 @@ class AskewPlanes extends SCPattern {
     private final SinLFO a;
     private final SinLFO b;
     private final SinLFO c;
-    float av;
-    float bv;
-    float cv;
-    float denom;
+    float av = 1;
+    float bv = 1;
+    float cv = 1;
+    float denom = 0.1;
     
     Plane(int i) {
       addModulator(a = new SinLFO(-1, 1, 4000 + 1029*i)).trigger();
@@ -528,25 +528,33 @@ class AskewPlanes extends SCPattern {
       planes[i] = new Plane(i);
     }
   }
-
-  private final float denoms[] = new float[NUM_PLANES];
   
   public void run(int deltaMs) {
     float huev = lx.getBaseHuef();
-    int i = 0;
-    for (Plane p : planes) {
-      p.run(deltaMs);
-    }
+    
+    // This is super fucking bizarre. But if this is a for loop, the framerate
+    // tanks to like 30FPS, instead of 60. Call them manually and it works fine.
+    // Doesn't make ANY sense... there must be some weird side effect going on
+    // with the Processing internals perhaps?
+//    for (Plane plane : planes) {
+//      plane.run(deltaMs);
+//    }
+    planes[0].run(deltaMs);
+    planes[1].run(deltaMs);
+    planes[2].run(deltaMs);    
+    
     for (Point p : model.points) {
-       float d = MAX_FLOAT;
-       for (Plane plane : planes) {
-         d = min(d, abs(plane.av*(p.fx-model.xMax/2.) + plane.bv*(p.fy-model.yMax/2.) + plane.cv) / plane.denom);
-       }
-       colors[p.index] = color(
-         (lx.getBaseHuef() + abs(p.fx-model.xMax/2.)*.3 + p.fy*.8) % 360,
-         max(0, 100 - .8*abs(p.fx - model.xMax/2.)),
-         constrain(140 - 10.*d, 0, 100)
-       );
+      float d = MAX_FLOAT;
+      for (Plane plane : planes) {
+        if (plane.denom != 0) {
+          d = min(d, abs(plane.av*(p.fx-model.cx) + plane.bv*(p.fy-model.cy) + plane.cv) / plane.denom);
+        }
+      }
+      colors[p.index] = color(
+        (huev + abs(p.fx-model.cx)*.3 + p.fy*.8) % 360,
+        max(0, 100 - .8*abs(p.fx - model.cx)),
+        constrain(140 - 10.*d, 0, 100)
+      );
     }
   }
 }
@@ -574,9 +582,9 @@ class ShiftingPlane extends SCPattern {
     float dv = d.getValuef();    
     float denom = sqrt(av*av + bv*bv + cv*cv);
     for (Point p : model.points) {
-      float d = abs(av*(p.fx-model.xMax/2.) + bv*(p.fy-model.yMax/2.) + cv*(p.fz-model.zMax/2.) + dv) / denom;
+      float d = abs(av*(p.fx-model.cx) + bv*(p.fy-model.cy) + cv*(p.fz-model.cz) + dv) / denom;
       colors[p.index] = color(
-        (hv + abs(p.fx-model.xMax/2.)*.6 + abs(p.fy-model.yMax/2)*.9 + abs(p.fz - model.zMax/2.)) % 360,
+        (hv + abs(p.fx-model.cx)*.6 + abs(p.fy-model.cy)*.9 + abs(p.fz - model.cz)) % 360,
         constrain(110 - d*6, 0, 100),
         constrain(130 - 7*d, 0, 100)
       );

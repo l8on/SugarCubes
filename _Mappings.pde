@@ -38,149 +38,153 @@ public Model buildModel() {
   // y-axis.
   //
   // The cubes automatically increment their y-position by Cube.EDGE_HEIGHT.
+  
+  final float STACKED_RELATIVE = 1;
+  final float STACKED_REL_SPIN = 2;
+  
   TowerMapping[] mapping = new TowerMapping[] {
     
     new TowerMapping(0, 0, 0, new float[][] {
-      {0, 0},
-      {5, -10, 20},
-      {0, -6},
-      {-5, -2, -20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 5, -10, 20},
+      {STACKED_RELATIVE, 0, -6},
+      {STACKED_RELATIVE, -5, -2, -20},
     }),
 
     new TowerMapping(Cube.EDGE_WIDTH + 2, 0, 0, new float[][] {
-      {0, 0},
-      {0, 5, 10},
-      {0, 2, 20},
-      {0, 0, 30},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, 5, 10},
+      {STACKED_RELATIVE, 0, 2, 20},
+      {STACKED_RELATIVE, 0, 0, 30},
     }),
     
     // Back Cubes behind DJ platform (in order of increasing x)
     new TowerMapping(50, 5, BASS_DEPTH, new float[][] {
-      {0, 0},
-      {2, 0, 20},
-      {-2, 10},
-      {-5, 15, -20},
-      {-2, 13},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 2, 0, 20},
+      {STACKED_RELATIVE, -2, 10},
+      {STACKED_RELATIVE, -5, 15, -20},
+      {STACKED_RELATIVE, -2, 13},
     }),
     
     new TowerMapping(79, 5, BASS_DEPTH, new float[][] {
-      {0, 0},
-      {2, 0, 20},
-      {4, 10},
-      {2, 15, -20},
-      {0, 13},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 2, 0, 20},
+      {STACKED_RELATIVE, 4, 10},
+      {STACKED_RELATIVE, 2, 15, -20},
+      {STACKED_RELATIVE, 0, 13},
     }),
     
     new TowerMapping(107, 5, BASS_DEPTH, new float[][] {
-      {0, 0},
-      {4, 0, 20},
-      {6, 10},
-      {3, 15, -20},
-      // {8,  13},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 4, 0, 20},
+      {STACKED_RELATIVE, 6, 10},
+      {STACKED_RELATIVE, 3, 15, -20},
+      // {STACKED_RELATIVE, 8,  13},
     }),
     
     new TowerMapping(133, 5, BASS_DEPTH, new float[][] {
-      {0, 0},
-      {-2, 0, 20},
-      {0, 10},
-      {2, 15, -20},
-      // {4, 13}
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, -2, 0, 20},
+      {STACKED_RELATIVE, 0, 10},
+      {STACKED_RELATIVE, 2, 15, -20},
+      // {STACKED_RELATIVE, 4, 13}
     }),
     
     new TowerMapping(165, 5, BASS_DEPTH, new float[][] {
-      {0, 0},
-      {-1, 20},
-      {2, 10},
-      {-2, 15, -20},
-      {3, 13},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, -1, 20},
+      {STACKED_RELATIVE, 2, 10},
+      {STACKED_RELATIVE, -2, 15, -20},
+      {STACKED_RELATIVE, 3, 13},
     }),
     
     // front DJ cubes
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 10, new float[][] {
-      {0, 0},
-      {0, -10, 20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, -10, 20},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT, BASS_HEIGHT, 10, new float[][] {
-      {3, 0},
-      {2, -10, 20},
+      {STACKED_RELATIVE, 3, 0},
+      {STACKED_RELATIVE, 2, -10, 20},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BASS_HEIGHT, 10, new float[][] {
-      {0, 0},
-      {1, 0, 10},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 1, 0, 10},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BASS_HEIGHT, 10, new float[][] {
-      {0, 0},
-      {-1, 0},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, -1, 0},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 10, new float[][] {
-      {0, 0},
-      {-1, 0},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, -1, 0},
     }),
     
     // left dj cubes    
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
-      {0, 0},
-      {0, 2, 20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, 2, 20},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
-      {0, 0},
-      {0, 2, 20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, 2, 20},
     }),
     
     // right dj cubes    
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
-      {0, 0},
-      {0, 2, 20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, 2, 20},
     }),
     
     new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
-      {0, 0},
-      {0, 2, 20},
+      {STACKED_RELATIVE, 0, 0},
+      {STACKED_RELATIVE, 0, 2, 20},
     }),
 
     new TowerMapping(200, 0, 0, new float[][] {
-      {0, 10},
-      {5, 0, 20},
-      {0, 4},
-      {-5, 8, -20},
-      {0, 3},
+      {STACKED_RELATIVE, 0, 10},
+      {STACKED_RELATIVE, 5, 0, 20},
+      {STACKED_RELATIVE, 0, 4},
+      {STACKED_RELATIVE, -5, 8, -20},
+      {STACKED_RELATIVE, 0, 3},
     }),
     
     new TowerMapping(0, 0, Cube.EDGE_HEIGHT + 10, new float[][] {
-      {10, 0, 40},
-      {3, -2, 20},
-      {0, 0, 40},
-      {0, 0, 60},
-      {0, 0, 40},
+      {STACKED_RELATIVE, 10, 0, 40},
+      {STACKED_RELATIVE, 3, -2, 20},
+      {STACKED_RELATIVE, 0, 0, 40},
+      {STACKED_RELATIVE, 0, 0, 60},
+      {STACKED_RELATIVE, 0, 0, 40},
     }),
     
     new TowerMapping(20, 0, 2*Cube.EDGE_HEIGHT + 18, new float[][] {
-      {0, 0, 40},
-      {10, 0, 20},
-      {5, 0, 40},
-      {10, 0, 60},
-      {12, 0, 40},
+      {STACKED_RELATIVE, 0, 0, 40},
+      {STACKED_RELATIVE, 10, 0, 20},
+      {STACKED_RELATIVE, 5, 0, 40},
+      {STACKED_RELATIVE, 10, 0, 60},
+      {STACKED_RELATIVE, 12, 0, 40},
     }),
     
     new TowerMapping(210, 0, Cube.EDGE_HEIGHT + 15, new float[][] {
-      {0, 0, 40},
-      {5, 0, 20},
-      {8, 0, 40},
-      {3, 0, 60},
-      {0, 0, 40},
+      {STACKED_RELATIVE, 0, 0, 40},
+      {STACKED_RELATIVE, 5, 0, 20},
+      {STACKED_RELATIVE, 8, 0, 40},
+      {STACKED_RELATIVE, 3, 0, 60},
+      {STACKED_RELATIVE, 0, 0, 40},
     }),
     
     new TowerMapping(210, 0, 2*Cube.EDGE_HEIGHT + 25, new float[][] {
-      {0, 0, 40},
-      {5, 0, 20},
-      {2, 0, 40},
-      {5, 0, 60},
-      {0, 0, 40},
+      {STACKED_RELATIVE, 0, 0, 40},
+      {STACKED_RELATIVE, 5, 0, 20},
+      {STACKED_RELATIVE, 2, 0, 40},
+      {STACKED_RELATIVE, 5, 0, 60},
+      {STACKED_RELATIVE, 0, 0, 40},
     }),
     
   };
@@ -189,16 +193,25 @@ public Model buildModel() {
   ArrayList<Cube> tower;
   Cube[] cubes = new Cube[79];
   int cubeIndex = 1;  
-  float x, y, z, ry;
+  float tx, ty, tz, px, pz, ny, dx, dz, ry;
   for (TowerMapping tm : mapping) {
     tower = new ArrayList<Cube>();
-    x = tm.x;
-    y = tm.y;
-    z = tm.z;
+    px = tx = tm.x;
+    ny = ty = tm.y;
+    pz = tz = tm.z;
+    int ti = 0;
     for (float[] cp : tm.cubePositions) {
-      ry = (cp.length >= 3) ? cp[2] : 0;
-      tower.add(cubes[cubeIndex++] = new Cube(x + cp[0], y, z + cp[1], 0, ry, 0));
-      y += Cube.EDGE_HEIGHT;
+      float mode = cp[0];
+      if (mode == STACKED_RELATIVE) {
+        dx = cp[1];
+        dz = cp[2];
+        ry = (cp.length >= 4) ? cp[3] : 0;
+        tower.add(cubes[cubeIndex++] = new Cube(px = tx + dx, ny, pz = tz + dz, 0, ry, 0));
+        ny += Cube.EDGE_HEIGHT;
+      } else if (mode == STACKED_REL_SPIN) {
+        // Same as above but the front left of this cube is actually its back right for wiring
+        // TODO(mcslee): implement this
+      }
     }
     towerList.add(new Tower(tower));
   }

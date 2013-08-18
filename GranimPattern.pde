@@ -26,6 +26,11 @@ class GranimPattern extends SCPattern
 		displayList.put(name,g);
 	}
 
+	public Graphic getGraphicByName(String name)
+	{
+		return displayList.get(name);
+	}
+
 	public void run(int deltaMs) 
 	{
 		for(Graphic g : displayList.values())

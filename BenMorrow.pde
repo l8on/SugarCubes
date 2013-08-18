@@ -49,7 +49,16 @@ class GranimTestPattern extends GranimPattern
 	{
 		super(glucose);
 		RedThreeGraphic	myReds = new RedThreeGraphic();
-		addGraphic("string_name",myReds);
+		addGraphic("myThreeReds",myReds);
+	}
+	int counter=0;
+	public void run(int deltaMs) 
+	{
+		super.run(deltaMs);
+		if(counter % 3 ==0)
+		{
+			getGraphicByName("myThreeReds").position++;
+		}
 	}
 
 

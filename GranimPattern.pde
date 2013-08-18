@@ -24,7 +24,7 @@ class Granim extends Graphic
 	}
 	public Graphic addGraphic(String name, Graphic g)
 	{
-		graphicBuffer.clear();
+		//graphicBuffer.clear();
 		while(width()< g.position+1)
 		{
 				graphicBuffer.add(color(0,0,0));

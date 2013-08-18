@@ -1,35 +1,56 @@
 class Sandbox extends SCPattern
 {
+	int c=0;
+	int prevC=0;
+	int huerange=255;
+	int pointrange= model.points.size();
+	int striprange= model.strips.size();
+	int facerange= model.faces.size();
+	int cuberange = model.cubes.size();
+	int towerrange = model.towers.size();
+	int counter=0;
 
 	Sandbox(GLucose glucose) {
 		super(glucose);
+		println("points "+pointrange);
+		println("strips "+striprange);
+		println("faces "+facerange);
+		println("cubes "+cuberange);
+		println("towers "+towerrange);
 	}
-	int c=0;
-	int huerange=255;
-	int cuberange = 74;
-
-	int counter=0;
+	
 	public void run(int deltaMs) {
-		Cube cube = model.cubes.get((int) c);
-		println("face length "+cube.faces.size());
-		if(cube.faces.size()!=4)
+		
+
+		if(counter % 10 ==0)
 		{
-			for(Face f : cube.faces)
-			{
-			double col = Math.random()*255;
-				for(Point p: f.points)
-				{
-					colors[p.index] = color(Math.round(col),255,255);
-				}
-			}
-				
-			
-		}
-		if(counter% 3 ==0)
-		{
-			c = (c+1) % cuberange;
+			doDraw(c,0);
+			c = (c + 1) % towerrange;
+			long col = color(Math.round(Math.random()*255),255,255) ;
+			doDraw(c,col);
 		}
 		counter++;
-		println(c);
+
 	}
+
+	public void doDraw(int c,long col)
+	{
+			Tower t= model.towers.get((int) c);
+			for(Point p : t.points)
+			{
+				colors[p.index] = (int) col;
+			}
+	}
+};
+
+class GranimTestPattern extends GranimPattern
+{
+	GranimTestPattern(GLucose glucose)
+	{
+		super(glucose);
+		RedThreeGraphic	myReds = new RedThreeGraphic();
+		addGraphic(myReds);
+	}
+
+
 }

@@ -1,8 +1,15 @@
+abstract class TestPattern extends SCPattern {
+  public TestPattern(GLucose glucose) {
+    super(glucose);
+    setEligible(false);
+  }
+}
+
 /**
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.
  */
-class TestHuePattern extends SCPattern {
+class TestHuePattern extends TestPattern {
   public TestHuePattern(GLucose glucose) {
     super(glucose);
   }
@@ -19,7 +26,7 @@ class TestHuePattern extends SCPattern {
 /**
  * Test of a wave moving across the X axis.
  */
-class TestXPattern extends SCPattern {
+class TestXPattern extends TestPattern {
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
   public TestXPattern(GLucose glucose) {
     super(glucose);
@@ -41,7 +48,7 @@ class TestXPattern extends SCPattern {
 /**
  * Test of a wave on the Y axis.
  */
-class TestYPattern extends SCPattern {
+class TestYPattern extends TestPattern {
   private final SinLFO yPos = new SinLFO(0, model.yMax, 4000);
   public TestYPattern(GLucose glucose) {
     super(glucose);
@@ -59,7 +66,7 @@ class TestYPattern extends SCPattern {
 /**
  * Test of a wave on the Z axis.
  */
-class TestZPattern extends SCPattern {
+class TestZPattern extends TestPattern {
   private final SinLFO zPos = new SinLFO(0, model.zMax, 4000);
   public TestZPattern(GLucose glucose) {
     super(glucose);
@@ -77,7 +84,7 @@ class TestZPattern extends SCPattern {
 /**
  * This shows how to iterate over towers, enumerated in the model.
  */
-class TestTowerPattern extends SCPattern {
+class TestTowerPattern extends TestPattern {
   private final SawLFO towerIndex = new SawLFO(0, model.towers.size(), 1000*model.towers.size());
   
   public TestTowerPattern(GLucose glucose) {
@@ -119,7 +126,7 @@ class TestTowerPattern extends SCPattern {
  * of sparse, non-uniformly spaced pixels. Mutating the structure would move
  * things to a space where there are no pixels in 99% of the cases.
  */
-class TestProjectionPattern extends SCPattern {
+class TestProjectionPattern extends TestPattern {
   
   private final Projection projection;
   private final SawLFO angle = new SawLFO(0, TWO_PI, 9000);
@@ -161,7 +168,7 @@ class TestProjectionPattern extends SCPattern {
   } 
 }
 
-class TestCubePattern extends SCPattern {
+class TestCubePattern extends TestPattern {
   
   private SawLFO index = new SawLFO(0, Cube.POINTS_PER_CUBE, Cube.POINTS_PER_CUBE*60);
   
@@ -185,7 +192,7 @@ class TestCubePattern extends SCPattern {
   }
 }
 
-class MappingTool extends SCPattern {
+class MappingTool extends TestPattern {
     
   private int cubeIndex = 0;
   private int stripIndex = 0;

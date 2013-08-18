@@ -33,6 +33,7 @@ abstract class OverlayUI {
   protected final int scrollWidth = 14;
   protected final color lightBlue = #666699;
   protected final color lightGreen = #669966;
+  protected final int toggleButtonSize = 10;
   
   private PImage logo;
 
@@ -44,6 +45,8 @@ abstract class OverlayUI {
   protected final int pandaWidth = 56;
   protected final int pandaHeight = 13;
   protected final int pandaTop = height-16;
+  
+  protected int eligibleLeft;
   
   protected OverlayUI() {
     leftPos = width - w;
@@ -110,6 +113,17 @@ abstract class OverlayUI {
     return drawObjectList(yPos, title, items, names, stateMethod, sz, 0);
   }
   
+  protected void drawToggleButton(float x, float y, boolean eligible, color textColor) {
+    noFill();
+    stroke(textColor);
+    rect(x, y, toggleButtonSize, toggleButtonSize);
+    if (eligible) {
+      noStroke();
+      fill(textColor);
+      rect(x + 2, y + 2, toggleButtonSize - 4, toggleButtonSize - 4);
+    }
+  }    
+  
   protected int drawObjectList(int yPos, String title, Object[] items, String[] names, Method stateMethod, int scrollLength, int scrollPos) {
     noStroke();
     fill(titleColor);
@@ -117,6 +131,7 @@ abstract class OverlayUI {
     textAlign(LEFT);
     text(title, leftTextPos, yPos += lineHeight);    
     if (items != null) {
+      boolean hasScroll = (scrollPos > 0) || (scrollLength < items.length);
       textFont(itemFont);
       color textColor;      
       boolean even = true;
@@ -143,12 +158,18 @@ abstract class OverlayUI {
             fill(even ? #666666 : #777777);
             break;
         }
+        noStroke();
         rect(leftPos, yPos+6, w, lineHeight);
         fill(textColor);
         text(names[i], leftTextPos, yPos += lineHeight);
+        if (lx.isAutoTransitionEnabled() && items[i] instanceof LXPattern) {
+          boolean eligible = ((LXPattern)items[i]).isEligible();
+          eligibleLeft = leftPos + w - (hasScroll ? scrollWidth : 0) - 15;
+          drawToggleButton(eligibleLeft, yPos-8, eligible, textColor);
+        }
         even = !even;       
       }
-      if ((scrollPos > 0) || (scrollLength < items.length)) {
+      if (hasScroll) {
         int yHere = yPos+6;
         noStroke();
         fill(color(0, 0, 0, 50));
@@ -214,6 +235,9 @@ class ControlUI extends OverlayUI {
   private int firstEffectY;
   private int firstEffectKnobY;
   
+  private int autoRotateX;
+  private int autoRotateY;
+  
   private final int PATTERN_LIST_LENGTH = 8;
   private int patternScrollPos = 0;
 
@@ -240,6 +264,11 @@ class ControlUI extends OverlayUI {
   public void draw() {    
     drawLogoAndBackground();
     int yPos = 0;
+    autoRotateX = leftPos + w - 29;
+    autoRotateY = yPos + 12;
+    drawToggleButton(autoRotateX, autoRotateY, lx.isAutoTransitionEnabled(), #999999);
+    fill(lx.isAutoTransitionEnabled() ? #222222: #999999);
+    text("A", autoRotateX + 2, autoRotateY + 9);
     firstPatternY = yPos + lineHeight + 6;
     yPos = drawObjectList(yPos, "PATTERN", patterns, patternNames, patternStateMethod, PATTERN_LIST_LENGTH, patternScrollPos);
     yPos += controlSpacing;
@@ -396,6 +425,20 @@ class ControlUI extends OverlayUI {
       return;
     }
     
+    if ((mouseX >= autoRotateX) &&
+        (mouseX < autoRotateX + toggleButtonSize) &&
+        (mouseY >= autoRotateY) &&
+        (mouseY < autoRotateY + toggleButtonSize)) {
+      if (lx.isAutoTransitionEnabled()) {
+        lx.disableAutoTransition();
+        println("Auto pattern transition disabled");
+      } else {
+        lx.enableAutoTransition(60000);
+        println("Auto pattern transition enabled");        
+      }
+      return;
+    }
+    
     if (mouseY > tempoY) {
       if (mouseY - tempoY < tempoHeight) {
         lx.tempo.tap();
@@ -430,7 +473,11 @@ class ControlUI extends OverlayUI {
       } else {
         int patternIndex = objectClickIndex(firstPatternY);
         if (patternIndex < patterns.length) {
-          lx.goIndex(patternIndex + patternScrollPos);
+          if (lx.isAutoTransitionEnabled() && (mouseX > eligibleLeft)) {
+            patterns[patternIndex + patternScrollPos].toggleEligible();
+          } else { 
+            lx.goIndex(patternIndex + patternScrollPos);
+          }
         }
       }
     }

@@ -42,10 +42,11 @@ class HelixPattern extends SCPattern {
 
     PVector rotatePoint(final PVector pt, final float rads) {
       Vec3D axisVec3D = new Vec3D(vector.x, vector.y, vector.z);
-      Matrix4x4 mat = new Matrix4x4();
-      mat.rotateAroundAxis(axisVec3D, rads);
-      Vec3D ptVec3D = new Vec3D(pt.x, pt.y, pt.z);
-      Vec3D rotatedPt = mat.applyTo(ptVec3D);
+      Vec3D originVec3D = new Vec3D(origin.x, origin.y, origin.z);
+      Matrix4x4 mat = new Matrix4x4().identity()
+        .rotateAroundAxis(axisVec3D, rads);
+      Vec3D ptVec3D = new Vec3D(pt.x, pt.y, pt.z).sub(originVec3D);
+      Vec3D rotatedPt = mat.applyTo(ptVec3D).add(originVec3D);
       return new PVector(rotatedPt.x, rotatedPt.y, rotatedPt.z);
     }
   }

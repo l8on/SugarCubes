@@ -1,3 +1,4 @@
+import java.util.Hashtable;
 class Graphic
 {
 	public int position  = 0;
@@ -12,22 +13,22 @@ class Graphic
 };
 class GranimPattern extends SCPattern
 {
-	ArrayList<Graphic> displayList;
+	Hashtable<String,Graphic> displayList;
 
 	GranimPattern(GLucose glucose)
 	{
 		super(glucose);
-		displayList = new ArrayList<Graphic>();
+		displayList = new Hashtable<String,Graphic>();
 	}
 
-	public void addGraphic(Graphic g)
+	public void addGraphic(String name, Graphic g)
 	{
-		displayList.add(g);
+		displayList.put(name,g);
 	}
 
 	public void run(int deltaMs) 
 	{
-		for(Graphic g : displayList)
+		for(Graphic g : displayList.values())
 		{
 			List<Point> drawList = model.points.subList(g.position, g.position + g.graphicBuffer.size());
 

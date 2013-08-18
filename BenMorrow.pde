@@ -49,7 +49,7 @@ class GranimTestPattern extends GranimPattern
 	{
 		super(glucose);
 		RedThreeGraphic	myReds = new RedThreeGraphic();
-		addGraphic(myReds);
+		addGraphic("string_name",myReds);
 	}
 
 

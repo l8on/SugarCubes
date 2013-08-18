@@ -7,42 +7,40 @@ class HelixPattern extends SCPattern {
   private class Line {
     private final PVector origin;
     private final PVector vector;
-    
+
     Line(PVector pt, PVector v) {
       origin = pt;
       vector = v.get();
       vector.normalize();
     }
-    
+
     PVector getPoint() {
       return origin;
     }
-    
+
     PVector getVector() {
       return vector;
     }
-    
-    PVector getPointAt(float t) {
-      PVector pt = PVector.mult(vector, t);
-      pt.add(origin);
-      return pt;
+
+    PVector getPointAt(final float t) {
+      return PVector.add(origin, PVector.mult(vector, t));
     }
-    
-    boolean isColinear(PVector pt) {
-      PVector projected = projected(pt);
+
+    boolean isColinear(final PVector pt) {
+      PVector projected = projectPoint(pt);
       return projected.x==pt.x && projected.y==pt.y && projected.z==pt.z;
     }
-    
-    float getTValue(PVector pt) {
+
+    float getTValue(final PVector pt) {
       PVector subtraction = PVector.sub(pt, origin);
       return subtraction.dot(vector);
-    }      
-    
-    PVector projected(PVector pt) {
+    }
+
+    PVector projectPoint(final PVector pt) {
       return getPointAt(getTValue(pt));
     }
-    
-    PVector rotatePoint(PVector pt, float rads) {
+
+    PVector rotatePoint(final PVector pt, final float rads) {
       Vec3D axisVec3D = new Vec3D(vector.x, vector.y, vector.z);
       Matrix4x4 mat = new Matrix4x4();
       mat.rotateAroundAxis(axisVec3D, rads);
@@ -54,10 +52,10 @@ class HelixPattern extends SCPattern {
 
   private class Helix {
     private final Line axis;
-    private final float period;
-    private final float rotationPeriod;
-    private final float radius;
-    private final float girth;
+    private final float period; // period of coil
+    private final float rotationPeriod; // animation period
+    private final float radius; // radius of coil
+    private final float girth; // girth of coil
     private final PVector referencePoint;
     private float phase;
     private PVector phaseNormal;
@@ -81,47 +79,48 @@ class HelixPattern extends SCPattern {
       }
 
       this.referencePoint = pt;
-      this.phase = phase;
 
-      setPhaseNormalFromPhase();      
-    }
-    
-    private void setPhaseNormalFromPhase() {
-      phaseNormal = axis.getVector().cross(axis.rotatePoint(referencePoint, phase));
+      // The normal is calculated by the cross product of the axis
+      // and a random point that is not colinear with it.
+      phaseNormal = axis.getVector().cross(referencePoint);
       phaseNormal.normalize();
       phaseNormal.mult(radius);
     }
-    
+
     private void setPhase(float phase) {
       this.phase = phase;
       setPhaseNormalFromPhase();
     }
-    
-    void step(int deltaMs) {
-      setPhase(phase + (deltaMs / rotationPeriod) * TWO_PI);
+
+    Line getAxis() {
+      return axis;
     }
-    
+
+    void step(int deltaMs) {
+      // Rotate
+      if (rotationPeriod != 0) {
+        setPhase(phase + (deltaMs / rotationPeriod) * TWO_PI);
+      }
+    }
+
     PVector pointOnToroidalAxis(float t) {
       PVector p = axis.getPointAt(t);
       PVector middle = PVector.add(p, phaseNormal);
       return axis.rotatePoint(middle, (t / period) * TWO_PI);
     }
-    
-    color colorOfPoint(PVector p) {
-      // Calculate the projection of this point to the axis.
-      PVector projectedPoint = axis.projected(p);
-      
+
+    color colorOfPoint(final PVector p) {
       // Find the appropriate point for the current rotation
       // of the helix.
       float t = axis.getTValue(projectedPoint);
       PVector toroidPoint = pointOnToroidalAxis(t);
-      
+
       // The rotated point represents the middle of the girth of
       // the helix.  Figure out if the current point is inside that
       // region.
       float d = PVector.dist(p, toroidPoint);
       boolean inToroid = d < girth;
-      
+
       // Soften edges by fading brightness
       float b = constrain(100*(1 - ((d-.5*girth)/(girth*.5))), 0, 100);
       return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, (inToroid ? 80 : 0), b);
@@ -130,16 +129,16 @@ class HelixPattern extends SCPattern {
 
   private final Helix h1;
   private final Helix h2;
-  
+
   private final BasicParameter helix1On = new BasicParameter("H1ON", 1);
   private final BasicParameter helix2On = new BasicParameter("H2ON", 1);
-  
+
   public HelixPattern(GLucose glucose) {
     super(glucose);
-    
+
     addParameter(helix1On);
     addParameter(helix2On);
-    
+
     h1 = new Helix(
       new Line(new PVector(100, 50, 70), new PVector(1,0,0)),
       700, // period
@@ -160,28 +159,28 @@ class HelixPattern extends SCPattern {
     // parameterized t value.  select base pairs and
     // associated colors.  lerp between colors for each
     // base pair to produce a DNA effect.
-    
+
   }
-  
+
   void run(int deltaMs) {
     boolean h1on = helix1On.getValue() > 0.5;
     boolean h2on = helix2On.getValue() > 0.5;
-    
+
     h1.step(deltaMs);
     h2.step(deltaMs);
-    
+
     for (Point p : model.points) {
       color h1c = color(0,0,0);
       color h2c = color(0,0,0);
-      
+
       if (h1on) {
         h1c = h1.colorOfPoint(new PVector(p.x,p.y,p.z));
       }
-      
+
       if (h2on) {
         h2c = h2.colorOfPoint(new PVector(p.x,p.y,p.z));
       }
-      
+
       // The helices are positioned to not overlap.  If that changes,
       // a better blending formula is probably needed.
       colors[p.index] = blendColor(h1c, h2c, ADD);

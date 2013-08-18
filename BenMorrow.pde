@@ -48,16 +48,66 @@ class GranimTestPattern extends GranimPattern
 	GranimTestPattern(GLucose glucose)
 	{
 		super(glucose);
-		RedThreeGraphic	myReds = new RedThreeGraphic();
-		addGraphic("myThreeReds",myReds);
+		addGraphic("myReds",new RedsGraphic(100));
+		int[] dots = {0,128,0,128,0,128,0,128,0,128,0,128};
+		addGraphic("myOtherColors",new ColorDotsGraphic(dots));
+
+		getGraphicByName("myOtherColors").position=100;
 	}
 	int counter=0;
 	public void run(int deltaMs) 
 	{
+		clearALL();
 		super.run(deltaMs);
+		
 		if(counter % 3 ==0)
 		{
-			getGraphicByName("myThreeReds").position++;
+			Graphic reds = getGraphicByName("myReds");
+			Graphic others = getGraphicByName("myOtherColors");
+			reds.position = reds.position + 1 % 19000;
+			others.position = others.position + 10 % 19000;
+		}
+	}
+	public void clearALL()
+	{
+		for(Point p : model.points)
+		{
+			colors[p.index] = 0;
+		}
+	}
+
+
+}
+
+class GranimTestPattern2 extends GranimPattern
+{
+	GranimTestPattern2(GLucose glucose)
+	{
+		super(glucose);
+		/*for(int i = 0;i < 100; i++)
+		{
+			Graphic g = addGraphic("myReds_"+i,new RedsGraphic(Math.round(Math.random() * 100)));
+
+		}*/
+		Graphic g = addGraphic("myRandoms",new RandomsGranim(50));
+		g.position = 200;
+		
+	}
+	int counter=0;
+	float count=0;
+	public void run(int deltaMs) 
+	{
+		clearALL();
+		super.run(deltaMs);
+		Graphic randomsGraphic = getGraphicByName("myRandoms");
+		randomsGraphic.position = Math.round(sin(count)*1000)+5000;
+		count+= 0.0005;
+	}
+	public void clearALL()
+	{
+		for(Point p : model.points)
+		{
+			colors[p.index] = 0;
 		}
 	}
 

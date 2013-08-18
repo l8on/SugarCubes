@@ -88,11 +88,6 @@ class HelixPattern extends SCPattern {
       phaseNormal.mult(radius);
     }
 
-    private void setPhase(float phase) {
-      this.phase = phase;
-      setPhaseNormalFromPhase();
-    }
-
     Line getAxis() {
       return axis;
     }
@@ -100,31 +95,30 @@ class HelixPattern extends SCPattern {
     void step(int deltaMs) {
       // Rotate
       if (rotationPeriod != 0) {
-        setPhase(phase + (deltaMs / rotationPeriod) * TWO_PI);
+        this.phase = (phase + ((float)deltaMs / (float)rotationPeriod) * TWO_PI);
       }
     }
 
     PVector pointOnToroidalAxis(float t) {
       PVector p = axis.getPointAt(t);
       PVector middle = PVector.add(p, phaseNormal);
-      return axis.rotatePoint(middle, (t / period) * TWO_PI);
+      return axis.rotatePoint(middle, (t / period) * TWO_PI + phase);
     }
 
     color colorOfPoint(final PVector p) {
       // Find the appropriate point for the current rotation
       // of the helix.
-      float t = axis.getTValue(projectedPoint);
+      float t = axis.getTValue(p);
       PVector toroidPoint = pointOnToroidalAxis(t);
 
       // The rotated point represents the middle of the girth of
       // the helix.  Figure out if the current point is inside that
       // region.
       float d = PVector.dist(p, toroidPoint);
-      boolean inToroid = d < girth;
 
-      // Soften edges by fading brightness
+      // Soften edges by fading brightness.
       float b = constrain(100*(1 - ((d-.5*girth)/(girth*.5))), 0, 100);
-      return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, (inToroid ? 80 : 0), b);
+      return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80, b);
     }
   }
 
@@ -141,16 +135,16 @@ class HelixPattern extends SCPattern {
     addParameter(helix2On);
 
     h1 = new Helix(
-      new Line(new PVector(100, 50, 70), new PVector(1,0,0)),
-      700, // period
-      50, // radius
+      new Line(new PVector(100, 50, 45), new PVector(1,0,0)),
+      100, // period
+      40, // radius
       30, // girth
       0,  // phase
       10000); // rotation period (ms)
     h2 = new Helix(
       new Line(new PVector(100, 50, 70), new PVector(1,0,0)),
-      700,
-      50,
+      100,
+      40,
       30,
       PI,
       10000);

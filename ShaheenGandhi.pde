@@ -44,9 +44,12 @@ class HelixPattern extends SCPattern {
       final PVector o = origin;
       final PVector v = vector;
       
-      float x = (o.x*(v.y*v.y + v.z*v.z) - v.x*(o.y*v.y + o.z*v.z - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cos(t)) + p.x*cos(t) + (-o.z*v.y + o.y*v.z - v.z*p.y + v.y*p.z)*sin(t);
-      float y = (o.y*(v.x*v.x + v.z*v.z) - v.y*(o.x*v.x + o.z*v.z - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cos(t)) + p.y*cos(t) + (o.z*v.x - o.x*v.z + v.z*p.x - v.x*p.z)*sin(t);
-      float z = (o.z*(v.x*v.x + v.y*v.y) - v.z*(o.x*v.x + o.y*v.y - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cos(t)) + p.z*cos(t) + (-o.y*v.x + o.x*v.y - v.y*p.x + v.x*p.y)*sin(t);
+      final float cost = cos(t);
+      final float sint = sin(t);
+
+      float x = (o.x*(v.y*v.y + v.z*v.z) - v.x*(o.y*v.y + o.z*v.z - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cost) + p.x*cost + (-o.z*v.y + o.y*v.z - v.z*p.y + v.y*p.z)*sint;
+      float y = (o.y*(v.x*v.x + v.z*v.z) - v.y*(o.x*v.x + o.z*v.z - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cost) + p.y*cost + (o.z*v.x - o.x*v.z + v.z*p.x - v.x*p.z)*sint;
+      float z = (o.z*(v.x*v.x + v.y*v.y) - v.z*(o.x*v.x + o.y*v.y - v.x*p.x - v.y*p.y - v.z*p.z))*(1 - cost) + p.z*cost + (-o.y*v.x + o.x*v.y - v.y*p.x + v.x*p.y)*sint;
       return new PVector(x, y, z);
     }
   }

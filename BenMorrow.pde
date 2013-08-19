@@ -70,9 +70,9 @@ class GranimTestPattern extends GranimPattern
 	}
 	public void clearALL()
 	{
-		for(Point p : model.points)
+		for(int i = 0; i < colors.length; i++)
 		{
-			colors[p.index] = 0;
+			colors[i] = 0;
 		}
 	}
 
@@ -101,7 +101,7 @@ class GranimTestPattern2 extends GranimPattern
 		super.run(deltaMs);
 		Graphic randomsGraphic = getGraphicByName("myRandoms");
 		randomsGraphic.position = Math.round(sin(count)*1000)+5000;
-		count+= 0.0005;
+		count+= 0.005;
 	}
 	public void clearALL()
 	{

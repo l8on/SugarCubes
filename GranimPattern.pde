@@ -1,6 +1,7 @@
 import java.util.LinkedHashMap;
 class Graphic
 {
+	public boolean changed = false;
 	public int position  = 0;
 	public ArrayList<Integer> graphicBuffer;
 	Graphic()
@@ -16,21 +17,21 @@ class Graphic
 };
 class Granim extends Graphic
 {
-	LinkedHashMap<String,Graphic> displayList;
+	HashMap<String,Graphic> displayList;
 	
 	Granim()
 	{
-		displayList = new LinkedHashMap<String,Graphic>();
+		displayList = new HashMap<String,Graphic>();
 	}
 	public Graphic addGraphic(String name, Graphic g)
 	{
-		//graphicBuffer.clear();
 		while(width()< g.position+1)
 		{
 				graphicBuffer.add(color(0,0,0));
 		}
 		drawAll();
 		displayList.put(name , g);
+		changed =true;
 		return g;
 	}
 
@@ -41,15 +42,29 @@ class Granim extends Graphic
 
 	public void update()
 	{
-
+		
 		for(Graphic g : displayList.values())
 		{
 			if(g instanceof Granim)
 			{
 				((Granim) g).update();
+				
+			}
+			changed = changed || g.changed;
+			if(changed)
+			{
+				while(width()< g.position + g.width())
+				{
+					graphicBuffer.add(color(0,0,0));
+				}
+				if(g.changed)
+				{
+					drawOne(g);
+					g.changed =false;
+				}
 			}
 		}
-		drawAll();
+		changed = false;
 
 	}
 	public void drawOne(Graphic g)
@@ -58,25 +73,16 @@ class Granim extends Graphic
 	}
 	public void drawAll()
 	{
-		graphicBuffer.clear();
-		for(Graphic g : displayList.values())
-		{
-			while(width()< g.position + g.width())
-			{
-				graphicBuffer.add(color(0,0,0));
-			}
-			drawOne(g);
-		}
 	}
 };
 class GranimPattern extends SCPattern
 {
-	LinkedHashMap<String,Graphic> displayList;
+	HashMap<String,Graphic> displayList;
 
 	GranimPattern(GLucose glucose)
 	{
 		super(glucose);
-		displayList = new LinkedHashMap<String,Graphic>();
+		displayList = new HashMap<String,Graphic>();
 	}
 
 	public Graphic addGraphic(String name, Graphic g)
@@ -94,7 +100,7 @@ class GranimPattern extends SCPattern
 	{
 		drawToPointList();
 	}
-
+	private Integer[] gbuffer;
 	public void drawToPointList()
 	{
 		for(Graphic g : displayList.values())
@@ -103,12 +109,16 @@ class GranimPattern extends SCPattern
 			{
 				((Granim) g).update();
 			}
-			List<Point> drawList = model.points.subList(g.position, g.position + g.width());
-
+			List<Point> drawList = model.points.subList(Math.min(g.position,colors.length-1), Math.min(g.position + g.width(),colors.length-1));
+			println("drawlistsize "+drawList.size());
+			
+			gbuffer = g.graphicBuffer.toArray(new Integer[0]);
+			
 			for (int i=0; i < drawList.size(); i++)
 			{
-				colors[drawList.get(i).index] = (int) g.graphicBuffer.get(i);
+				colors[drawList.get(i).index] = gbuffer[i];
 			}
+			g.changed =false;
 		}
 	}
 
@@ -192,13 +202,14 @@ class RandomsGranim extends Granim
 	public void update()
 	{
 		super.update();
-		if(count % 50==0)
+		if(instanceCount<50 && count % 20==0)
 		{
 			instanceCount++;
 			Graphic h=addGraphic("myrandoms_"+instanceCount, makeGraphic(_len));
 			h.position = instanceCount*(_len+100);
 			println("one more " + instanceCount+" at "+h.position);
 			count=0;
+			changed = true;
 		}
 		count++;
 		
@@ -216,5 +227,6 @@ class ColorDotsGraphic extends Graphic
 		{
 			graphicBuffer.add(color(colorVal, 255, 255));
 		}
+		changed = true;
 	}
 };

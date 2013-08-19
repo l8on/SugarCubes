@@ -180,14 +180,12 @@ class HelixPattern extends SCPattern {
     float t = h1.getAxis().getTValue(pt) + spokePhase;
     float spokeAxisTValue = floor(((t + spokePeriod/2) / spokePeriod)) * spokePeriod;
     PVector h1point = h1.pointOnToroidalAxis(spokeAxisTValue);
-    PVector h2point = h2.pointOnToroidalAxis(spokeAxisTValue);
-    PVector spokeVector = PVector.sub(h2point, h1point);
+    // TODO(shaheen) investigate why h1.getAxis().getPointAt(spokeAxisTValue) doesn't quite
+    // have the same value as finding the middle between h1point and h2point.
+    PVector spokeCenter = h1.getAxis().getPointAt(spokeAxisTValue);
+    PVector spokeVector = PVector.sub(h1point, spokeCenter);
     spokeVector.normalize();
     Line spokeLine = new Line(h1point, spokeVector);
-    float spokeLength = PVector.dist(h1point, h2point);
-    // TODO(shaheen) investigate why h1.getAxis().getPointAt(spokeAxisTValue) doesn't quite
-    // have the same value.
-    PVector spokeCenter = PVector.add(h1point, PVector.mult(spokeVector, spokeLength/2.f));
     PVector pointOnSpoke = spokeLine.projectPoint(pt);
     float b = ((PVector.dist(pt, pointOnSpoke) < spokeGirth) && (PVector.dist(pointOnSpoke, spokeCenter) < spokeRadius)) ? 100.f : 0.f;
     return color(100, 80.f, b);

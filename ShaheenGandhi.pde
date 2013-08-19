@@ -128,57 +128,109 @@ class HelixPattern extends SCPattern {
   private final BasicParameter helix1On = new BasicParameter("H1ON", 1);
   private final BasicParameter helix2On = new BasicParameter("H2ON", 1);
 
+  private final BasicParameter basePairsOn = new BasicParameter("BPON", 1);
+  private final BasicParameter spokePeriodParam = new BasicParameter("SPPD", 0.40);
+  private final BasicParameter spokePhaseParam = new BasicParameter("SPPH", 0.25);
+
+  private static final float helixCoilPeriod = 100;
+  private static final float helixCoilRadius = 45;
+  private static final float helixCoilGirth = 20;
+  private static final float helixCoilRotationPeriod = 10000;
+
   public HelixPattern(GLucose glucose) {
     super(glucose);
 
     addParameter(helix1On);
     addParameter(helix2On);
+    addParameter(basePairsOn);
+    addParameter(spokePhaseParam);
+    addParameter(spokePeriodParam);
+
+    PVector origin = new PVector(100, 50, 45);
+    PVector axis = new PVector(1,0,0);
 
     h1 = new Helix(
-      new Line(new PVector(100, 50, 45), new PVector(1,0,0)),
-      100, // period
-      40, // radius
-      30, // girth
-      0,  // phase
-      10000); // rotation period (ms)
+      new Line(origin, axis),
+      helixCoilPeriod,
+      helixCoilRadius,
+      helixCoilGirth,
+      0,
+      helixCoilRotationPeriod);
     h2 = new Helix(
-      new Line(new PVector(100, 50, 70), new PVector(1,0,0)),
-      100,
-      40,
-      30,
+      new Line(origin, axis),
+      helixCoilPeriod,
+      helixCoilRadius,
+      helixCoilGirth,
       PI,
-      10000);
-
-    // TODO(shaheen) calculate line segments between
-    // toroidal points selected by stepping the
-    // parameterized t value.  select base pairs and
-    // associated colors.  lerp between colors for each
-    // base pair to produce a DNA effect.
-
+      helixCoilRotationPeriod);
   }
 
   void run(int deltaMs) {
     boolean h1on = helix1On.getValue() > 0.5;
     boolean h2on = helix2On.getValue() > 0.5;
+    boolean spokesOn = (float)basePairsOn.getValue() > 0.5;
+    float spokePeriod = (float)spokePeriodParam.getValue() * 100 + 1;
+    float spokeGirth = 10;
+    float spokePhase = (float)spokePhaseParam.getValue() * spokePeriod;
+    float spokeRadius = helixCoilRadius - helixCoilGirth*.5f;
 
     h1.step(deltaMs);
     h2.step(deltaMs);
 
     for (Point p : model.points) {
-      color h1c = color(0,0,0);
-      color h2c = color(0,0,0);
+      PVector pt = new PVector(p.x,p.y,p.z);
+      color h1c = h1.colorOfPoint(pt);
+      color h2c = h2.colorOfPoint(pt);
 
-      if (h1on) {
-        h1c = h1.colorOfPoint(new PVector(p.x,p.y,p.z));
+      // Find the closest spoke's t-value and calculate its
+      // axis.  Until everything animates in the model reference
+      // frame, this has to be calculated at every step because
+      // the helices rotate.
+      float t = h1.getAxis().getTValue(pt) + spokePhase;
+      float spokeAxisTValue = floor(((t + spokePeriod/2) / spokePeriod)) * spokePeriod;
+      PVector h1point = h1.pointOnToroidalAxis(spokeAxisTValue);
+      PVector h2point = h2.pointOnToroidalAxis(spokeAxisTValue);
+      PVector spokeVector = PVector.sub(h2point, h1point);
+      spokeVector.normalize();
+      Line spokeLine = new Line(h1point, spokeVector);
+      float spokeLength = PVector.dist(h1point, h2point);
+      // TODO(shaheen) investigate why h1.getAxis().getPointAt(spokeAxisTValue) doesn't quite
+      // have the same value.
+      PVector spokeCenter = PVector.add(h1point, PVector.mult(spokeVector, spokeLength/2.f));
+      PVector spokeStart = PVector.add(spokeCenter, PVector.mult(spokeLine.getVector(), -spokeRadius));
+      PVector spokeEnd = PVector.add(spokeCenter, PVector.mult(spokeLine.getVector(), spokeRadius));
+      float spokeStartTValue = spokeLine.getTValue(spokeStart);
+      float spokeEndTValue = spokeLine.getTValue(spokeEnd);
+      PVector pointOnSpoke = spokeLine.projectPoint(pt);
+      float projectedTValue = spokeLine.getTValue(pointOnSpoke);
+      float percentage = constrain(PVector.dist(pointOnSpoke, spokeStart) / spokeLength, 0.f, 1.f);
+      float b = ((PVector.dist(pt, pointOnSpoke) < spokeGirth) && (PVector.dist(pointOnSpoke, spokeCenter) < spokeRadius)) ? 100.f : 0.f;
+
+      color spokeColor;
+
+      if (spokeStartTValue < spokeEndTValue) {
+        spokeColor = lerpColor(h1c, h2c, percentage);
+      } else {
+        spokeColor = lerpColor(h2c, h1c, percentage);
       }
 
-      if (h2on) {
-        h2c = h2.colorOfPoint(new PVector(p.x,p.y,p.z));
+      spokeColor = color(hue(spokeColor), 80.f, b);
+
+      if (!h1on) {
+        h1c = color(0,0,0);
+      }
+
+      if (!h2on) {
+        h2c = color(0,0,0);
+      }
+
+      if (!spokesOn) {
+        spokeColor = color(0,0,0);
       }
 
       // The helices are positioned to not overlap.  If that changes,
       // a better blending formula is probably needed.
-      colors[p.index] = blendColor(h1c, h2c, ADD);
+      colors[p.index] = blendColor(blendColor(h1c, h2c, ADD), spokeColor, ADD);
     }
   }
 }

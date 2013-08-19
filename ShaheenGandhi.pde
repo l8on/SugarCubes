@@ -117,11 +117,12 @@ class HelixPattern extends SCPattern {
     }
 
     color colorOfPoint(final PVector p) {
-      float t = axis.getTValue(p);
+      final float t = axis.getTValue(p);
+      final PVector axisPoint = axis.getPointAt(t);
 
       // For performance reasons, cut out points that are outside of
       // the tube where the toroidal coil lives.
-      if (abs(PVector.dist(p, axis.getPointAt(t)) - radius) > girth*.5f) {
+      if (abs(PVector.dist(p, axisPoint) - radius) > girth*.5f) {
         return color(0,0,0);
       }
 

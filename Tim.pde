@@ -370,7 +370,7 @@ class TimCubes extends SCPattern {
  * for a nice abstract effect.
  */
 class TimPlanes extends SCPattern {
-  private BasicParameter wobbleParameter = new BasicParameter("Wob", 0.2);
+  private BasicParameter wobbleParameter = new BasicParameter("Wob", 0.166);
   private BasicParameter wobbleSpreadParameter = new BasicParameter("WSpr", 0.25);
   private BasicParameter wobbleSpeedParameter = new BasicParameter("WSpd", 0.375);
   private BasicParameter wobbleOffsetParameter = new BasicParameter("WOff", 0);
@@ -412,22 +412,6 @@ class TimPlanes extends SCPattern {
     addParameter(hueSpreadParameter);
   }
   
-  color getColor(Vector3 normalizedPoint, float hue, Rotation rotation, float saturation) {
-    float t = (thicknessParameter.getValuef() * 25 + 1);
-    
-    float v = rotation.rotatedY(normalizedPoint);
-    float d = abs(v);
-    
-    if (d <= t) {
-      return color(hue, saturation, 100);
-    } else if (d <= t * 2) {    
-      float value = 1 - ((d - t) / t);
-      return color(hue, saturation, value * 100);
-    } else {
-      return 0;
-    }
-  }
-  
   int beat = 0;
   float prevRamp = 0;
   float[] wobbleSpeeds = { 1.0/8, 1.0/4, 1.0/2, 1.0 };
@@ -467,7 +451,11 @@ class TimPlanes extends SCPattern {
         new Rotation(wobble + wobbleSpread, phase, 0),
         (hue + 360 + hueSpread) % 360)
     };
+
+    float thickness = (thicknessParameter.getValuef() * 25 + 1);
     
+    Vector3 normalizedPoint = new Vector3();
+
     for (Point p : model.points) {
       if (random(1.0) < derez) {
         continue;
@@ -476,8 +464,23 @@ class TimPlanes extends SCPattern {
       color c = 0;
       
       for (Plane plane : planes) {
-        Vector3 normalizedPoint = new Vector3(p.fx - plane.center.x, p.fy - plane.center.y, p.fz - plane.center.z);
-        color planeColor = getColor(normalizedPoint, plane.hue, plane.rotation, saturation);
+        normalizedPoint.x = p.fx - plane.center.x;
+        normalizedPoint.y = p.fy - plane.center.y;
+        normalizedPoint.z = p.fz - plane.center.z;
+        
+        float v = plane.rotation.rotatedY(normalizedPoint);
+        float d = abs(v);
+        
+        final color planeColor;
+        if (d <= thickness) {
+          planeColor = color(plane.hue, saturation, 100);
+        } else if (d <= thickness * 2) {    
+          float value = 1 - ((d - thickness) / thickness);
+          planeColor = color(plane.hue, saturation, value * 100);
+        } else {
+          planeColor = 0;
+        }
+
         if (planeColor != 0) {
           if (c == 0) {
             c = planeColor; 

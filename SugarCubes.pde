@@ -25,6 +25,7 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
+    new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
     new GranimTestPattern(glucose),
     new Sandbox(glucose),

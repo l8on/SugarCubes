@@ -112,4 +112,41 @@ class GranimTestPattern2 extends GranimPattern
 	}
 
 
+};
+
+class DriveableCrossSections extends CrossSections
+{
+	BasicParameter xd = new BasicParameter("XD", 1.0);
+	BasicParameter yd = new BasicParameter("YD", 1.0);
+	BasicParameter zd = new BasicParameter("ZD", 1.0);
+
+	DriveableCrossSections(GLucose glucose) {
+		super(glucose);	
+	}
+
+	public void addParams()
+	{
+		addParameter(xd);
+	    addParameter(yd);
+	    addParameter(zd);
+	    addParameter(xr);
+	    addParameter(yr);
+	    addParameter(zr);    
+	    addParameter(xw);
+	    addParameter(xl);
+	    addParameter(yl);
+	    addParameter(zl);
+	   	addParameter(yw);    
+	    addParameter(zw);
+	}
+
+
+
+	public void updateXYZVals()
+  	{
+	  	xv = xd.getValuef();
+	    yv = yd.getValuef();
+	    zv = zd.getValuef(); 
+  	}
+
 }

@@ -188,31 +188,35 @@ class RandomsGranim extends Granim
 		_len=len;
 		addGraphic("myrandoms", makeGraphic(len));
 	}
+	int colorLid=0;
 	public Graphic makeGraphic(int len)
 	{
+
 		int[] colors= new int[len]; 
 		for(int i =0;i<len;i++)
 		{
-			colors[i]=(int) Math.round(Math.random()*255);
+			colors[i]=(int) Math.round(Math.random()*80)+colorLid;
+			
 		}
+		colorLid+=4;
 		return new ColorDotsGraphic(colors);
 	}
 	private int count =1;
 	private int instanceCount =0;
 	public void update()
 	{
-		super.update();
-		if(instanceCount<50 && count % 20==0)
+		
+		if(instanceCount<90 && count % 20==0)
 		{
 			instanceCount++;
 			Graphic h=addGraphic("myrandoms_"+instanceCount, makeGraphic(_len));
 			h.position = instanceCount*(_len+100);
-			println("one more " + instanceCount+" at "+h.position);
+			//println("one more " + instanceCount+" at "+h.position);
 			count=0;
 			changed = true;
 		}
 		count++;
-		
+		super.update();
 	}
 	
 };

@@ -135,15 +135,8 @@ class DriveableCrossSections extends CrossSections
 		addParameter(xd);
 	    addParameter(yd);
 	    addParameter(zd);
-	    addParameter(xr);
-	    addParameter(yr);
-	    addParameter(zr);    
-	    addParameter(xw);
-	    addParameter(xl);
-	    addParameter(yl);
-	    addParameter(zl);
-	   	addParameter(yw);    
-	    addParameter(zw);
+
+	   super.addParams();
 	}
 
 	public void onParameterChanged(LXParameter p) {

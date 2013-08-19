@@ -118,7 +118,7 @@ class GranimPattern extends SCPattern
 			{
 				colors[drawList.get(i).index] = gbuffer[i];
 			}
-			g.changed =false;
+			g.changed = false;
 		}
 	}
 

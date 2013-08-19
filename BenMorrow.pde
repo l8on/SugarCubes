@@ -116,9 +116,10 @@ class GranimTestPattern2 extends GranimPattern
 
 class DriveableCrossSections extends CrossSections
 {
-	BasicParameter xd = new BasicParameter("XD", 1.0);
-	BasicParameter yd = new BasicParameter("YD", 1.0);
-	BasicParameter zd = new BasicParameter("ZD", 1.0);
+	BasicParameter xd; 
+	BasicParameter yd;
+	BasicParameter zd;
+	BasicParameter mode; 
 
 	DriveableCrossSections(GLucose glucose) {
 		super(glucose);	
@@ -126,6 +127,11 @@ class DriveableCrossSections extends CrossSections
 
 	public void addParams()
 	{
+		mode = new BasicParameter("Mode", 0.0);
+		xd = new BasicParameter("XD", 0.0);
+		yd = new BasicParameter("YD", 0.0);
+		zd = new BasicParameter("ZD", 0.0);
+		addParameter(mode);
 		addParameter(xd);
 	    addParameter(yd);
 	    addParameter(zd);
@@ -140,13 +146,33 @@ class DriveableCrossSections extends CrossSections
 	    addParameter(zw);
 	}
 
+	public void onParameterChanged(LXParameter p) {
+			if(p == mode)
+			{
+				if(interactive())
+				{
+					xd.setValue(x.getValue()/200);
+					yd.setValue(y.getValue()/200);
+					zd.setValue(z.getValue()/100);
+				}
+			}
+	}
 
+	boolean interactive()
+	{
+		return Math.round(mode.getValuef())>0.5;
+	}
 
 	public void updateXYZVals()
   	{
-	  	xv = xd.getValuef();
-	    yv = yd.getValuef();
-	    zv = zd.getValuef(); 
+  		if(interactive())
+  		{
+		  	xv = xd.getValuef()*200;
+		    yv = yd.getValuef()*200;
+		    zv = zd.getValuef()*100;
+		}else{
+			super.updateXYZVals();
+		}
   	}
 
 }

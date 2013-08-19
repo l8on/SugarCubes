@@ -25,7 +25,7 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    new HelixPattern(glucose),
+    
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
@@ -65,6 +65,8 @@ LXPattern[] patterns(GLucose glucose) {
     // new TestYPattern(glucose),
     // new TestZPattern(glucose),
 
+    //slow for now, relegated to the bottom until faster!
+    new HelixPattern(glucose),
   };
 }
 

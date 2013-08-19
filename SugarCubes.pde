@@ -25,7 +25,6 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
@@ -55,6 +54,9 @@ LXPattern[] patterns(GLucose glucose) {
     //Ben
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
+    
+    //Sam
+    new JazzRainbow(glucose),
 
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),

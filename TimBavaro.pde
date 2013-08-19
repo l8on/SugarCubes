@@ -496,7 +496,15 @@ class TimPlanes extends SCPattern {
 }
 
 /**
- * Not very flushed out but pretty.
+ * Two spinning wheels, basically XORed together, with a color palette that should
+ * be pretty easy to switch around.  Timed to the beat; also introduces "clickiness"
+ * which makes the movement non-linear throughout a given beat, giving it a nice
+ * dance feel.  I'm not 100% sure that it's actually going to look like it's _on_
+ * the beat, but that should be easy enough to adjust.
+ *
+ * It's particularly nice to turn down the clickiness and turn up derez during
+ * slow/beatless parts of the music and then revert them at the drop :)  But maybe
+ * I shouldn't be listening to so much shitty dubstep while making these...
  */
 class TimPinwheels extends SCPattern { 
   private BasicParameter horizSpreadParameter = new BasicParameter("HSpr", 0.75);
@@ -507,7 +515,7 @@ class TimPinwheels extends SCPattern {
   private BasicParameter derezParameter = new BasicParameter("Drez", 0.25);
   private BasicParameter clickinessParameter = new BasicParameter("Clic", 0.5);
   private BasicParameter hueParameter = new BasicParameter("Hue", 0.667);
-  private BasicParameter hueSpreadParameter = new BasicParameter("HSpd", 0.55);
+  private BasicParameter hueSpreadParameter = new BasicParameter("HSpd", 0.667);
 
   float phase = 0;
   private final int NUM_BLADES = 12;
@@ -641,7 +649,7 @@ class TimPinwheels extends SCPattern {
       
       if (random(1.0) >= derez) {
         float v = values[i];
-        colors[p.index] = color((360 + hue + pow(v, 2) * hueSpread) % 360, 40 + pow(1 - v, 0.25) * 50, v * 100);
+        colors[p.index] = color((360 + hue + pow(v, 2) * hueSpread) % 360, 30 + pow(1 - v, 0.25) * 60, v * 100);
       }      
     }
   }

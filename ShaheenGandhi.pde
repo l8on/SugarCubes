@@ -94,6 +94,14 @@ class HelixPattern extends SCPattern {
     Line getAxis() {
       return axis;
     }
+    
+    PVector getPhaseNormal() {
+      return phaseNormal;
+    }
+    
+    float getPhase() {
+      return phase;
+    }
 
     void step(int deltaMs) {
       // Rotate
@@ -119,7 +127,9 @@ class HelixPattern extends SCPattern {
 
       // Find the appropriate point for the current rotation
       // of the helix.
-      PVector toroidPoint = pointOnToroidalAxis(t);
+      PVector toroidPoint = axisPoint;
+      toroidPoint.add(phaseNormal);
+      toroidPoint = axis.rotatePoint(toroidPoint, (t / period) * TWO_PI + phase);
 
       // The rotated point represents the middle of the girth of
       // the helix.  Figure out if the current point is inside that
@@ -180,9 +190,12 @@ class HelixPattern extends SCPattern {
     // axis.  Until everything animates in the model reference
     // frame, this has to be calculated at every step because
     // the helices rotate.
-    float t = h1.getAxis().getTValue(pt) + spokePhase;
+    Line axis = h1.getAxis();
+    float t = axis.getTValue(pt) + spokePhase;
     float spokeAxisTValue = floor(((t + spokePeriod/2) / spokePeriod)) * spokePeriod;
-    PVector h1point = h1.pointOnToroidalAxis(spokeAxisTValue);
+    PVector h1point = axis.getPointAt(t);
+    h1point.add(h1.getPhaseNormal());
+    h1point = axis.rotatePoint(h1point, (t / helixCoilPeriod) * TWO_PI + h1.getPhase());
     // TODO(shaheen) investigate why h1.getAxis().getPointAt(spokeAxisTValue) doesn't quite
     // have the same value as finding the middle between h1point and h2point.
     PVector spokeCenter = h1.getAxis().getPointAt(spokeAxisTValue);

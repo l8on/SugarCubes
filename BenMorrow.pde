@@ -151,11 +151,25 @@ class DriveableCrossSections extends CrossSections
 			{
 				if(interactive())
 				{
-					xd.setValue(x.getValue()/200);
-					yd.setValue(y.getValue()/200);
-					zd.setValue(z.getValue()/100);
+					copyValuesToKnobs();
+				}else{
+					copyKnobsToValues();
 				}
 			}
+	}
+
+	void copyValuesToKnobs()
+	{
+		xd.setValue(x.getValue()/200);
+		yd.setValue(y.getValue()/115);
+		zd.setValue(z.getValue()/100);
+	}
+
+	void copyKnobsToValues()
+	{
+		x.setValue(xd.getValue()*200);
+		y.setValue(yd.getValue()*115);
+		z.setValue(zd.getValue()*100);
 	}
 
 	boolean interactive()
@@ -168,10 +182,11 @@ class DriveableCrossSections extends CrossSections
   		if(interactive())
   		{
 		  	xv = xd.getValuef()*200;
-		    yv = yd.getValuef()*200;
+		    yv = yd.getValuef()*115;
 		    zv = zd.getValuef()*100;
 		}else{
 			super.updateXYZVals();
+			copyValuesToKnobs();
 		}
   	}
 

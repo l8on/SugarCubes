@@ -402,6 +402,8 @@ class CrossSections extends SCPattern {
   }
 
   public void run(int deltaMs) {
+    updateXYZVals();
+    
     float xlv = 100*xl.getValuef();
     float ylv = 100*yl.getValuef();
     float zlv = 100*zl.getValuef();

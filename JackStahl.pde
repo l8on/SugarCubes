@@ -78,10 +78,38 @@ class Breathe extends SCPattern {
 
   final BasicParameter hueScale = new BasicParameter("HUE", 0.3);
 
+  class Sphere {
+    float x, y, z;
+    float radius;
+    float hue;
+  }
+  
+  private final Sphere[] spheres;
+  private final float centerX, centerY, centerZ;
+
   public Breathe(GLucose glucose) {
     super(glucose);
 
     addParameter(hueScale);
+    
+    spheres = new Sphere[2];
+    centerX = (model.xMax + model.xMin) / 2;
+    centerY = (model.yMax + model.yMin) / 2;
+    centerZ = (model.zMax + model.zMin) / 2;
+
+    
+    spheres[0] = new Sphere();
+    spheres[0].x = model.xMin + 50;
+    spheres[0].y = centerY;
+    spheres[0].z = centerZ;
+    spheres[0].radius = 25;
+    
+    spheres[1] = new Sphere();
+    spheres[1].x = model.xMax - 50;
+    spheres[1].y = centerY;
+    spheres[1].z = centerZ;
+    spheres[1].radius = 25;
+
   }
 
 
@@ -111,7 +139,18 @@ class Breathe extends SCPattern {
       float v1 = sin_x > y_in_range  ? (100 + 100*(y_in_range - sin_x)) : 0;     
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.)*.6 + abs(p.y-model.yMax/2)*.9 + abs(p.z - model.zMax/2.))) % 360;
-      colors[p.index] = color(hue_color, 70, v1);
+      color c = color(hue_color, 70, v1);
+      
+      // Now draw the spheres
+      for (Sphere s : spheres) {
+        float phase_x = (s.x - phase * model_width / ( 2 * PI)) % model_width;
+        float d = sqrt(pow(p.x - phase_x, 2) + pow(p.y - s.y, 2) + pow(p.z - s.z, 2));
+        float r = (s.radius);
+        float value = max(0, 1 - max(0, d - r) / 10);
+     
+        c = blendColor(c, color(hue_color + 180 % 360, 70, min(1, value) * 100), ADD);
+      }
+      colors[p.index] = c;
     }
   }
 }

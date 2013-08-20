@@ -25,6 +25,8 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
+    new Breathe(glucose),
+
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
@@ -45,8 +47,7 @@ LXPattern[] patterns(GLucose glucose) {
 
     // Jack
     new Swim(glucose),
-    // new Breathe(glucose),
-
+   
 
     new TimPlanes(glucose),
     new TimPinwheels(glucose),

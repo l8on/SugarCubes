@@ -29,51 +29,31 @@ LXPattern[] patterns(GLucose glucose) {
     new AskewPlanes(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
-    new HelixPattern(glucose),
+    new HelixPattern(glucose).setEligible(false),
     new Pong(glucose),
     new Noise(glucose),
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
-    new CubeEQ(glucose),
-    new PianoKeyPattern(glucose),
+    new CubeEQ(glucose).setEligible(false),
+    new PianoKeyPattern(glucose).setEligible(false),
     new GlitchPlasma(glucose),
-    new FireEffect(glucose),
+    new FireEffect(glucose).setEligible(false),
     new StripBounce(glucose),
-    new SoundRain(glucose),
-    new SoundSpikes(glucose),
+    new SoundRain(glucose).setEligible(false),
+    new SoundSpikes(glucose).setEligible(false),
     new FaceSync(glucose),
-
-    // Jack
-    new Swim(glucose),
-    // new Breathe(glucose),
-
-
-    new TimPlanes(glucose),
-    new TimPinwheels(glucose),
-    new TimRaindrops(glucose),
-    new TimCubes(glucose),
-    //new TimTrace(glucose),
-    new TimSpheres(glucose),
-
-    //Ben
-    new DriveableCrossSections(glucose),
-    new GranimTestPattern2(glucose),
     
-    //Sam
-    new JazzRainbow(glucose),
-
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),
     new TestTowerPattern(glucose),
     new TestProjectionPattern(glucose),
+    new TestStripPattern(glucose),
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),
     // new TestZPattern(glucose),
 
-    //slow for now, relegated to the bottom until faster!
-    new HelixPattern(glucose),
   };
 }
 

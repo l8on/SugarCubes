@@ -5,6 +5,24 @@ abstract class TestPattern extends SCPattern {
   }
 }
 
+class TestStripPattern extends TestPattern {
+  public TestStripPattern(GLucose glucose) {
+    super(glucose);
+  }
+  
+  public void run(int deltaMs) {
+    for (Strip s : model.strips) {
+      for (Point p : s.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - 10*dist(p.x, p.y, s.cx, s.cy))
+        );
+      }
+    }
+  }
+}
+
 /**
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.

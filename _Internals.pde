@@ -264,8 +264,11 @@ void drawSpeaker(Speaker s) {
   rotate(s.ry / 180. * PI, 0, -1, 0);
   translate(Speaker.EDGE_WIDTH/2., Speaker.EDGE_HEIGHT/2., Speaker.EDGE_DEPTH/2.);
   box(Speaker.EDGE_WIDTH-20*in, Speaker.EDGE_HEIGHT-20*in, Speaker.EDGE_DEPTH-20*in);
+  translate(0, Speaker.EDGE_HEIGHT/2. + Speaker.EDGE_HEIGHT*.8/2, 0);
+
+  fill(#222222);
+  box(Speaker.EDGE_WIDTH*.6, Speaker.EDGE_HEIGHT*.8, Speaker.EDGE_DEPTH*.75);
   popMatrix();
-  
   
   noStroke();
   fill(#393939);  

@@ -452,7 +452,7 @@ class Blinders extends SCPattern {
         colors[p.index] = color(
           (hv + p.fz + p.fy*hs.getValuef()) % 360, 
           min(100, abs(p.fx - s.getValuef())/2.), 
-          max(0, 100 - mv/2. - mv * abs(i - 7.5))
+          max(0, 100 - mv/2. - mv * abs(i - (strip.metrics.length-1)/2.))
         );
         ++i;
       }

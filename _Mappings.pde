@@ -221,7 +221,7 @@ public Model buildModel() {
   BassBox bassBox = new BassBox(56, 0, 2);
 
   List<Speaker> speakers = new ArrayList<Speaker>();
-  speakers.add(new Speaker(0, 6, 0, 15));
+  speakers.add(new Speaker(-12, 6, 0, 15));
   speakers.add(new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH, 6, 6, -15));
 
   return new Model(towerList, cubes, bassBox, speakers);

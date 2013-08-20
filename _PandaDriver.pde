@@ -62,6 +62,13 @@ public class PandaDriver {
   } 
 
   private void buildPointList(Model model, PandaMapping pm) {
+    final int[][] stripOrderings = new int[][] {
+      {  2,  1,  0,  3, 13, 12, 15, 14,  4,  7,  6,  5, 11, 10,  9,  8 }, // FRONT_LEFT
+      {  6,  5,  4,  7,  1,  0,  3,  2,  8, 11, 10,  9, 15, 14, 13, 12 }, // FRONT_RIGHT
+      { 14, 13, 12, 15,  9,  8, 11, 10,  0,  3,  2,  1,  7,  6,  5,  4 }, // REAR_LEFT
+      { 10,  9,  8, 11,  5,  4,  7,  6, 12, 15, 14, 13,  3,  2,  1,  0 }, // REAR_RIGHT
+    };
+
     int pi = 0;
     for (int[] channel : pm.channelList) {
       for (int cubeNumber : channel) {
@@ -74,10 +81,14 @@ public class PandaDriver {
           if (cube == null) {
             throw new RuntimeException("Non-zero, non-existing cube specified in channel mapping (" + cubeNumber + ")");
           }
-          final int[] stripOrder = new int[] {
-            2, 1, 0, 3, 13, 12, 15, 14, 4, 7, 6, 5, 11, 10, 9, 8
-          };
-          for (int stripIndex : stripOrder) {
+          int stripOrderIndex = 0;
+          switch (cube.wiring) {
+            case FRONT_LEFT: stripOrderIndex = 0; break;
+            case FRONT_RIGHT: stripOrderIndex = 1; break;
+            case REAR_LEFT: stripOrderIndex = 2; break;
+            case REAR_RIGHT: stripOrderIndex = 3; break;
+          }
+          for (int stripIndex : stripOrderings[stripOrderIndex]) {
             Strip s = cube.strips.get(stripIndex);
             for (int j = s.points.size() - 1; j >= 0; --j) {
               points[pi++] = s.points.get(j).index;

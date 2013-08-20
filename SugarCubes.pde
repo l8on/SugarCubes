@@ -25,7 +25,7 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    new HelixPattern(glucose),
+    
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
@@ -44,12 +44,17 @@ LXPattern[] patterns(GLucose glucose) {
     new SoundSpikes(glucose),
     new FaceSync(glucose),
 
+
     new TimPlanes(glucose),
     new TimPinwheels(glucose),
     new TimRaindrops(glucose),
     new TimCubes(glucose),
-//    new TimTrace(glucose),
+    //new TimTrace(glucose),
     new TimSpheres(glucose),
+
+    //Ben
+    new DriveableCrossSections(glucose),
+    new GranimTestPattern2(glucose),
 
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),
@@ -60,6 +65,8 @@ LXPattern[] patterns(GLucose glucose) {
     // new TestYPattern(glucose),
     // new TestZPattern(glucose),
 
+    //slow for now, relegated to the bottom until faster!
+    new HelixPattern(glucose),
   };
 }
 

@@ -120,9 +120,10 @@ void setup() {
       mouseWheel(mwe.getWheelRotation());
   }}); 
   
-  
   println("Total setup: " + (millis() - startMillis) + "ms");
   println("Hit the 'p' key to toggle Panda Board output");
+  
+  println(glucose.model.bassBox.points.size());
 }
 
 void controllerChangeReceived(rwmidi.Controller cc) {
@@ -224,6 +225,16 @@ void drawBassBox(BassBox b) {
   noStroke();
   fill(#393939);
   drawBox(b.x+in, b.y+in, b.z+in, 0, 0, 0, BassBox.EDGE_WIDTH-in*2, BassBox.EDGE_HEIGHT-in*2, BassBox.EDGE_DEPTH-in*2, Cube.CHANNEL_WIDTH-in);
+
+  pushMatrix();
+  translate(b.x+(Cube.CHANNEL_WIDTH-in)/2., b.y + BassBox.EDGE_HEIGHT-in, b.z + BassBox.EDGE_DEPTH/2.);
+  float lastOffset = 0;
+  for (float offset : BoothFloor.STRIP_OFFSETS) {
+    translate(offset - lastOffset, 0, 0);
+    box(Cube.CHANNEL_WIDTH-in, 0, BassBox.EDGE_DEPTH - 2*in);
+    lastOffset = offset;
+  }
+  popMatrix();
 
   pushMatrix();
   translate(b.x + (Cube.CHANNEL_WIDTH-in)/2., b.y + BassBox.EDGE_HEIGHT/2., b.z + in);

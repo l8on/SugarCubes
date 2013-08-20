@@ -102,49 +102,49 @@ public Model buildModel() {
     }),
     
     // front DJ cubes
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, -10, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + Cube.EDGE_HEIGHT, BassBox.EDGE_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + Cube.EDGE_HEIGHT, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 3, 0},
       {STACKED_RELATIVE, 2, -10, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BassBox.EDGE_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 1, 0, 10},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BassBox.EDGE_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, -1, 0},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, -1, 0},
     }),
     
     // left dj cubes    
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, Cube.EDGE_HEIGHT + 2, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
     // right dj cubes    
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, Cube.EDGE_HEIGHT + 2, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),

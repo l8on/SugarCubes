@@ -43,6 +43,150 @@ class Sandbox extends SCPattern
 	}
 };
 
+
+
+class Screen extends Sandbox
+{
+	BasicParameter z=new BasicParameter("Z",0.0);
+	BasicParameter y=new BasicParameter("y",0.0);
+	BasicParameter o=new BasicParameter("o",0.0);
+
+
+
+
+	Screen(GLucose glucose)
+	{
+		super(glucose);
+		addParameter(z);
+		addParameter(y);
+		addParameter(o);
+	}
+
+	ArrayList<Point> buffer = new ArrayList();
+	public void run(int deltaMs) {
+		buffer.clear();
+		for(int i=0; i<model.points.size();i++)
+		{
+			Point p = model.points.get(i);
+			
+			if(p.fz < z.getValue()*20)
+			{
+				colors[p.index]=color(0,255,255);
+				buffer.add(p);
+			}else if(p.fy > y.getValue()*100){
+
+				colors[p.index]=color(128,255,255);
+				buffer.add(p);
+			}else{
+				colors[p.index]=0;
+			}
+			
+			
+		}
+		if(o.getValuef()>0.5)
+		{
+			printOutPoints((ArrayList<Point>) buffer.clone());
+			o.setValue(0);
+		}
+	}
+	void sortOutPoints(ArrayList<Point> buffer)
+	{
+		Collections.sort(buffer, new Comparator<Point>() {
+    		public int compare(Point a, Point b)
+    		{
+    			return (int) (((float) b.fx) - ((float) a.fx));
+    		}
+		});
+		print("{");
+		for(Point p : buffer)
+		{
+			print(str(p.index)+", ");
+		}
+		print("}");
+		
+	}
+	void printOutPoints(ArrayList<Point> buffer)
+	{
+		int[][] places = new int[300][200];
+		for(Point p : buffer)
+		{
+			places[Math.round(p.fx)+10][Math.round(p.fy)+10] = p.index;
+		}
+		print("{");
+		for(int j=0;j<300;j++)
+		{
+			print("{");
+			for(int k=0;k<200;k++)
+			{
+				String out = (k==199) ? (str(places[j][k])) : (str(places[j][k])+", ");
+				print(out);
+			}
+			print(j==299 ? "}" : "},\n");
+		}
+		print("}");
+		
+	}
+	
+
+
+};
+
+class IterateScreen extends SCPattern
+{
+	BasicParameter x=new BasicParameter("x",0.0);
+
+	IterateScreen(GLucose glucose)
+	{
+		super(glucose);
+		addParameter(x);
+	}
+	ScreenPixelDump sx=new ScreenPixelDump();	
+
+	public void run(int deltaMs)
+	{
+		for(int i=0;i<sx.sortedX.length;i++)
+		{
+			if(i<x.getValuef()*((float )sx.sortedX.length))
+			{
+				colors[sx.sortedX[i]]=color(0,255,255);
+			}else{
+				colors[sx.sortedX[i]]=0;
+			}
+		}
+	}
+};
+
+class IterateScreen2D extends SCPattern
+{
+	BasicParameter x=new BasicParameter("x",0.0);
+	BasicParameter y=new BasicParameter("y",0.0);
+	ScreenPixelDump sx = new ScreenPixelDump();	
+	int[][] data; 
+	IterateScreen2D(GLucose glucose)
+	{
+		super(glucose);
+		data = sx.twoD();
+		addParameter(x);
+		addParameter(y);
+	}
+	
+
+	public void run(int deltaMs)
+	{
+		for(Point p : model.points)
+		{
+			colors[p.index]=0;
+		}
+		for(int j=0;j<x.getValuef()*300;j++)
+		{
+			for(int k=0;k<y.getValuef()*200;k++)
+			{
+				colors[data[j][k]] = color(0,255,255);
+			}
+		}
+	}
+};
+
 class GranimTestPattern extends GranimPattern
 {
 	GranimTestPattern(GLucose glucose)

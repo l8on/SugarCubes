@@ -152,6 +152,7 @@ class HelixPattern extends SCPattern {
 
   private final Helix h1;
   private final Helix h2;
+  private final Line[] basePairs;
 
   private final BasicParameter helix1On = new BasicParameter("H1ON", 1);
   private final BasicParameter helix2On = new BasicParameter("H2ON", 1);
@@ -166,6 +167,9 @@ class HelixPattern extends SCPattern {
   private static final float spokeGirth = 10;
   private static final float spokePhase = 10;
   private static final float spokeRadius = 35; // helixCoilRadius - helixCoilGirth*.5f;
+  
+  private static final float tMin = -200;
+  private static final float tMax = 200;
 
   public HelixPattern(GLucose glucose) {
     super(glucose);
@@ -191,27 +195,34 @@ class HelixPattern extends SCPattern {
       helixCoilGirth,
       PI,
       helixCoilRotationPeriod);
+      
+    basePairs = new Line[(int)floor((tMax - tMin)/spokePeriod)];
+  }
+
+  private void calculateSpokes() {
+    for (float t = tMin + spokePhase; t < tMax; t += spokePeriod) {
+      int spokeIndex = (int)floor((t - tMin)/spokePeriod);
+      PVector h1point = h1.pointOnToroidalAxis(t);
+      PVector spokeCenter = h1.getAxis().getPointAt(t);
+      PVector spokeVector = PVector.sub(h1point, spokeCenter);
+      basePairs[spokeIndex] = new Line(spokeCenter, spokeVector);
+    }
   }
   
-  private color calculateSpokeColor(final color h1c, final color h2c, final PVector pt) {
+  private color calculateSpokeColor(final PVector pt) {
     // Find the closest spoke's t-value and calculate its
     // axis.  Until everything animates in the model reference
     // frame, this has to be calculated at every step because
     // the helices rotate.
     Line axis = h1.getAxis();
     float t = axis.getTValue(pt) + spokePhase;
-    float spokeAxisTValue = floor(((t + spokePeriod/2) / spokePeriod)) * spokePeriod;
-    PVector h1point = axis.getPointAt(t);
-    h1point.add(h1.getPhaseNormal());
-    h1point = axis.rotatePoint(h1point, (t / helixCoilPeriod) * TWO_PI + h1.getPhase());
-    // TODO(shaheen) investigate why h1.getAxis().getPointAt(spokeAxisTValue) doesn't quite
-    // have the same value as finding the middle between h1point and h2point.
-    PVector spokeCenter = h1.getAxis().getPointAt(spokeAxisTValue);
-    PVector spokeVector = PVector.sub(h1point, spokeCenter);
-    spokeVector.normalize();
-    Line spokeLine = new Line(h1point, spokeVector);
+    int spokeIndex = (int)floor((t - tMin + spokePeriod/2) / spokePeriod);
+    if (spokeIndex < 0 || spokeIndex >= basePairs.length) {
+      return color(0,0,0);
+    }
+    Line spokeLine = basePairs[spokeIndex];
     PVector pointOnSpoke = spokeLine.projectPoint(pt);
-    float b = ((PVector.dist(pt, pointOnSpoke) < spokeGirth) && (PVector.dist(pointOnSpoke, spokeCenter) < spokeRadius)) ? 100.f : 0.f;
+    float b = ((PVector.dist(pt, pointOnSpoke) < spokeGirth) && (PVector.dist(pointOnSpoke, spokeLine.getPoint()) < spokeRadius)) ? 100.f : 0.f;
     return color(100, 80.f, b);
   }
 
@@ -222,12 +233,13 @@ class HelixPattern extends SCPattern {
 
     h1.step(deltaMs);
     h2.step(deltaMs);
+    calculateSpokes();
 
     for (Point p : model.points) {
       PVector pt = new PVector(p.x,p.y,p.z);
       color h1c = h1.colorOfPoint(pt);
       color h2c = h2.colorOfPoint(pt);
-      color spokeColor = calculateSpokeColor(h1c, h2c, pt);
+      color spokeColor = calculateSpokeColor(pt);
 
       if (!h1on) {
         h1c = color(0,0,0);

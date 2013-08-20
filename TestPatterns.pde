@@ -343,15 +343,13 @@ class MappingTool extends TestPattern {
   }
   
   public void incStrip() {
-    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
-    stripIndex = (stripIndex + 1) % stripsPerCube;
+    stripIndex = (stripIndex + 1) % Cube.STRIPS_PER_CUBE;
   }
   
   public void decStrip() {
-    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     --stripIndex;
     if (stripIndex < 0) {
-      stripIndex += stripsPerCube;
+      stripIndex += Cube.STRIPS_PER_CUBE;
     }
   }
   

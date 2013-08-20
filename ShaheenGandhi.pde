@@ -115,6 +115,13 @@ class HelixPattern extends SCPattern {
       PVector middle = PVector.add(p, phaseNormal);
       return axis.rotatePoint(middle, (t / period) * TWO_PI + phase);
     }
+    
+    private float myDist(PVector p1, PVector p2) {
+      final float x = p2.x-p1.x;
+      final float y = p2.y-p1.y;
+      final float z = p2.z-p1.z;
+      return sqrt(x*x + y*y + z*z);
+    }
 
     color colorOfPoint(final PVector p) {
       final float t = axis.getTValue(p);
@@ -122,7 +129,7 @@ class HelixPattern extends SCPattern {
 
       // For performance reasons, cut out points that are outside of
       // the tube where the toroidal coil lives.
-      if (abs(PVector.dist(p, axisPoint) - radius) > girth*.5f) {
+      if (abs(myDist(p, axisPoint) - radius) > girth*.5f) {
         return color(0,0,0);
       }
 
@@ -135,7 +142,7 @@ class HelixPattern extends SCPattern {
       // The rotated point represents the middle of the girth of
       // the helix.  Figure out if the current point is inside that
       // region.
-      float d = PVector.dist(p, toroidPoint);
+      float d = myDist(p, toroidPoint);
 
       // Soften edges by fading brightness.
       float b = constrain(100*(1 - ((d-.5*girth)/(girth*.5))), 0, 100);

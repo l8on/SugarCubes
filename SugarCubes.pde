@@ -43,6 +43,24 @@ LXPattern[] patterns(GLucose glucose) {
     new SoundRain(glucose).setEligible(false),
     new SoundSpikes(glucose).setEligible(false),
     new FaceSync(glucose),
+
+    // Jack
+    new Swim(glucose),
+    // new Breathe(glucose),
+
+    new TimPlanes(glucose),
+    new TimPinwheels(glucose),
+    new TimRaindrops(glucose),
+    new TimCubes(glucose),
+    // new TimTrace(glucose),
+    new TimSpheres(glucose),
+
+    // Ben
+    new DriveableCrossSections(glucose),
+    new GranimTestPattern2(glucose),
+     
+    // Sam
+    new JazzRainbow(glucose),
     
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),

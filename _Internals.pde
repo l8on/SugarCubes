@@ -34,15 +34,10 @@ import rwmidi.*;
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
 
+// The trailer is measured from the outside of the black metal (but not including the higher welded part on the front)
 final float TRAILER_WIDTH = 240;
 final float TRAILER_DEPTH = 97;
 final float TRAILER_HEIGHT = 33;
-
-final float BASS_WIDTH = 124;
-final float BASS_HEIGHT = 31.5;
-final float BASS_DEPTH = 66;
-final float BASS_X = (TRAILER_WIDTH - BASS_WIDTH) / 2.;
-final float BASS_Z = (TRAILER_DEPTH - BASS_DEPTH) / 2.;
 
 int targetFramerate = 60;
 
@@ -182,7 +177,7 @@ void draw() {
   
   noStroke();
   fill(#393939);
-  drawBox(BASS_X, 0, BASS_Z, 0, 0, 0, BASS_WIDTH, BASS_HEIGHT, BASS_DEPTH, Cube.CHANNEL_WIDTH);
+  drawBassBox(glucose.model.bassBox);
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
   }
@@ -193,7 +188,6 @@ void draw() {
   for (Point p : glucose.model.points) {
     stroke(colors[p.index]);
     vertex(p.fx, p.fy, p.fz);
-    // println(p.fx + ":" + p.fy + ":" + p.fz);
   }
   endShape();
   
@@ -213,6 +207,31 @@ void draw() {
   for (PandaDriver p : pandaBoards) {
     p.send(colors);
   }
+}
+
+void drawBassBox(BassBox b) {
+  float in = .15;
+  drawBox(b.x+in, b.y+in, b.z+in, 0, 0, 0, BassBox.EDGE_WIDTH-in*2, BassBox.EDGE_HEIGHT-in*2, BassBox.EDGE_DEPTH-in*2, Cube.CHANNEL_WIDTH-in);
+
+  pushMatrix();
+  translate(b.x + (Cube.CHANNEL_WIDTH-in)/2., b.y + BassBox.EDGE_HEIGHT/2., b.z + in);
+  for (int j = 0; j < 2; ++j) {
+    pushMatrix();
+    for (int i = 0; i < BassBox.NUM_FRONT_STRUTS; ++i) {
+      translate(BassBox.FRONT_STRUT_SPACING, 0, 0);
+      box(Cube.CHANNEL_WIDTH-in, BassBox.EDGE_HEIGHT - in*2, 0);
+    }
+    popMatrix();
+    translate(0, 0, BassBox.EDGE_DEPTH - 2*in);
+  }
+  popMatrix();
+  
+  pushMatrix();
+  translate(b.x + in, b.y + BassBox.EDGE_HEIGHT/2., b.z + BassBox.SIDE_STRUT_SPACING + (Cube.CHANNEL_WIDTH-in)/2.);
+  box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
+  translate(BassBox.EDGE_WIDTH-2*in, 0, 0);
+  box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
+  popMatrix();
 }
 
 void drawCube(Cube c) {

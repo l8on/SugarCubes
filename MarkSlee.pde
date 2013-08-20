@@ -368,6 +368,10 @@ class CrossSections extends SCPattern {
     addModulator(x).trigger();
     addModulator(y).trigger();
     addModulator(z).trigger();
+    addParams();
+  }
+  
+  protected void addParams() {
     addParameter(xr);
     addParameter(yr);
     addParameter(zr);    
@@ -388,11 +392,16 @@ class CrossSections extends SCPattern {
       z.setDuration(10000 - 9000*p.getValuef());
     }
   }
+  
+  float xv, yv, zv;
+  
+  protected void updateXYZVals() {
+    xv = x.getValuef();
+    yv = y.getValuef();
+    zv = z.getValuef();    
+  }
 
   public void run(int deltaMs) {
-    float xv = x.getValuef();
-    float yv = y.getValuef();
-    float zv = z.getValuef();    
     float xlv = 100*xl.getValuef();
     float ylv = 100*yl.getValuef();
     float zlv = 100*zl.getValuef();

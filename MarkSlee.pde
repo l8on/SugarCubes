@@ -37,7 +37,7 @@ class SpaceTime extends SCPattern {
     float fVal = falloff.getValuef();
 
     int s = 0;
-    for (Strip strip : model.allBoxStrips) {
+    for (Strip strip : model.strips) {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
@@ -86,7 +86,7 @@ class Swarm extends SCPattern {
 
   void run(int deltaMs) {
     float s = 0;
-    for (Strip strip : model.allBoxStrips) {
+    for (Strip strip : model.strips  ) {
       int i = 0;
       for (Point p : strip.points) {
         float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);

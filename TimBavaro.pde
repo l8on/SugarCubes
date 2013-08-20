@@ -496,15 +496,34 @@ class TimPlanes extends SCPattern {
 }
 
 /**
- * Not very flushed out but pretty.
+ * Two spinning wheels, basically XORed together, with a color palette that should
+ * be pretty easy to switch around.  Timed to the beat; also introduces "clickiness"
+ * which makes the movement non-linear throughout a given beat, giving it a nice
+ * dance feel.  I'm not 100% sure that it's actually going to look like it's _on_
+ * the beat, but that should be easy enough to adjust.
+ *
+ * It's particularly nice to turn down the clickiness and turn up derez during
+ * slow/beatless parts of the music and then revert them at the drop :)  But maybe
+ * I shouldn't be listening to so much shitty dubstep while making these...
  */
 class TimPinwheels extends SCPattern { 
+  private BasicParameter horizSpreadParameter = new BasicParameter("HSpr", 0.75);
+  private BasicParameter vertSpreadParameter = new BasicParameter("VSpr", 0.5);
+  private BasicParameter vertOffsetParameter = new BasicParameter("VOff", 1.0);
+  private BasicParameter zSlopeParameter = new BasicParameter("ZSlp", 0.6);
+  private BasicParameter sharpnessParameter = new BasicParameter("Shrp", 0.25);
+  private BasicParameter derezParameter = new BasicParameter("Drez", 0.25);
+  private BasicParameter clickinessParameter = new BasicParameter("Clic", 0.5);
+  private BasicParameter hueParameter = new BasicParameter("Hue", 0.667);
+  private BasicParameter hueSpreadParameter = new BasicParameter("HSpd", 0.667);
+
   float phase = 0;
-  private final int NUM_BLADES = 16;
+  private final int NUM_BLADES = 12;
   
   class Pinwheel {
     Vector2 center;
     int numBlades;
+    float realPhase;
     float phase;
     float speed;
     
@@ -514,15 +533,22 @@ class TimPinwheels extends SCPattern {
       this.speed = speed;
     }
     
-    void age(int deltaMs) {
-      phase = (phase + deltaMs / 1000.0 * speed) % 1.0;      
+    void age(float numBeats) {
+      int numSteps = numBlades;
+      
+      realPhase = (realPhase + numBeats / numSteps) % 2.0;
+      
+      float phaseStep = floor(realPhase * numSteps);
+      float phaseRamp = (realPhase * numSteps) % 1.0;
+      phase = (phaseStep + pow(phaseRamp, (clickinessParameter.getValuef() * 10) + 1)) / (numSteps * 2);
+//      phase = (phase + deltaMs / 1000.0 * speed) % 1.0;      
     }
     
     boolean isOnBlade(float x, float y) {
       x = x - center.x;
       y = y - center.y;
       
-      float normalizedAngle = (atan2(x, y) / (2 * PI) + 1.5 + phase) % 1;
+      float normalizedAngle = (atan2(x, y) / (2 * PI) + 1 + phase) % 1;
       float v = (normalizedAngle * 4 * numBlades);
       int blade_num = floor((v + 2) / 4);
       return (blade_num % 2) == 0;
@@ -530,35 +556,101 @@ class TimPinwheels extends SCPattern {
   }
   
   private final List<Pinwheel> pinwheels;
+  private final float[] values;
   
   TimPinwheels(GLucose glucose) {
     super(glucose);
     
-    float xDist = model.xMax - model.xMin;
-    float xCenter = (model.xMin + model.xMax) / 2;
-    float yCenter = (model.yMin + model.yMax) / 2;
-
+    addParameter(horizSpreadParameter);
+//    addParameter(vertSpreadParameter);
+    addParameter(vertOffsetParameter);
+    addParameter(zSlopeParameter);
+    addParameter(sharpnessParameter);
+    addParameter(derezParameter);
+    addParameter(clickinessParameter);
+    addParameter(hueParameter);
+    addParameter(hueSpreadParameter);
+    
     pinwheels = new ArrayList();
-    pinwheels.add(new Pinwheel(xCenter - xDist * 0.4, yCenter, NUM_BLADES, 0.1));
-    pinwheels.add(new Pinwheel(xCenter + xDist * 0.4, yCenter, NUM_BLADES, -0.1));
+    pinwheels.add(new Pinwheel(0, 0, NUM_BLADES, 0.1));
+    pinwheels.add(new Pinwheel(0, 0, NUM_BLADES, -0.1));
+    
+    this.updateHorizSpread();
+    this.updateVertPositions();
+    
+    values = new float[model.points.size()];
   }
   
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == horizSpreadParameter) {
+      updateHorizSpread();
+    } else if (parameter == vertSpreadParameter || parameter == vertOffsetParameter) {
+      updateVertPositions();
+    }
+  }
+  
+  private void updateHorizSpread() {
+    float xDist = model.xMax - model.xMin;
+    float xCenter = (model.xMin + model.xMax) / 2;
+    
+    float spread = horizSpreadParameter.getValuef() - 0.5;
+    pinwheels.get(0).center.x = xCenter - xDist * spread;
+    pinwheels.get(1).center.x = xCenter + xDist * spread; 
+  }
+  
+  private void updateVertPositions() {
+    float yDist = model.yMax - model.yMin;
+    float yCenter = model.yMin + yDist * vertOffsetParameter.getValuef();
+
+    float spread = vertSpreadParameter.getValuef() - 0.5;
+    pinwheels.get(0).center.y = yCenter - yDist * spread;
+    pinwheels.get(1).center.y = yCenter + yDist * spread;     
+  }
+  
+  private float prevRamp = 0;
+  
   public void run(int deltaMs) {
+    float ramp = lx.tempo.rampf();
+    float numBeats = (1 + ramp - prevRamp) % 1;
+    prevRamp = ramp;
+    
+    float hue = hueParameter.getValuef() * 360;
+    // 0 -> -180
+    // 0.5 -> 0
+    // 1 -> 180
+    float hueSpread = (hueSpreadParameter.getValuef() - 0.5) * 360;
+    
+    float fadeAmount = (deltaMs / 1000.0) * pow(sharpnessParameter.getValuef() * 10, 1);
+    
     for (Pinwheel pw : pinwheels) {
-      pw.age(deltaMs);
+      pw.age(numBeats);
     }
     
+    float derez = derezParameter.getValuef();
+    
+    float zSlope = (zSlopeParameter.getValuef() - 0.5) * 2;
+    
+    int i = -1;
     for (Point p : model.points) {
+      ++i;
+      
       int value = 0;
       for (Pinwheel pw : pinwheels) {
-        value += (pw.isOnBlade(p.fx, p.fy) ? 1 : 0);
+        value += (pw.isOnBlade(p.fx, p.fy - p.fz * zSlope) ? 1 : 0);
       }
       if (value == 1) {
-        colors[p.index] = color(120, 0, 100);
+        values[i] = 1;
+//        colors[p.index] = color(120, 0, 100);
       } else {
-        color c = colors[p.index];
-        colors[p.index] = color(max(0, hue(c) - 10), min(100, saturation(c) + 10), brightness(c) - 5 );
+        values[i] = max(0, values[i] - fadeAmount);
+        //color c = colors[p.index];
+        //colors[p.index] = color(max(0, hue(c) - 10), min(100, saturation(c) + 10), brightness(c) - 5 );
       }
+      
+      if (random(1.0) >= derez) {
+        float v = values[i];
+        colors[p.index] = color((360 + hue + pow(v, 2) * hueSpread) % 360, 30 + pow(1 - v, 0.25) * 60, v * 100);
+      }      
     }
   }
 }

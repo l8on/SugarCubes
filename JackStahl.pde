@@ -43,7 +43,7 @@ class Swim extends SCPattern {
       beat = (beat + 1) % 4;
     }
     prevRamp = ramp;
-    float phase = (beat+ramp) / 2.0 * 4 * PI;
+    float phase = (beat+ramp) / 2.0 * 2 * PI;
 
     float denominator = max(xAngle.getValuef() + yAngle.getValuef() + zAngle.getValuef(), 1);
 

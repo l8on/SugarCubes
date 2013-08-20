@@ -43,6 +43,10 @@ LXPattern[] patterns(GLucose glucose) {
     new SoundSpikes(glucose),
     new FaceSync(glucose),
 
+    // Jack
+    new Swim(glucose),
+    // new Breathe(glucose),
+
 
     new TimPlanes(glucose),
     new TimPinwheels(glucose),

@@ -6,8 +6,12 @@ abstract class TestPattern extends SCPattern {
 }
 
 class TestStripPattern extends TestPattern {
+  
+  SinLFO d = new SinLFO(4, 40, 4000);
+  
   public TestStripPattern(GLucose glucose) {
     super(glucose);
+    addModulator(d).trigger();
   }
   
   public void run(int deltaMs) {
@@ -16,7 +20,7 @@ class TestStripPattern extends TestPattern {
         colors[p.index] = color(
           lx.getBaseHuef(),
           100,
-          max(0, 100 - 10*dist(p.x, p.y, s.cx, s.cy))
+          max(0, 100 - d.getValuef()*dist(p.x, p.y, s.cx, s.cy))
         );
       }
     }
@@ -176,11 +180,11 @@ class TestProjectionPattern extends TestPattern {
     for (Coord c : projection) {
       float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
       // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
-      d = max(0, abs(c.y) - 10 + .3*abs(c.z) + .08*abs(c.x)); // plane / spear thing
+      d = max(0, abs(c.y) - 10 + .1*abs(c.z) + .02*abs(c.x)); // plane / spear thing
       colors[c.index] = color(
         (hv + .6*abs(c.x) + abs(c.z)) % 360,
         100,
-        constrain(140 - 10*d, 0, 100)
+        constrain(140 - 40*d, 0, 100)
       );
     }
   } 

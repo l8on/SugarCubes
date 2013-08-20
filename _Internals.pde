@@ -176,8 +176,10 @@ void draw() {
   endShape();
   
   noStroke();
-  fill(#393939);
   drawBassBox(glucose.model.bassBox);
+  for (Speaker s : glucose.model.speakers) {
+    drawSpeaker(s);
+  }
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
   }
@@ -211,6 +213,16 @@ void draw() {
 
 void drawBassBox(BassBox b) {
   float in = .15;
+
+  noStroke();
+  fill(#191919);
+  pushMatrix();
+  translate(b.x + BassBox.EDGE_WIDTH/2., b.y + BassBox.EDGE_HEIGHT/2, b.z + BassBox.EDGE_DEPTH/2.);
+  box(BassBox.EDGE_WIDTH-20*in, BassBox.EDGE_HEIGHT-20*in, BassBox.EDGE_DEPTH-20*in);
+  popMatrix();
+
+  noStroke();
+  fill(#393939);
   drawBox(b.x+in, b.y+in, b.z+in, 0, 0, 0, BassBox.EDGE_WIDTH-in*2, BassBox.EDGE_HEIGHT-in*2, BassBox.EDGE_DEPTH-in*2, Cube.CHANNEL_WIDTH-in);
 
   pushMatrix();
@@ -232,12 +244,34 @@ void drawBassBox(BassBox b) {
   translate(BassBox.EDGE_WIDTH-2*in, 0, 0);
   box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
   popMatrix();
+  
 }
 
 void drawCube(Cube c) {
   float in = .15;
+  noStroke();
+  fill(#393939);  
   drawBox(c.x+in, c.y+in, c.z+in, c.rx, c.ry, c.rz, Cube.EDGE_WIDTH-in*2, Cube.EDGE_HEIGHT-in*2, Cube.EDGE_WIDTH-in*2, Cube.CHANNEL_WIDTH-in);
 }
+
+void drawSpeaker(Speaker s) {
+  float in = .15;
+  
+  noStroke();
+  fill(#191919);
+  pushMatrix();
+  translate(s.x, s.y, s.z);
+  rotate(s.ry / 180. * PI, 0, -1, 0);
+  translate(Speaker.EDGE_WIDTH/2., Speaker.EDGE_HEIGHT/2., Speaker.EDGE_DEPTH/2.);
+  box(Speaker.EDGE_WIDTH-20*in, Speaker.EDGE_HEIGHT-20*in, Speaker.EDGE_DEPTH-20*in);
+  popMatrix();
+  
+  
+  noStroke();
+  fill(#393939);  
+  drawBox(s.x+in, s.y+in, s.z+in, 0, s.ry, 0, Speaker.EDGE_WIDTH-in*2, Speaker.EDGE_HEIGHT-in*2, Speaker.EDGE_DEPTH-in*2, Cube.CHANNEL_WIDTH-in);
+}  
+
 
 void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {
   pushMatrix();

@@ -152,7 +152,7 @@ class Breathe extends SCPattern {
       float v1 = sin_x > y_in_range  ? (100 + 100*(y_in_range - sin_x)) : 0;     
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.)*.6 + abs(p.y-model.yMax/2)*.9 + abs(p.z - model.zMax/2.))) % 360;
-      color c = color(hue_color, 40, v1);
+      color c = color(hue_color, 60, v1);
 
       // Now draw the spheres
       for (Sphere s : spheres) {
@@ -175,7 +175,7 @@ class Breathe extends SCPattern {
 
         float value = min(beat_value, distance_value);
 
-        c = blendColor(c, color((hue_color + 90) % 360, 100, min(1, value) * 100), ADD);
+        c = blendColor(c, color((hue_color + 180) % 360, 100, min(1, value) * 100), ADD);
       }
       colors[p.index] = c;
     }

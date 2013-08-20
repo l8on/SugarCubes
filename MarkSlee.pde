@@ -1,6 +1,6 @@
 class SpaceTime extends SCPattern {
 
-  SinLFO pos = new SinLFO(0, 15, 3000);
+  SinLFO pos = new SinLFO(0, 1, 3000);
   SinLFO rate = new SinLFO(1000, 9000, 13000);
   SinLFO falloff = new SinLFO(10, 70, 5000);
   float angle = 0;
@@ -8,8 +8,10 @@ class SpaceTime extends SCPattern {
   BasicParameter rateParameter = new BasicParameter("RATE", 0.5);
   BasicParameter sizeParameter = new BasicParameter("SIZE", 0.5);
 
+
   public SpaceTime(GLucose glucose) {
     super(glucose);
+    
     addModulator(pos).trigger();
     addModulator(rate).trigger();
     addModulator(falloff).trigger();    
@@ -35,14 +37,14 @@ class SpaceTime extends SCPattern {
     float fVal = falloff.getValuef();
 
     int s = 0;
-    for (Strip strip : model.strips) {
+    for (Strip strip : model.allBoxStrips) {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
-        (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
-        constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
-        max(0, 100 - fVal*abs(i - pVal))
-          );
+          (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
+          constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
+          max(0, 100 - fVal*abs(i - pVal*(strip.metrics.numPoints - 1)))
+        );
         ++i;
       }
       ++s;
@@ -52,7 +54,7 @@ class SpaceTime extends SCPattern {
 
 class Swarm extends SCPattern {
 
-  SawLFO offset = new SawLFO(0, 16, 1000);
+  SawLFO offset = new SawLFO(0, 1, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
   SinLFO fX = new SinLFO(0, model.xMax, 19000);
@@ -61,6 +63,7 @@ class Swarm extends SCPattern {
 
   public Swarm(GLucose glucose) {
     super(glucose);
+    
     addModulator(offset).trigger();
     addModulator(rate).trigger();
     addModulator(falloff).trigger();
@@ -83,14 +86,14 @@ class Swarm extends SCPattern {
 
   void run(int deltaMs) {
     float s = 0;
-    for (Strip strip : model.strips) {
+    for (Strip strip : model.allBoxStrips) {
       int i = 0;
       for (Point p : strip.points) {
         float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
         colors[p.index] = color(
         (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
-        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef(), 16), 0, 100)
+        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, (int) (offset.getValuef() * strip.metrics.numPoints), strip.metrics.numPoints), 0, 100)
           );
         ++i;
       }
@@ -365,11 +368,6 @@ class CrossSections extends SCPattern {
     addModulator(x).trigger();
     addModulator(y).trigger();
     addModulator(z).trigger();
-    addParams();
-  }
-  
-  public void addParams()
-  {
     addParameter(xr);
     addParameter(yr);
     addParameter(zr);    
@@ -380,8 +378,8 @@ class CrossSections extends SCPattern {
     addParameter(yw);    
     addParameter(zw);
   }
-
-  public void onParameterChanged(LXParameter p) {
+  
+  void onParameterChanged(LXParameter p) {
     if (p == xr) {
       x.setDuration(10000 - 8800*p.getValuef());
     } else if (p == yr) {
@@ -391,19 +389,10 @@ class CrossSections extends SCPattern {
     }
   }
 
-  float xv;
-  float yv;
-  float zv;  
-
-  public void updateXYZVals()
-  {
-    xv = x.getValuef();
-    yv = y.getValuef();
-    zv = z.getValuef(); 
-  }
-
   public void run(int deltaMs) {
-    updateXYZVals();   
+    float xv = x.getValuef();
+    float yv = y.getValuef();
+    float zv = z.getValuef();    
     float xlv = 100*xl.getValuef();
     float ylv = 100*yl.getValuef();
     float zlv = 100*zl.getValuef();

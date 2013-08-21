@@ -256,7 +256,7 @@ class MappingTool extends TestPattern {
     if (activeChannel.mode == ChannelMapping.MODE_CUBES) {
       int i = 1;
       for (int index : activeChannel.objectIndices) {
-        if (c == model.getCubeByRawIndex(index)) {
+        if ((index >= 0) && (c == model.getCubeByRawIndex(index))) {
           return i;
         }
         ++i;
@@ -359,10 +359,7 @@ class MappingTool extends TestPattern {
   }
   
   public void decChannel() {
-    --channelIndex;
-    if (channelIndex < 0) {
-      channelIndex += numChannels;
-    }
+    channelIndex = (channelIndex + numChannels - 1) % numChannels;
     setChannel();    
   }
   
@@ -371,10 +368,7 @@ class MappingTool extends TestPattern {
   }
   
   public void decStrip() {
-    --stripIndex;
-    if (stripIndex < 0) {
-      stripIndex += Cube.STRIPS_PER_CUBE;
-    }
+    stripIndex = (stripIndex + Cube.STRIPS_PER_CUBE - 1) % Cube.STRIPS_PER_CUBE;
   }
   
   public void keyPressed() {

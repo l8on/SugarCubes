@@ -172,7 +172,7 @@ class Balance extends SCPattern {
       float v1 = max(0, 100 * (1 - 4*abs(sin_x - y_in_range)));     
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.) + abs(p.y-model.yMax/2)*.2 + abs(p.z - model.zMax/2.)*.5)) % 360;
-      color c = color(hue_color, 60, v1);
+      color c = color(hue_color, 80, v1);
 
       // Now draw the spheres
       for (Sphere s : spheres) {
@@ -195,7 +195,9 @@ class Balance extends SCPattern {
 
         float value = min(beat_value, distance_value);
 
-        c = blendColor(c, color((hue_color + 180) % 360, 100, min(1, value) * 100), ADD);
+        float sphere_color = (lx.getBaseHuef() - (1 - hueScale.getValuef()) * d/r * 45) % 360;
+
+        c = blendColor(c, color((sphere_color + 270) % 360, 60, min(1, value) * 100), ADD);
       }
       colors[p.index] = c;
     }

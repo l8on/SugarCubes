@@ -57,8 +57,9 @@ LXPattern[] patterns(GLucose glucose) {
 
     // Jack
     new Swim(glucose),
-    new Breathe(glucose),
+    new Balance(glucose),
 
+    // Tim
     new TimPlanes(glucose),
     new TimPinwheels(glucose),
     new TimRaindrops(glucose),

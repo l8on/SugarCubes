@@ -190,7 +190,7 @@ class HelixPattern extends SCPattern {
     addParameter(helix2On);
     addParameter(basePairsOn);
 
-    PVector origin = new PVector(100, 50, 45);
+    PVector origin = new PVector(100, 50, 55);
     PVector axis = new PVector(1,0,0);
 
     h1 = new Helix(

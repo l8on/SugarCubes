@@ -159,14 +159,14 @@ class HelixPattern extends SCPattern {
   private final BasicParameter basePairsOn = new BasicParameter("BPON", 1);
 
   private static final float helixCoilPeriod = 100;
-  private static final float helixCoilRadius = 45;
-  private static final float helixCoilGirth = 20;
-  private static final float helixCoilRotationPeriod = 10000;
+  private static final float helixCoilRadius = 50;
+  private static final float helixCoilGirth = 30;
+  private static final float helixCoilRotationPeriod = 5000;
 
   private static final float spokePeriod = 40;
-  private static final float spokeGirth = 10;
+  private static final float spokeGirth = 20;
   private static final float spokePhase = 10;
-  private static final float spokeRadius = 35; // helixCoilRadius - helixCoilGirth*.5f;
+  private static final float spokeRadius = helixCoilRadius - helixCoilGirth*.5f;
   
   private static final float tMin = -200;
   private static final float tMax = 200;

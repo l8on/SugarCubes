@@ -109,14 +109,14 @@ public Model buildModel() {
 public PandaMapping[] buildPandaList() {
   return new PandaMapping[] {
     new PandaMapping(
-      "10.200.1.28", new ChannelMapping[] {
+      "10.200.1.29", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 7, 8 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 9, 10 }),
         new ChannelMapping(ChannelMapping.MODE_BASS),
         new ChannelMapping(ChannelMapping.MODE_FLOOR),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
@@ -126,7 +126,7 @@ public PandaMapping[] buildPandaList() {
     }),
 
     new PandaMapping(
-      "10.200.1.29", new ChannelMapping[] {
+      "10.200.1.28", new ChannelMapping[] {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),

@@ -14,7 +14,7 @@ import oscP5.*;
  * This class implements the output function to the Panda Boards. It
  * will be moved into GLucose once stabilized.
  */
-public class PandaDriver {
+public static class PandaDriver {
 
   // IP address
   public final String ip;
@@ -50,18 +50,73 @@ public class PandaDriver {
     }
   }
 
+  private final static int FORWARD = -1;
+  private final static int BACKWARD = -2;
+
   /**
    * These constant arrays indicate the order in which the strips of a cube
    * are wired. There are four different options, depending on which bottom
    * corner of the cube the data wire comes in.
    */
-  private final int[][] CUBE_STRIP_ORDERINGS = new int[][] {
+  private final static int[][] CUBE_STRIP_ORDERINGS = new int[][] {
     {  2,  1,  0,  3, 13, 12, 15, 14,  4,  7,  6,  5, 11, 10,  9,  8 }, // FRONT_LEFT
     {  6,  5,  4,  7,  1,  0,  3,  2,  8, 11, 10,  9, 15, 14, 13, 12 }, // FRONT_RIGHT
     { 14, 13, 12, 15,  9,  8, 11, 10,  0,  3,  2,  1,  7,  6,  5,  4 }, // REAR_LEFT
     { 10,  9,  8, 11,  5,  4,  7,  6, 12, 15, 14, 13,  3,  2,  1,  0 }, // REAR_RIGHT
   };
-
+  
+  private final static int[][] BASS_STRIP_ORDERING = {
+    {0, FORWARD },
+    {1, FORWARD },
+    {2, FORWARD },
+    {3, FORWARD },
+    {4, FORWARD },
+    {5, FORWARD },
+    {6, FORWARD },
+    {7, FORWARD },
+    {8, FORWARD },
+    {9, FORWARD },
+    {10, FORWARD },
+    {11, FORWARD },
+    {12, FORWARD },
+    {13, FORWARD },
+    {14, FORWARD },
+    {15, FORWARD },
+    {16, FORWARD },
+    {17, FORWARD },
+    {18, FORWARD },
+    {19, FORWARD },
+    {20, FORWARD },
+    {21, FORWARD },
+    {22, FORWARD },            
+  };
+  
+  private final static int[][] FLOOR_STRIP_ORDERING = {
+    {0, FORWARD},
+    {1, FORWARD},
+    {2, FORWARD},
+    {3, FORWARD},
+  };
+  
+  private final static int[][] SPEAKER_STRIP_ORDERING = {
+    {0, FORWARD },
+    {1, FORWARD },
+    {2, FORWARD },
+    {3, FORWARD },
+    {4, FORWARD },
+    {5, FORWARD },
+    {6, FORWARD },
+    {7, FORWARD },
+    {8, FORWARD },
+    {9, FORWARD },
+    {10, FORWARD },
+    {11, FORWARD },
+    {12, FORWARD },
+    {13, FORWARD },
+    {14, FORWARD },
+    {15, FORWARD },
+  };
+  
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
 
@@ -99,25 +154,29 @@ public class PandaDriver {
               for (int stripIndex : CUBE_STRIP_ORDERINGS[stripOrderIndex]) {
                 // We go backwards here... in the model strips go clockwise, but
                 // the physical wires are run counter-clockwise
-                Strip s = cube.strips.get(stripIndex);
-                for (int j = s.points.size() - 1; j >= 0; --j) {
-                  points[pi++] = s.points.get(j).index;
-                }
+                pi = mapStrip(cube.strips.get(stripIndex), BACKWARD, points, pi);
               }
             }
           }
           break;
           
         case ChannelMapping.MODE_BASS:
-          // TODO(mapping): figure out how we end up connecting the bass cabinet
+          for (int[] config : BASS_STRIP_ORDERING) {
+            pi = mapStrip(model.bassBox.strips.get(config[0]), config[1], points, pi);
+          }
           break;
           
-        case ChannelMapping.MODE_FLOOR:        
-          // TODO(mapping): figure out how these strips are wired
+        case ChannelMapping.MODE_FLOOR:
+          for (int[] config : FLOOR_STRIP_ORDERING) {
+            pi = mapStrip(model.boothFloor.strips.get(config[0]), config[1], points, pi);
+          }
           break;
           
         case ChannelMapping.MODE_SPEAKER:
-          // TODO(mapping): figure out how these strips are wired
+          for (int[] config : SPEAKER_STRIP_ORDERING) {
+            Speaker speaker = model.speakers.get(channel.objectIndices[0]);
+            pi = mapStrip(speaker.strips.get(config[0]), config[1], points, pi);
+          }
           break;
           
         case ChannelMapping.MODE_NULL:
@@ -129,6 +188,21 @@ public class PandaDriver {
       }
 
     }
+  }
+  
+  private int mapStrip(Strip s, int direction, int[] points, int pi) {
+    if (direction == FORWARD) {
+      for (Point p : s.points) {
+        points[pi++] = p.index;
+      }
+    } else if (direction == BACKWARD) {
+      for (int i = s.points.size()-1; i >= 0; --i) {
+        points[pi++] = s.points.get(i).index;
+      }
+    } else {
+      throw new RuntimeException("Unidentified strip mapping direction: " + direction);
+    }
+    return pi;
   }
 
   public void toggle() {

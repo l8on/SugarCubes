@@ -15,7 +15,6 @@
 
 public Model buildModel() {
 
-  final float BASS_FLOOR = BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH;
   
   // Shorthand helpers for specifying wiring more quickly
   final Cube.Wiring WFL = Cube.Wiring.FRONT_LEFT;
@@ -24,6 +23,11 @@ public Model buildModel() {
   final Cube.Wiring WRR = Cube.Wiring.REAR_RIGHT;
   
   final float CH = Cube.EDGE_HEIGHT;
+  
+  final float BBY = BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH;
+  final float BBX = 56;
+  final float BBZ = 2;
+
 
   // The model is represented as an array of towers. The cubes in the tower
   // are represenented relatively. Each tower has an x, y, z reference position,
@@ -40,9 +44,27 @@ public Model buildModel() {
   // The cubes automatically increment their y-position by Cube.EDGE_HEIGHT.
   TowerMapping[] towerCubes = new TowerMapping[] {
     
-    new TowerMapping(50, 0, 80, new CubeMapping[] {
-      new CubeMapping(0, 0, WFL),
+    // DJ booth, from left to right
+    new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
+      new CubeMapping(-7.25, 7.5, -25, WFR),
+      new CubeMapping(7.5, -15.75, 12, WRL),
     }),
+    new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
+      new CubeMapping(19.625, 5.375, -22, WFR),
+      new CubeMapping(8, -14.5, 10, WRR),
+    }),
+    new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
+      new CubeMapping(48, 4.75, -35, WRL),
+      new CubeMapping(8, -15, 10, WRR),
+    }),
+    new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
+      new CubeMapping(78.75, 3.75, -28, WRR),
+      new CubeMapping(8, -15, 10, WRR),
+    }),
+    new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
+      new CubeMapping(104.75, 0, -27, WRL),
+      new CubeMapping(8, -15, 10, WFL),      
+    }),    
     
   };
   
@@ -52,12 +74,12 @@ public Model buildModel() {
   };
 
   // The bass box!
-  BassBox bassBox = new BassBox(56, 0, 2);
+  BassBox bassBox = new BassBox(BBX, 0, BBZ);
 
   // The speakers!
   List<Speaker> speakers = Arrays.asList(new Speaker[] {
     new Speaker(-12, 6, 0, 15),
-    new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH, 6, 6, -15)
+    new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
   });
 
   // These guts just convert the shorthand mappings into usable objects

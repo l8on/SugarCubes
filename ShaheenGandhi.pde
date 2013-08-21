@@ -222,7 +222,8 @@ class HelixPattern extends SCPattern {
     }
     Line spokeLine = basePairs[spokeIndex];
     PVector pointOnSpoke = spokeLine.projectPoint(pt);
-    float b = ((PVector.dist(pt, pointOnSpoke) < spokeGirth) && (PVector.dist(pointOnSpoke, spokeLine.getPoint()) < spokeRadius)) ? 100.f : 0.f;
+    float d = PVector.dist(pt, pointOnSpoke);
+    float b = (PVector.dist(pointOnSpoke, spokeLine.getPoint()) < spokeRadius) ? constrain(100*(1 - ((d-.5*spokeGirth)/(spokeGirth*.5))), 0, 100) : 0.f;
     return color(100, 80.f, b);
   }
 

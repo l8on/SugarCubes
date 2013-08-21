@@ -749,10 +749,10 @@ class MappingUI extends OverlayUI {
 class DebugUI {
   
   final ChannelMapping[] channelList;
-  final int debugX = 10;
-  final int debugY = 42;
+  final int debugX = 5;
+  final int debugY = 5;
   final int debugXSpacing = 28;
-  final int debugYSpacing = 22;
+  final int debugYSpacing = 21;
   final int[][] debugState;
   
   final int DEBUG_STATE_ANIM = 0;
@@ -782,8 +782,8 @@ class DebugUI {
     int xBase = debugX;
     int yPos = debugY;
     
-    fill(color(0, 0, 0, 80));
-    rect(4, 32, 172, 388);
+    fill(#000000);
+    rect(0, 0, debugX + 5*debugXSpacing, height);
     
     int channelNum = 0;
     for (ChannelMapping channel : channelList) {

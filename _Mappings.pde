@@ -110,36 +110,30 @@ public PandaMapping[] buildPandaList() {
   return new PandaMapping[] {
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 7, 8 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 9, 10 }),
-        new ChannelMapping(ChannelMapping.MODE_BASS),
-        new ChannelMapping(ChannelMapping.MODE_FLOOR),
-        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
-        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
     }),
 
     new PandaMapping(
       "10.200.1.28", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),        
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
+        new ChannelMapping(ChannelMapping.MODE_BASS),
+        new ChannelMapping(ChannelMapping.MODE_FLOOR),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
     }),
   };
 }
@@ -184,7 +178,7 @@ class CubeMapping {
 class PandaMapping {
   
   // How many channels are on the panda board
-  public final static int CHANNELS_PER_BOARD = 13;
+  public final static int CHANNELS_PER_BOARD = 16;
   
   // How many total pixels on the whole board
   public final static int PIXELS_PER_BOARD = ChannelMapping.PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;

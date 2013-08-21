@@ -149,10 +149,22 @@ class HelixPattern extends SCPattern {
       return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80, b);
     }
   }
+  
+  private class BasePairInfo {
+    Line line;
+    float colorPhase1;
+    float colorPhase2;
+    
+    BasePairInfo(Line line, float colorPhase1, float colorPhase2) {
+      this.line = line;
+      this.colorPhase1 = colorPhase1;
+      this.colorPhase2 = colorPhase2;
+    }
+  }
 
   private final Helix h1;
   private final Helix h2;
-  private final Line[] basePairs;
+  private final BasePairInfo[] basePairs;
 
   private final BasicParameter helix1On = new BasicParameter("H1ON", 1);
   private final BasicParameter helix2On = new BasicParameter("H2ON", 1);
@@ -196,16 +208,18 @@ class HelixPattern extends SCPattern {
       PI,
       helixCoilRotationPeriod);
       
-    basePairs = new Line[(int)floor((tMax - tMin)/spokePeriod)];
+    basePairs = new BasePairInfo[(int)floor((tMax - tMin)/spokePeriod)];
   }
 
   private void calculateSpokes() {
+    float colorPhase = PI/6;
     for (float t = tMin + spokePhase; t < tMax; t += spokePeriod) {
       int spokeIndex = (int)floor((t - tMin)/spokePeriod);
       PVector h1point = h1.pointOnToroidalAxis(t);
       PVector spokeCenter = h1.getAxis().getPointAt(t);
       PVector spokeVector = PVector.sub(h1point, spokeCenter);
-      basePairs[spokeIndex] = new Line(spokeCenter, spokeVector);
+      Line spokeLine = new Line(spokeCenter, spokeVector);
+      basePairs[spokeIndex] = new BasePairInfo(spokeLine, colorPhase * spokeIndex, colorPhase * (spokeIndex + 1));
     }
   }
   
@@ -220,11 +234,13 @@ class HelixPattern extends SCPattern {
     if (spokeIndex < 0 || spokeIndex >= basePairs.length) {
       return color(0,0,0);
     }
-    Line spokeLine = basePairs[spokeIndex];
+    BasePairInfo basePair = basePairs[spokeIndex];
+    Line spokeLine = basePair.line;
     PVector pointOnSpoke = spokeLine.projectPoint(pt);
     float d = PVector.dist(pt, pointOnSpoke);
     float b = (PVector.dist(pointOnSpoke, spokeLine.getPoint()) < spokeRadius) ? constrain(100*(1 - ((d-.5*spokeGirth)/(spokeGirth*.5))), 0, 100) : 0.f;
-    return color(100, 80.f, b);
+    float phase = spokeLine.getTValue(pointOnSpoke) < 0 ? basePair.colorPhase1 : basePair.colorPhase2;
+    return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80.f, b);
   }
 
   void run(int deltaMs) {

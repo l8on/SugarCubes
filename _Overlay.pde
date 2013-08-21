@@ -753,7 +753,7 @@ class DebugUI {
   final int debugY = 42;
   final int debugXSpacing = 28;
   final int debugYSpacing = 22;
-  final int[][] debugState = new int[17][6];
+  final int[][] debugState;
   
   final int DEBUG_STATE_ANIM = 0;
   final int DEBUG_STATE_WHITE = 1;
@@ -761,6 +761,8 @@ class DebugUI {
   
   DebugUI(PandaMapping[] pandaMappings) {
     int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
+    debugState = new int[totalChannels+1][ChannelMapping.CUBES_PER_CHANNEL+1];
+    
     channelList = new ChannelMapping[totalChannels];
     int channelIndex = 0;
     for (PandaMapping pm : pandaMappings) {
@@ -935,7 +937,7 @@ class DebugUI {
     if ((dy >= 0) && (dy < debugState.length)) {
       if ((dx >= 0) && (dx < debugState[dy].length)) {
         int newState = debugState[dy][dx] = (debugState[dy][dx] + 1) % 3;
-        if (dy == 16) {
+        if (dy == debugState.length-1) {
           for (int[] states : debugState) {
             for (int i = 0; i < states.length; ++i) {
               states[i] = newState;

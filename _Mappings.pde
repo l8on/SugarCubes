@@ -22,6 +22,8 @@ public Model buildModel() {
   final Cube.Wiring WFR = Cube.Wiring.FRONT_RIGHT;
   final Cube.Wiring WRL = Cube.Wiring.REAR_LEFT;
   final Cube.Wiring WRR = Cube.Wiring.REAR_RIGHT;
+  
+  final float CH = Cube.EDGE_HEIGHT;
 
   // The model is represented as an array of towers. The cubes in the tower
   // are represenented relatively. Each tower has an x, y, z reference position,

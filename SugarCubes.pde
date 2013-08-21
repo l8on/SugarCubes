@@ -25,19 +25,29 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-
+    
+    // Slee
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
-    new HelixPattern(glucose).setEligible(false),
-    new Pong(glucose),
-    new Noise(glucose),
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
+    
+    new Traktor(glucose).setEligible(false),
+    new BassPod(glucose).setEligible(false),
     new CubeEQ(glucose).setEligible(false),
     new PianoKeyPattern(glucose).setEligible(false),
+
+    // Dan
+    new Pong(glucose),
+    new Noise(glucose),
+
+    // Shaheen
+    new HelixPattern(glucose).setEligible(false),
+    
+    // Toby
     new GlitchPlasma(glucose),
     new FireEffect(glucose).setEligible(false),
     new StripBounce(glucose),

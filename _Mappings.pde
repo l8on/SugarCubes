@@ -255,6 +255,11 @@ public PandaMapping[] buildPandaList() {
   };
 }
 
+/**
+ * Each panda board has an IP address and a fixed number of channels. The channels
+ * each have a fixed number of pixels on them. Whether or not that many physical
+ * pixels are connected to the channel, we still send it that much data.
+ */
 class PandaMapping {
   
   // How many channels are on the panda board
@@ -268,12 +273,27 @@ class PandaMapping {
   
   PandaMapping(String ip, ChannelMapping[] rawChannelList) {
     this.ip = ip;
+    
+    // Ensure our array is the right length and has all valid items in it
     for (int i = 0; i < channelList.length; ++i) {
       channelList[i] = (i < rawChannelList.length) ? rawChannelList[i] : new ChannelMapping();
+      if (channelList[i] == null) {
+        channelList[i] = new ChannelMapping();
+      }
     }
   }
 }
 
+/**
+ * Each channel on a pandaboard can be mapped in a number of modes. The typial is
+ * to a series of connected cubes, but we also have special mappings for the bass box,
+ * the speaker enclosures, and the DJ booth floor.
+ *
+ * This class is just the mapping meta-data. It sanitizes the input to make sure
+ * that the cubes and objects being referenced actually exist in the model.
+ *
+ * The logic for how to encode the pixels is contained in the PandaDriver.
+ */
 class ChannelMapping {
 
   // How many cubes per channel xc_PB is configured for
@@ -336,3 +356,4 @@ class ChannelMapping {
     }
   }
 }
+

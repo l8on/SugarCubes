@@ -28,59 +28,64 @@ public class PandaDriver {
   // OSC message
   private final OscMessage message;
 
-  // List of point indices on the board
+  // List of point indices that get sent to this board
   private final int[] points;
     
   // Packet data
-  private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
+  private final byte[] packet = new byte[4*352]; // magic number, our UDP packet size
 
   private static final int NO_POINT = -1;
 
   public PandaDriver(String ip) {
     this.ip = ip;
-    this.address = new NetAddress(ip, 9001);
+    
+    // Initialize our OSC output stuff
+    address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
+
+    // Build the array of points, initialize all to nothing
     points = new int[PandaMapping.PIXELS_PER_BOARD];
     for (int i = 0; i < points.length; ++i) {
-      points[i] = 0;
+      points[i] = NO_POINT;
     }
   }
 
-  public PandaDriver(String ip, int[] pointList) {
-    this(ip);
-    for (int i = 0; i < pointList.length && i < points.length; ++i) {
-      this.points[i] = pointList[i];
-    }
-  }
+  /**
+   * These constant arrays indicate the order in which the strips of a cube
+   * are wired. There are four different options, depending on which bottom
+   * corner of the cube the data wire comes in.
+   */
+  private final int[][] CUBE_STRIP_ORDERINGS = new int[][] {
+    {  2,  1,  0,  3, 13, 12, 15, 14,  4,  7,  6,  5, 11, 10,  9,  8 }, // FRONT_LEFT
+    {  6,  5,  4,  7,  1,  0,  3,  2,  8, 11, 10,  9, 15, 14, 13, 12 }, // FRONT_RIGHT
+    { 14, 13, 12, 15,  9,  8, 11, 10,  0,  3,  2,  1,  7,  6,  5,  4 }, // REAR_LEFT
+    { 10,  9,  8, 11,  5,  4,  7,  6, 12, 15, 14, 13,  3,  2,  1,  0 }, // REAR_RIGHT
+  };
 
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
-    buildPointList(model, pm);
-  }
-  
-  public void toggle() {
-    enabled = !enabled;
-    println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
-  } 
 
-  private void buildPointList(Model model, PandaMapping pm) {
-    final int[][] stripOrderings = new int[][] {
-      {  2,  1,  0,  3, 13, 12, 15, 14,  4,  7,  6,  5, 11, 10,  9,  8 }, // FRONT_LEFT
-      {  6,  5,  4,  7,  1,  0,  3,  2,  8, 11, 10,  9, 15, 14, 13, 12 }, // FRONT_RIGHT
-      { 14, 13, 12, 15,  9,  8, 11, 10,  0,  3,  2,  1,  7,  6,  5,  4 }, // REAR_LEFT
-      { 10,  9,  8, 11,  5,  4,  7,  6, 12, 15, 14, 13,  3,  2,  1,  0 }, // REAR_RIGHT
-    };
-
-    int pi = 0;
+    // Ok, we are initialized, time to build the array if points in order to
+    // send out. We start at the head of our point buffer, and work our way
+    // down. This is the order in which points will be sent down the wire.
+    int ci = -1;
+    
+    // Iterate through all our channels
     for (ChannelMapping channel : pm.channelList) {
+      ++ci;
+      int pi = ci * ChannelMapping.PIXELS_PER_CHANNEL;
+      
       switch (channel.mode) {
+
         case ChannelMapping.MODE_CUBES:
+          // We have a list of cubes per channel
           for (int rawCubeIndex : channel.objectIndices) {
             if (rawCubeIndex < 0) {
-              for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
-                points[pi++] = NO_POINT;
-              }
+              // No cube here, skip ahead in the buffer
+              pi += Cube.POINTS_PER_CUBE;
             } else {
+              // The cube exists, check which way it is wired to
+              // figure out the order of strips.
               Cube cube = model.getCubeByRawIndex(rawCubeIndex);
               int stripOrderIndex = 0;
               switch (cube.wiring) {
@@ -89,7 +94,11 @@ public class PandaDriver {
                 case REAR_LEFT: stripOrderIndex = 2; break;
                 case REAR_RIGHT: stripOrderIndex = 3; break;
               }
-              for (int stripIndex : stripOrderings[stripOrderIndex]) {
+              
+              // Iterate through all the strips on the cube and add the points
+              for (int stripIndex : CUBE_STRIP_ORDERINGS[stripOrderIndex]) {
+                // We go backwards here... in the model strips go clockwise, but
+                // the physical wires are run counter-clockwise
                 Strip s = cube.strips.get(stripIndex);
                 for (int j = s.points.size() - 1; j >= 0; --j) {
                   points[pi++] = s.points.get(j).index;
@@ -100,36 +109,31 @@ public class PandaDriver {
           break;
           
         case ChannelMapping.MODE_BASS:
-          // TODO(mapping): figure out how these strips are wired
-          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
-            points[pi++] = NO_POINT;
-          }
+          // TODO(mapping): figure out how we end up connecting the bass cabinet
           break;
           
         case ChannelMapping.MODE_FLOOR:        
           // TODO(mapping): figure out how these strips are wired
-          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
-            points[pi++] = NO_POINT;
-          }
           break;
           
         case ChannelMapping.MODE_SPEAKER:
           // TODO(mapping): figure out how these strips are wired
-          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
-            points[pi++] = NO_POINT;
-          }
           break;
           
         case ChannelMapping.MODE_NULL:
-          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
-            points[pi++] = NO_POINT;
-          }
+          // No problem, nothing on this channel!
           break;
           
         default:
           throw new RuntimeException("Invalid/unhandled channel mapping mode: " + channel.mode);
       }
+
     }
+  }
+
+  public void toggle() {
+    enabled = !enabled;
+    println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
   }
 
   public final void send(int[] colors) {
@@ -143,7 +147,7 @@ public class PandaDriver {
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);
-      packet[len++] = 0;
+      packet[len++] = 0; // alpha channel, unused but makes for 4-byte alignment
       packet[len++] = r;
       packet[len++] = g;
       packet[len++] = b;

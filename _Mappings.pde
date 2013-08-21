@@ -230,29 +230,28 @@ public Model buildModel() {
 public PandaMapping[] buildPandaList() {
   return new PandaMapping[] {
     new PandaMapping(
-      "10.200.1.28", new int[][] {
-      {  1,  2,  3,  4 }, // ch1
-      {  5,  6,  7,  8 }, // ch2
-      {  9, 10, 11, 12 }, // ch3
-      { 13, 14, 15, 16 }, // ch4
-      { 17, 18, 19, 20 }, // ch5
-      { 21, 22, 23, 24 }, // ch6
-      { 25, 26, 27, 28 }, // ch7
-      { 29, 30, 31, 32 }, // ch8
+      "10.200.1.28", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_BASS),
+        new ChannelMapping(ChannelMapping.MODE_FLOOR),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  1,  2,  3,  4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  5,  6,  7,  8 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  9, 10, 11, 12 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 13, 14, 15, 16 }),
     }),
 
     new PandaMapping(
-      "10.200.1.29", new int[][] {
-      { 33, 34, 35, 36 }, // ch9
-      { 37, 38, 39, 40 }, // ch10
-      { 41, 42, 43, 44 }, // ch11
-      { 45, 46, 47, 48 }, // ch12
-      { 33, 34, 35, 36 }, // ch13
-      { 37, 38, 39, 40 }, // ch14
-      { 41, 42, 43, 44 }, // ch15
-      { 45, 46, 47, 48 }, // ch16
+      "10.200.1.29", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 17, 18, 19, 20 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 21, 22, 23, 24 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 25, 26, 27, 28 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 29, 30, 31, 32 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33, 34, 35, 36 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 39, 40 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 41, 42, 43, 44 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45, 46, 47, 48 }),
     }),
-    
   };
 }
 
@@ -261,27 +260,79 @@ class PandaMapping {
   // How many channels are on the panda board
   public final static int CHANNELS_PER_BOARD = 8;
   
-  // How many cubes per channel xc_PB is configured for
-  public final static int CUBES_PER_CHANNEL = 4;
-  
-  // How many total pixels on each channel
-  public final static int PIXELS_PER_CHANNEL = Cube.POINTS_PER_CUBE * CUBES_PER_CHANNEL;
-  
   // How many total pixels on the whole board
-  public final static int PIXELS_PER_BOARD = PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;
+  public final static int PIXELS_PER_BOARD = ChannelMapping.PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;
   
   final String ip;
-  final int[][] channelList = new int[CHANNELS_PER_BOARD][CUBES_PER_CHANNEL];
+  final ChannelMapping[] channelList = new ChannelMapping[CHANNELS_PER_BOARD];
   
-  PandaMapping(String ip, int[][] rawChannelList) {
+  PandaMapping(String ip, ChannelMapping[] rawChannelList) {
     this.ip = ip;
-    for (int chi = 0; chi < CHANNELS_PER_BOARD; ++chi) {
-      int[] cubes = (chi < rawChannelList.length) ? rawChannelList[chi] : new int[]{};
-      for (int cui = 0; cui < CUBES_PER_CHANNEL; ++cui) {
-        channelList[chi][cui] = (cui < cubes.length) ? cubes[cui] : 0;
-      }
+    for (int i = 0; i < channelList.length; ++i) {
+      channelList[i] = (i < rawChannelList.length) ? rawChannelList[i] : new ChannelMapping();
     }
   }
 }
 
+class ChannelMapping {
 
+  // How many cubes per channel xc_PB is configured for
+  public final static int CUBES_PER_CHANNEL = 4;  
+
+  // How many total pixels on each channel
+  public final static int PIXELS_PER_CHANNEL = Cube.POINTS_PER_CUBE * CUBES_PER_CHANNEL;
+  
+  public static final int MODE_NULL = 0;
+  public static final int MODE_CUBES = 1;
+  public static final int MODE_BASS = 2;
+  public static final int MODE_SPEAKER = 3;
+  public static final int MODE_FLOOR = 4;
+  public static final int MODE_INVALID = 5;
+  
+  public static final int NO_OBJECT = -1;
+  
+  final int mode;
+  final int[] objectIndices = new int[CUBES_PER_CHANNEL];
+  
+  ChannelMapping() {
+    this(MODE_NULL);
+  }
+  
+  ChannelMapping(int mode) {
+    this(mode, new int[]{});
+  }
+  
+  ChannelMapping(int mode, int rawObjectIndex) {
+    this(mode, new int[]{ rawObjectIndex });
+  }
+  
+  ChannelMapping(int mode, int[] rawObjectIndices) {
+    if (mode < 0 || mode >= MODE_INVALID) {
+      throw new RuntimeException("Invalid channel mapping mode: " + mode);
+    }
+    if (mode == MODE_SPEAKER) {
+      if (rawObjectIndices.length != 1) {
+        throw new RuntimeException("Speaker channel mapping mode must specify one speaker index");
+      }
+      int speakerIndex = rawObjectIndices[0];
+      if (speakerIndex < 0 || speakerIndex >= glucose.model.speakers.size()) {
+        throw new RuntimeException("Invalid speaker channel mapping: " + speakerIndex);
+      }
+    } else if ((mode == MODE_FLOOR) || (mode == MODE_BASS) || (mode == MODE_NULL)) {
+      if (rawObjectIndices.length > 0) {
+        throw new RuntimeException("Bass/floor/null mappings cannot specify object indices");
+      }
+    } else if (mode == MODE_CUBES) {
+      for (int rawCubeIndex : rawObjectIndices) {
+        if (glucose.model.getCubeByRawIndex(rawCubeIndex) == null) {
+          throw new RuntimeException("Non-existing cube specified in cube mapping: " + rawCubeIndex);
+        }
+      }
+    }
+    
+    this.mode = mode;
+    for (int i = 0; i < objectIndices.length; ++i) {
+      objectIndices[i] = (i < rawObjectIndices.length) ? rawObjectIndices[i] : NO_OBJECT;
+    }
+  }
+}

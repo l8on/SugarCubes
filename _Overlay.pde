@@ -748,7 +748,7 @@ class MappingUI extends OverlayUI {
 
 class DebugUI {
   
-  final int[][] channelList;
+  final ChannelMapping[] channelList;
   final int debugX = 10;
   final int debugY = 42;
   final int debugXSpacing = 28;
@@ -761,10 +761,10 @@ class DebugUI {
   
   DebugUI(PandaMapping[] pandaMappings) {
     int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
-    channelList = new int[totalChannels][];
+    channelList = new ChannelMapping[totalChannels];
     int channelIndex = 0;
     for (PandaMapping pm : pandaMappings) {
-      for (int[] channel : pm.channelList) {
+      for (ChannelMapping channel : pm.channelList) {
         channelList[channelIndex++] = channel;
       }
     }
@@ -784,26 +784,44 @@ class DebugUI {
     rect(4, 32, 172, 388);
     
     int channelNum = 0;
-    for (int[] channel : channelList) {
+    for (ChannelMapping channel : channelList) {
       int xPos = xBase;
       drawNumBox(xPos, yPos, channelNum+1, debugState[channelNum][0]);
+      xPos += debugXSpacing;
       
-      boolean first = true;
-      int cubeNum = 0;
-      for (int cube : channel) {
-        if (cube <= 0) {
+      switch (channel.mode) {
+        case ChannelMapping.MODE_CUBES:
+          int stateIndex = 0;
+          boolean first = true;
+          for (int rawCubeIndex : channel.objectIndices) {
+            if (rawCubeIndex < 0) {
+              break;
+            }
+            if (first) {
+              first = false;
+            } else {
+              stroke(#999999);          
+              line(xPos - 12, yPos + 8, xPos, yPos + 8);
+            }
+            drawNumBox(xPos, yPos, rawCubeIndex, debugState[channelNum][stateIndex+1]);
+            ++stateIndex;
+            xPos += debugXSpacing;            
+          }
           break;
-        }
-        xPos += debugXSpacing;
-        if (first) {
-          first = false;
-        } else {
-          stroke(#999999);          
-          line(xPos - 12, yPos + 8, xPos, yPos + 8);
-        }
-        drawNumBox(xPos, yPos, cube, debugState[channelNum][cubeNum+1]);
-        ++cubeNum;
-      }
+        case ChannelMapping.MODE_BASS:
+          drawNumBox(xPos, yPos, "B", debugState[channelNum][1]);
+          break;
+        case ChannelMapping.MODE_SPEAKER:
+          drawNumBox(xPos, yPos, "S" + channel.objectIndices[0], debugState[channelNum][1]);
+          break;
+        case ChannelMapping.MODE_FLOOR:
+          drawNumBox(xPos, yPos, "F", debugState[channelNum][1]);
+          break;
+        case ChannelMapping.MODE_NULL:
+          break;
+        default:
+          throw new RuntimeException("Unhandled channel mapping mode: " + channel.mode);
+      }          
       
       yPos += debugYSpacing;
       ++channelNum;
@@ -851,20 +869,61 @@ class DebugUI {
     color white = #FFFFFF;
     color off = #000000;
     int channelIndex = 0;
-    for (int[] channel : channelList) {
-      int cubeIndex = 1;
-      for (int rawCubeIndex : channel) {
-        if (rawCubeIndex > 0) {
-          int state = debugState[channelIndex][cubeIndex];
-          if (state != DEBUG_STATE_ANIM) {
-            color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
-            Cube cube = glucose.model.getCubeByRawIndex(rawCubeIndex);
-            for (Point p : cube.points) {
-              colors[p.index] = debugColor;
+    int state;
+    for (ChannelMapping channel : channelList) {
+      switch (channel.mode) {
+        case ChannelMapping.MODE_CUBES:
+          int cubeIndex = 1;
+          for (int rawCubeIndex : channel.objectIndices) {
+            if (rawCubeIndex >= 0) {
+              state = debugState[channelIndex][cubeIndex];
+              if (state != DEBUG_STATE_ANIM) {
+                color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
+                Cube cube = glucose.model.getCubeByRawIndex(rawCubeIndex);
+                for (Point p : cube.points) {
+                  colors[p.index] = debugColor;
+                }
+              }
             }
+            ++cubeIndex;
           }
-        }
-        ++cubeIndex;
+          break;
+            
+         case ChannelMapping.MODE_BASS:
+           state = debugState[channelIndex][1];
+           if (state != DEBUG_STATE_ANIM) {
+              color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
+              for (Point p : glucose.model.bassBox.points) {
+                colors[p.index] = debugColor;
+              }
+           }
+           break;
+
+         case ChannelMapping.MODE_FLOOR:
+           state = debugState[channelIndex][1];
+           if (state != DEBUG_STATE_ANIM) {
+              color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
+              for (Point p : glucose.model.boothFloor.points) {
+                colors[p.index] = debugColor;
+              }
+           }
+           break;
+           
+         case ChannelMapping.MODE_SPEAKER:
+           state = debugState[channelIndex][1];
+           if (state != DEBUG_STATE_ANIM) {
+              color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
+              for (Point p : glucose.model.speakers.get(channel.objectIndices[0]).points) {
+                colors[p.index] = debugColor;
+              }
+           }
+           break;
+           
+         case ChannelMapping.MODE_NULL:
+           break;
+           
+        default:
+          throw new RuntimeException("Unhandled channel mapping mode: " + channel.mode);           
       }
       ++channelIndex;
     }

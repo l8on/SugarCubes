@@ -122,8 +122,6 @@ void setup() {
   
   println("Total setup: " + (millis() - startMillis) + "ms");
   println("Hit the 'p' key to toggle Panda Board output");
-  
-  println(glucose.model.bassBox.points.size());
 }
 
 void controllerChangeReceived(rwmidi.Controller cc) {

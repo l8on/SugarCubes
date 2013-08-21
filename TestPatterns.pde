@@ -237,8 +237,8 @@ class MappingTool extends TestPattern {
   private final int numChannels;
   
   private final PandaMapping[] pandaMappings;
-  private PandaMapping activeMapping;
-  private int mappingChannelIndex;
+  private PandaMapping activePanda;
+  private ChannelMapping activeChannel;
   
   MappingTool(GLucose glucose, PandaMapping[] pandaMappings) {
     super(glucose);
@@ -248,17 +248,19 @@ class MappingTool extends TestPattern {
   }
   
   private void setChannel() {
-    mappingChannelIndex = channelIndex % PandaMapping.CHANNELS_PER_BOARD;
-    activeMapping = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
+    activePanda = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
+    activeChannel = activePanda.channelList[channelIndex % PandaMapping.CHANNELS_PER_BOARD];
   }
   
-  private int cubeInChannel(Cube c) {
-    int i = 1;
-    for (int index : activeMapping.channelList[mappingChannelIndex]) {
-      if (c == model.getCubeByRawIndex(index)) {
-        return i;
+  private int indexOfCubeInChannel(Cube c) {
+    if (activeChannel.mode == ChannelMapping.MODE_CUBES) {
+      int i = 1;
+      for (int index : activeChannel.objectIndices) {
+        if (c == model.getCubeByRawIndex(index)) {
+          return i;
+        }
+        ++i;
       }
-      ++i;
     }
     return 0;
   }
@@ -292,7 +294,7 @@ class MappingTool extends TestPattern {
     int ci = 0;
     for (Cube cube : model.cubes) {
       boolean cubeOn = false;
-      int channelIndex = cubeInChannel(cube);
+      int indexOfCubeInChannel = indexOfCubeInChannel(cube);
       switch (mappingMode) {
         case MAPPING_MODE_ALL: cubeOn = true; break;
         case MAPPING_MODE_SINGLE_CUBE: cubeOn = (cubeIndex == ci); break;
@@ -301,7 +303,7 @@ class MappingTool extends TestPattern {
       if (cubeOn) {
         if (mappingMode == MAPPING_MODE_CHANNEL) {
           color cc = off;
-          switch (channelIndex) {
+          switch (indexOfCubeInChannel) {
             case 1: cc = r; break;
             case 2: cc = r|g; break;
             case 3: cc = g; break;

@@ -34,6 +34,8 @@ public class PandaDriver {
   // Packet data
   private final byte[] packet = new byte[4*352]; // TODO: de-magic-number, UDP related?
 
+  private static final int NO_POINT = -1;
+
   public PandaDriver(String ip) {
     this.ip = ip;
     this.address = new NetAddress(ip, 9001);
@@ -70,31 +72,62 @@ public class PandaDriver {
     };
 
     int pi = 0;
-    for (int[] channel : pm.channelList) {
-      for (int cubeNumber : channel) {
-        if (cubeNumber <= 0) {
-          for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
-            points[pi++] = 0;
-          }
-        } else {
-          Cube cube = model.getCubeByRawIndex(cubeNumber);
-          if (cube == null) {
-            throw new RuntimeException("Non-zero, non-existing cube specified in channel mapping (" + cubeNumber + ")");
-          }
-          int stripOrderIndex = 0;
-          switch (cube.wiring) {
-            case FRONT_LEFT: stripOrderIndex = 0; break;
-            case FRONT_RIGHT: stripOrderIndex = 1; break;
-            case REAR_LEFT: stripOrderIndex = 2; break;
-            case REAR_RIGHT: stripOrderIndex = 3; break;
-          }
-          for (int stripIndex : stripOrderings[stripOrderIndex]) {
-            Strip s = cube.strips.get(stripIndex);
-            for (int j = s.points.size() - 1; j >= 0; --j) {
-              points[pi++] = s.points.get(j).index;
+    for (ChannelMapping channel : pm.channelList) {
+      switch (channel.mode) {
+        case ChannelMapping.MODE_CUBES:
+          for (int rawCubeIndex : channel.objectIndices) {
+            if (rawCubeIndex < 0) {
+              for (int i = 0; i < Cube.POINTS_PER_CUBE; ++i) {
+                points[pi++] = NO_POINT;
+              }
+            } else {
+              Cube cube = model.getCubeByRawIndex(rawCubeIndex);
+              int stripOrderIndex = 0;
+              switch (cube.wiring) {
+                case FRONT_LEFT: stripOrderIndex = 0; break;
+                case FRONT_RIGHT: stripOrderIndex = 1; break;
+                case REAR_LEFT: stripOrderIndex = 2; break;
+                case REAR_RIGHT: stripOrderIndex = 3; break;
+              }
+              for (int stripIndex : stripOrderings[stripOrderIndex]) {
+                Strip s = cube.strips.get(stripIndex);
+                for (int j = s.points.size() - 1; j >= 0; --j) {
+                  points[pi++] = s.points.get(j).index;
+                }
+              }
             }
           }
-        }
+          break;
+          
+        case ChannelMapping.MODE_BASS:
+          // TODO(mapping): figure out how these strips are wired
+          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
+            points[pi++] = NO_POINT;
+          }
+          break;
+          
+        case ChannelMapping.MODE_FLOOR:        
+          // TODO(mapping): figure out how these strips are wired
+          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
+            points[pi++] = NO_POINT;
+          }
+          break;
+          
+        case ChannelMapping.MODE_SPEAKER:
+          // TODO(mapping): figure out how these strips are wired
+          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
+            points[pi++] = NO_POINT;
+          }
+          break;
+          
+        case ChannelMapping.MODE_NULL:
+          for (int i = 0; i < ChannelMapping.PIXELS_PER_CHANNEL; ++i) {
+            points[pi++] = NO_POINT;
+          }
+          break;
+          
+        default:
+          throw new RuntimeException("Invalid/unhandled channel mapping mode: " + channel.mode);
       }
     }
   }
@@ -106,7 +139,7 @@ public class PandaDriver {
     int len = 0;
     int packetNum = 0;
     for (int index : points) {
-      int c = colors[index];
+      int c = (index < 0) ? 0 : colors[index];
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);

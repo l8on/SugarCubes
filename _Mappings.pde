@@ -41,22 +41,24 @@ public Model buildModel() {
   
   final float STACKED_RELATIVE = 1;
   final float STACKED_REL_SPIN = 2;
+  final float BASS_DEPTH = BassBox.EDGE_DEPTH + 4;
   
   TowerMapping[] mapping = new TowerMapping[] {
-    
-    new TowerMapping(0, 0, 0, new float[][] {
-      {STACKED_RELATIVE, 0, 0},
-      {STACKED_RELATIVE, 5, -10, 20},
-      {STACKED_RELATIVE, 0, -6},
-      {STACKED_RELATIVE, -5, -2, -20},
-    }),
 
-    new TowerMapping(Cube.EDGE_WIDTH + 2, 0, 0, new float[][] {
-      {STACKED_RELATIVE, 0, 0},
-      {STACKED_RELATIVE, 0, 5, 10},
-      {STACKED_RELATIVE, 0, 2, 20},
-      {STACKED_RELATIVE, 0, 0, 30},
-    }),
+      // Front left cubes
+//    new TowerMapping(0, 0, 0, new float[][] {
+//      {STACKED_RELATIVE, 0, 0},
+//      {STACKED_RELATIVE, 5, -10, 20},
+//      {STACKED_RELATIVE, 0, -6},
+//      {STACKED_RELATIVE, -5, -2, -20},
+//    }),
+//
+//    new TowerMapping(Cube.EDGE_WIDTH + 2, 0, 0, new float[][] {
+//      {STACKED_RELATIVE, 0, 0},
+//      {STACKED_RELATIVE, 0, 5, 10},
+//      {STACKED_RELATIVE, 0, 2, 20},
+//      {STACKED_RELATIVE, 0, 0, 30},
+//    }),
     
     // Back Cubes behind DJ platform (in order of increasing x)
     new TowerMapping(50, 5, BASS_DEPTH, new float[][] {
@@ -100,68 +102,68 @@ public Model buildModel() {
     }),
     
     // front DJ cubes
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, -10, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + Cube.EDGE_HEIGHT, BASS_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + Cube.EDGE_HEIGHT, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 3, 0},
       {STACKED_RELATIVE, 2, -10, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BASS_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 2*Cube.EDGE_HEIGHT + 5, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 1, 0, 10},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BASS_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 3*Cube.EDGE_HEIGHT + 9, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, -1, 0},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 10, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 10, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, -1, 0},
     }),
     
     // left dj cubes    
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, Cube.EDGE_HEIGHT + 2, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
     // right dj cubes    
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, Cube.EDGE_HEIGHT + 2, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, Cube.EDGE_HEIGHT + 2, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
     
-    new TowerMapping((TRAILER_WIDTH - BASS_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BASS_HEIGHT, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
+    new TowerMapping((TRAILER_WIDTH - BassBox.EDGE_WIDTH)/2 + 4*Cube.EDGE_HEIGHT + 15, BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH, 2*Cube.EDGE_HEIGHT + 4, new float[][] {
       {STACKED_RELATIVE, 0, 0},
       {STACKED_RELATIVE, 0, 2, 20},
     }),
 
-    new TowerMapping(200, 0, 0, new float[][] {
-      {STACKED_RELATIVE, 0, 10},
-      {STACKED_RELATIVE, 5, 0, 20},
-      {STACKED_RELATIVE, 0, 4},
-      {STACKED_RELATIVE, -5, 8, -20},
-      {STACKED_RELATIVE, 0, 3},
-    }),
+//    new TowerMapping(200, 0, 0, new float[][] {
+//      {STACKED_RELATIVE, 0, 10},
+//      {STACKED_RELATIVE, 5, 0, 20},
+//      {STACKED_RELATIVE, 0, 4},
+//      {STACKED_RELATIVE, -5, 8, -20},
+//      {STACKED_RELATIVE, 0, 3},
+//    }),
     
-    new TowerMapping(0, 0, Cube.EDGE_HEIGHT + 10, new float[][] {
-      {STACKED_RELATIVE, 10, 0, 40},
-      {STACKED_RELATIVE, 3, -2, 20},
-      {STACKED_RELATIVE, 0, 0, 40},
-      {STACKED_RELATIVE, 0, 0, 60},
-      {STACKED_RELATIVE, 0, 0, 40},
-    }),
+//    new TowerMapping(0, 0, Cube.EDGE_HEIGHT + 10, new float[][] {
+//      {STACKED_RELATIVE, 10, 0, 40},
+//      {STACKED_RELATIVE, 3, -2, 20},
+//      {STACKED_RELATIVE, 0, 0, 40},
+//      {STACKED_RELATIVE, 0, 0, 60},
+//      {STACKED_RELATIVE, 0, 0, 40},
+//    }),
     
     new TowerMapping(20, 0, 2*Cube.EDGE_HEIGHT + 18, new float[][] {
       {STACKED_RELATIVE, 0, 0, 40},
@@ -171,13 +173,13 @@ public Model buildModel() {
       {STACKED_RELATIVE, 12, 0, 40},
     }),
     
-    new TowerMapping(210, 0, Cube.EDGE_HEIGHT + 15, new float[][] {
-      {STACKED_RELATIVE, 0, 0, 40},
-      {STACKED_RELATIVE, 5, 0, 20},
-      {STACKED_RELATIVE, 8, 0, 40},
-      {STACKED_RELATIVE, 3, 0, 60},
-      {STACKED_RELATIVE, 0, 0, 40},
-    }),
+//    new TowerMapping(210, 0, Cube.EDGE_HEIGHT + 15, new float[][] {
+//      {STACKED_RELATIVE, 0, 0, 40},
+//      {STACKED_RELATIVE, 5, 0, 20},
+//      {STACKED_RELATIVE, 8, 0, 40},
+//      {STACKED_RELATIVE, 3, 0, 60},
+//      {STACKED_RELATIVE, 0, 0, 40},
+//    }),
     
     new TowerMapping(210, 0, 2*Cube.EDGE_HEIGHT + 25, new float[][] {
       {STACKED_RELATIVE, 0, 0, 40},
@@ -215,65 +217,143 @@ public Model buildModel() {
     }
     towerList.add(new Tower(tower));
   }
-       
-  return new Model(towerList, cubes);
+
+  BassBox bassBox = new BassBox(56, 0, 2);
+
+  List<Speaker> speakers = new ArrayList<Speaker>();
+  speakers.add(new Speaker(-12, 6, 0, 15));
+  speakers.add(new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH, 6, 6, -15));
+
+  return new Model(towerList, cubes, bassBox, speakers);
 }
 
 public PandaMapping[] buildPandaList() {
   return new PandaMapping[] {
     new PandaMapping(
-      "10.200.1.28", new int[][] {
-      {  1,  2,  3,  4 }, // ch1
-      {  5,  6,  7,  8 }, // ch2
-      {  9, 10, 11, 12 }, // ch3
-      { 13, 14, 15, 16 }, // ch4
-      { 17, 18, 19, 20 }, // ch5
-      { 21, 22, 23, 24 }, // ch6
-      { 25, 26, 27, 28 }, // ch7
-      { 29, 30, 31, 32 }, // ch8
+      "10.200.1.28", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_BASS),
+        new ChannelMapping(ChannelMapping.MODE_FLOOR),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  1,  2,  3,  4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  5,  6,  7,  8 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  9, 10, 11, 12 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 13, 14, 15, 16 }),
     }),
 
     new PandaMapping(
-      "10.200.1.29", new int[][] {
-      { 33, 34, 35, 36 }, // ch9
-      { 37, 38, 39, 40 }, // ch10
-      { 41, 42, 43, 44 }, // ch11
-      { 45, 46, 47, 48 }, // ch12
-      { 49, 50, 51, 52 }, // ch13
-      { 53, 54, 55, 56 }, // ch14
-      { 57, 58, 59, 60 }, // ch15
-      { 61, 62, 63, 64 }, // ch16
+      "10.200.1.29", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 17, 18, 19, 20 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 21, 22, 23, 24 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 25, 26, 27, 28 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 29, 30, 31, 32 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33, 34, 35, 36 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 39, 40 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 41, 42, 43, 44 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45, 46, 47, 48 }),
     }),
-    
   };
 }
 
+/**
+ * Each panda board has an IP address and a fixed number of channels. The channels
+ * each have a fixed number of pixels on them. Whether or not that many physical
+ * pixels are connected to the channel, we still send it that much data.
+ */
 class PandaMapping {
   
   // How many channels are on the panda board
   public final static int CHANNELS_PER_BOARD = 8;
   
-  // How many cubes per channel xc_PB is configured for
-  public final static int CUBES_PER_CHANNEL = 4;
-  
-  // How many total pixels on each channel
-  public final static int PIXELS_PER_CHANNEL = Cube.POINTS_PER_CUBE * CUBES_PER_CHANNEL;
-  
   // How many total pixels on the whole board
-  public final static int PIXELS_PER_BOARD = PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;
+  public final static int PIXELS_PER_BOARD = ChannelMapping.PIXELS_PER_CHANNEL * CHANNELS_PER_BOARD;
   
   final String ip;
-  final int[][] channelList = new int[CHANNELS_PER_BOARD][CUBES_PER_CHANNEL];
+  final ChannelMapping[] channelList = new ChannelMapping[CHANNELS_PER_BOARD];
   
-  PandaMapping(String ip, int[][] rawChannelList) {
+  PandaMapping(String ip, ChannelMapping[] rawChannelList) {
     this.ip = ip;
-    for (int chi = 0; chi < CHANNELS_PER_BOARD; ++chi) {
-      int[] cubes = (chi < rawChannelList.length) ? rawChannelList[chi] : new int[]{};
-      for (int cui = 0; cui < CUBES_PER_CHANNEL; ++cui) {
-        channelList[chi][cui] = (cui < cubes.length) ? cubes[cui] : 0;
+    
+    // Ensure our array is the right length and has all valid items in it
+    for (int i = 0; i < channelList.length; ++i) {
+      channelList[i] = (i < rawChannelList.length) ? rawChannelList[i] : new ChannelMapping();
+      if (channelList[i] == null) {
+        channelList[i] = new ChannelMapping();
       }
     }
   }
 }
 
+/**
+ * Each channel on a pandaboard can be mapped in a number of modes. The typial is
+ * to a series of connected cubes, but we also have special mappings for the bass box,
+ * the speaker enclosures, and the DJ booth floor.
+ *
+ * This class is just the mapping meta-data. It sanitizes the input to make sure
+ * that the cubes and objects being referenced actually exist in the model.
+ *
+ * The logic for how to encode the pixels is contained in the PandaDriver.
+ */
+class ChannelMapping {
+
+  // How many cubes per channel xc_PB is configured for
+  public final static int CUBES_PER_CHANNEL = 4;  
+
+  // How many total pixels on each channel
+  public final static int PIXELS_PER_CHANNEL = Cube.POINTS_PER_CUBE * CUBES_PER_CHANNEL;
+  
+  public static final int MODE_NULL = 0;
+  public static final int MODE_CUBES = 1;
+  public static final int MODE_BASS = 2;
+  public static final int MODE_SPEAKER = 3;
+  public static final int MODE_FLOOR = 4;
+  public static final int MODE_INVALID = 5;
+  
+  public static final int NO_OBJECT = -1;
+  
+  final int mode;
+  final int[] objectIndices = new int[CUBES_PER_CHANNEL];
+  
+  ChannelMapping() {
+    this(MODE_NULL);
+  }
+  
+  ChannelMapping(int mode) {
+    this(mode, new int[]{});
+  }
+  
+  ChannelMapping(int mode, int rawObjectIndex) {
+    this(mode, new int[]{ rawObjectIndex });
+  }
+  
+  ChannelMapping(int mode, int[] rawObjectIndices) {
+    if (mode < 0 || mode >= MODE_INVALID) {
+      throw new RuntimeException("Invalid channel mapping mode: " + mode);
+    }
+    if (mode == MODE_SPEAKER) {
+      if (rawObjectIndices.length != 1) {
+        throw new RuntimeException("Speaker channel mapping mode must specify one speaker index");
+      }
+      int speakerIndex = rawObjectIndices[0];
+      if (speakerIndex < 0 || speakerIndex >= glucose.model.speakers.size()) {
+        throw new RuntimeException("Invalid speaker channel mapping: " + speakerIndex);
+      }
+    } else if ((mode == MODE_FLOOR) || (mode == MODE_BASS) || (mode == MODE_NULL)) {
+      if (rawObjectIndices.length > 0) {
+        throw new RuntimeException("Bass/floor/null mappings cannot specify object indices");
+      }
+    } else if (mode == MODE_CUBES) {
+      for (int rawCubeIndex : rawObjectIndices) {
+        if (glucose.model.getCubeByRawIndex(rawCubeIndex) == null) {
+          throw new RuntimeException("Non-existing cube specified in cube mapping: " + rawCubeIndex);
+        }
+      }
+    }
+    
+    this.mode = mode;
+    for (int i = 0; i < objectIndices.length; ++i) {
+      objectIndices[i] = (i < rawObjectIndices.length) ? rawObjectIndices[i] : NO_OBJECT;
+    }
+  }
+}
 

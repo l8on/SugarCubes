@@ -213,16 +213,16 @@ class FaceSync extends SCPattern {
 
   public void run(int deltaMs) {
     int i=0;
-    for (Cube c : model.cubes) {
+    for (Strip s : model.strips) {
       i++;
-      for (Point p : c.points) {
+      for (Point p : s.points) {
         float dx, dz;
-        if (i%2==0) {
-          dx = p.fx - (c.cx+xosc.getValuef());
-          dz = p.fz - (c.cz+zosc.getValuef());
+        if (i%32 < 16) {
+          dx = p.fx - (s.cx+xosc.getValuef());
+          dz = p.fz - (s.cz+zosc.getValuef());
         } else {
-          dx = p.fx - (c.cx+zosc.getValuef());
-          dz = p.fz - (c.cz+xosc.getValuef());
+          dx = p.fx - (s.cx+zosc.getValuef());
+          dz = p.fz - (s.cz+xosc.getValuef());
         }                
         //println(dx);
         float a1=max(0,100-abs(p.fx-col1.getValuef()));

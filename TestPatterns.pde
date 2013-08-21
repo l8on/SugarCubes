@@ -5,6 +5,28 @@ abstract class TestPattern extends SCPattern {
   }
 }
 
+class TestStripPattern extends TestPattern {
+  
+  SinLFO d = new SinLFO(4, 40, 4000);
+  
+  public TestStripPattern(GLucose glucose) {
+    super(glucose);
+    addModulator(d).trigger();
+  }
+  
+  public void run(int deltaMs) {
+    for (Strip s : model.strips) {
+      for (Point p : s.points) {
+        colors[p.index] = color(
+          lx.getBaseHuef(),
+          100,
+          max(0, 100 - d.getValuef()*dist(p.x, p.y, s.cx, s.cy))
+        );
+      }
+    }
+  }
+}
+
 /**
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.
@@ -158,11 +180,11 @@ class TestProjectionPattern extends TestPattern {
     for (Coord c : projection) {
       float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
       // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
-      d = max(0, abs(c.y) - 10 + .3*abs(c.z) + .08*abs(c.x)); // plane / spear thing
+      d = max(0, abs(c.y) - 10 + .1*abs(c.z) + .02*abs(c.x)); // plane / spear thing
       colors[c.index] = color(
         (hv + .6*abs(c.x) + abs(c.z)) % 360,
         100,
-        constrain(140 - 10*d, 0, 100)
+        constrain(140 - 40*d, 0, 100)
       );
     }
   } 
@@ -215,8 +237,8 @@ class MappingTool extends TestPattern {
   private final int numChannels;
   
   private final PandaMapping[] pandaMappings;
-  private PandaMapping activeMapping;
-  private int mappingChannelIndex;
+  private PandaMapping activePanda;
+  private ChannelMapping activeChannel;
   
   MappingTool(GLucose glucose, PandaMapping[] pandaMappings) {
     super(glucose);
@@ -226,17 +248,19 @@ class MappingTool extends TestPattern {
   }
   
   private void setChannel() {
-    mappingChannelIndex = channelIndex % PandaMapping.CHANNELS_PER_BOARD;
-    activeMapping = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
+    activePanda = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
+    activeChannel = activePanda.channelList[channelIndex % PandaMapping.CHANNELS_PER_BOARD];
   }
   
-  private int cubeInChannel(Cube c) {
-    int i = 1;
-    for (int index : activeMapping.channelList[mappingChannelIndex]) {
-      if (c == model.getCubeByRawIndex(index)) {
-        return i;
+  private int indexOfCubeInChannel(Cube c) {
+    if (activeChannel.mode == ChannelMapping.MODE_CUBES) {
+      int i = 1;
+      for (int index : activeChannel.objectIndices) {
+        if (c == model.getCubeByRawIndex(index)) {
+          return i;
+        }
+        ++i;
       }
-      ++i;
     }
     return 0;
   }
@@ -270,7 +294,7 @@ class MappingTool extends TestPattern {
     int ci = 0;
     for (Cube cube : model.cubes) {
       boolean cubeOn = false;
-      int channelIndex = cubeInChannel(cube);
+      int indexOfCubeInChannel = indexOfCubeInChannel(cube);
       switch (mappingMode) {
         case MAPPING_MODE_ALL: cubeOn = true; break;
         case MAPPING_MODE_SINGLE_CUBE: cubeOn = (cubeIndex == ci); break;
@@ -279,7 +303,7 @@ class MappingTool extends TestPattern {
       if (cubeOn) {
         if (mappingMode == MAPPING_MODE_CHANNEL) {
           color cc = off;
-          switch (channelIndex) {
+          switch (indexOfCubeInChannel) {
             case 1: cc = r; break;
             case 2: cc = r|g; break;
             case 3: cc = g; break;
@@ -343,15 +367,13 @@ class MappingTool extends TestPattern {
   }
   
   public void incStrip() {
-    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
-    stripIndex = (stripIndex + 1) % stripsPerCube;
+    stripIndex = (stripIndex + 1) % Cube.STRIPS_PER_CUBE;
   }
   
   public void decStrip() {
-    int stripsPerCube = Cube.FACES_PER_CUBE * Face.STRIPS_PER_FACE;
     --stripIndex;
     if (stripIndex < 0) {
-      stripIndex += stripsPerCube;
+      stripIndex += Cube.STRIPS_PER_CUBE;
     }
   }
   

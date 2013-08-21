@@ -1,6 +1,6 @@
 class SpaceTime extends SCPattern {
 
-  SinLFO pos = new SinLFO(0, 15, 3000);
+  SinLFO pos = new SinLFO(0, 1, 3000);
   SinLFO rate = new SinLFO(1000, 9000, 13000);
   SinLFO falloff = new SinLFO(10, 70, 5000);
   float angle = 0;
@@ -8,8 +8,10 @@ class SpaceTime extends SCPattern {
   BasicParameter rateParameter = new BasicParameter("RATE", 0.5);
   BasicParameter sizeParameter = new BasicParameter("SIZE", 0.5);
 
+
   public SpaceTime(GLucose glucose) {
     super(glucose);
+    
     addModulator(pos).trigger();
     addModulator(rate).trigger();
     addModulator(falloff).trigger();    
@@ -39,10 +41,10 @@ class SpaceTime extends SCPattern {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
-        (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
-        constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
-        max(0, 100 - fVal*abs(i - pVal))
-          );
+          (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
+          constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
+          max(0, 100 - fVal*abs(i - pVal*(strip.metrics.numPoints - 1)))
+        );
         ++i;
       }
       ++s;
@@ -52,7 +54,7 @@ class SpaceTime extends SCPattern {
 
 class Swarm extends SCPattern {
 
-  SawLFO offset = new SawLFO(0, 16, 1000);
+  SawLFO offset = new SawLFO(0, 1, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
   SinLFO fX = new SinLFO(0, model.xMax, 19000);
@@ -61,6 +63,7 @@ class Swarm extends SCPattern {
 
   public Swarm(GLucose glucose) {
     super(glucose);
+    
     addModulator(offset).trigger();
     addModulator(rate).trigger();
     addModulator(falloff).trigger();
@@ -83,14 +86,14 @@ class Swarm extends SCPattern {
 
   void run(int deltaMs) {
     float s = 0;
-    for (Strip strip : model.strips) {
+    for (Strip strip : model.strips  ) {
       int i = 0;
       for (Point p : strip.points) {
         float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
         colors[p.index] = color(
         (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
-        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef(), 16), 0, 100)
+        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, (int) (offset.getValuef() * strip.metrics.numPoints), strip.metrics.numPoints), 0, 100)
           );
         ++i;
       }
@@ -125,80 +128,105 @@ class SwipeTransition extends SCTransition {
   }
 }
 
-class CubeEQ extends SCPattern {
+class BassPod extends SCPattern {
 
-  private FFT fft = null; 
-  private LinearEnvelope[] bandVals = null;
-  private int avgSize;
-
-  private final BasicParameter thrsh = new BasicParameter("LVL", 0.35);
-  private final BasicParameter range = new BasicParameter("RANG", 0.45);
-  private final BasicParameter edge = new BasicParameter("EDGE", 0.5);
-  private final BasicParameter speed = new BasicParameter("SPD", 0.5);
-  private final BasicParameter tone = new BasicParameter("TONE", 0.5);
-  private final BasicParameter clr = new BasicParameter("CLR", 0.5);
-
-  public CubeEQ(GLucose glucose) {
+  private GraphicEQ eq = null;
+  
+  public BassPod(GLucose glucose) {
     super(glucose);
-    addParameter(thrsh);
-    addParameter(range);
-    addParameter(edge);
-    addParameter(speed);
-    addParameter(tone);
-    addParameter(clr);
   }
-
+  
   protected void onActive() {
-    if (this.fft == null) {
-      this.fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
-      this.fft.window(FFT.HAMMING);
-      this.fft.logAverages(40, 1);
-      this.avgSize = this.fft.avgSize();
-      this.bandVals = new LinearEnvelope[this.avgSize];
-      for (int i = 0; i < this.bandVals.length; ++i) {
-        this.addModulator(this.bandVals[i] = (new LinearEnvelope(0, 0, 700+i*4))).trigger();
-      }
+    if (eq == null) {
+      eq = new GraphicEQ(lx, 16);
+      eq.slope.setValue(0.6);
+      addParameter(eq.level);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
     }
   }
 
   public void run(int deltaMs) {
-    this.fft.forward(this.lx.audioInput().mix);
-    float toneConst = .35 + .4 * (tone.getValuef() - 0.5);
-    float edgeConst = 2 + 30*(edge.getValuef()*edge.getValuef()*edge.getValuef());
-
-    for (int i = 0; i < avgSize; ++i) {
-      float value = this.fft.getAvg(i);
-      value = 20*log(1 + sqrt(value));
-      float sqdist = avgSize - i;
-      value -= toneConst*sqdist*sqdist + .5*sqdist;
-      value *= 6;
-      if (value > this.bandVals[i].getValue()) {
-        this.bandVals[i].setEndVal(value, 40).trigger();
-      } 
-      else {
-        this.bandVals[i].setEndVal(value, 1000 - 900*speed.getValuef()).trigger();
+    eq.run(deltaMs);
+    
+    float bassLevel = eq.getAverageLevel(0, 5);
+    
+    for (Point p : model.points) {
+      int avgIndex = (int) constrain(1 + abs(p.fx-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
+      float value = 0;
+      for (int i = avgIndex; i < avgIndex + 5; ++i) {
+        value += eq.getLevel(i);
       }
-    }
+      value /= 5.;
 
-    float jBase = 120 - 360*thrsh.getValuef();
-    float jConst = 300.*(1-range.getValuef());
+      float b = constrain(8 * (value*model.yMax - abs(p.fy-model.yMax/2.)), 0, 100);
+      colors[p.index] = color(
+        (lx.getBaseHuef() + abs(p.fy - model.cy) + abs(p.fx - model.cx)) % 360,
+        constrain(bassLevel*240 - .6*dist(p.fx, p.fy, model.cx, model.cy), 0, 100),
+        b
+      );
+    }
+  }
+}
+
+
+class CubeEQ extends SCPattern {
+
+  private GraphicEQ eq = null;
+
+  private final BasicParameter edge = new BasicParameter("EDGE", 0.5);
+  private final BasicParameter clr = new BasicParameter("CLR", 0.5);
+  private final BasicParameter blockiness = new BasicParameter("BLK", 0.5);
+
+  public CubeEQ(GLucose glucose) {
+    super(glucose);
+  }
+
+  protected void onActive() {
+    if (eq == null) {
+      eq = new GraphicEQ(lx, 16);
+      addParameter(eq.level);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
+      addParameter(edge);
+      addParameter(clr);
+      addParameter(blockiness);
+    }
+  }
+
+  public void run(int deltaMs) {
+    eq.run(deltaMs);
+
+    float edgeConst = 2 + 30*edge.getValuef();
     float clrConst = 1.1 + clr.getValuef();
 
     for (Point p : model.points) {
-      float avgIndex = constrain((p.fx / model.xMax * avgSize), 0, avgSize-2);
+      float avgIndex = constrain(2 + p.fx / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
       int avgFloor = (int) avgIndex;
-      float j = jBase + jConst * (p.fy / model.yMax);
-      float value = lerp(
-      this.bandVals[avgFloor].getValuef(), 
-      this.bandVals[avgFloor+1].getValuef(), 
-      avgIndex-avgFloor
-        );
 
-      float b = constrain(edgeConst * (value - j), 0, 100);
+      float leftVal = eq.getLevel(avgFloor);
+      float rightVal = eq.getLevel(avgFloor+1);
+      float smoothValue = lerp(leftVal, rightVal, avgIndex-avgFloor);
+      
+      float chunkyValue = (
+        eq.getLevel(avgFloor/4*4) +
+        eq.getLevel(avgFloor/4*4 + 1) +
+        eq.getLevel(avgFloor/4*4 + 2) +
+        eq.getLevel(avgFloor/4*4 + 3)
+      ) / 4.; 
+      
+      float value = lerp(smoothValue, chunkyValue, blockiness.getValuef());
+
+      float b = constrain(edgeConst * (value*model.yMax - p.fy), 0, 100);
       colors[p.index] = color(
-      (480 + lx.getBaseHuef() - min(clrConst*p.fy, 120)) % 360, 
-      100, 
-      b);
+        (480 + lx.getBaseHuef() - min(clrConst*p.fy, 120)) % 360, 
+        100, 
+        b
+      );
     }
   }
 }
@@ -368,8 +396,7 @@ class CrossSections extends SCPattern {
     addParams();
   }
   
-  public void addParams()
-  {
+  protected void addParams() {
     addParameter(xr);
     addParameter(yr);
     addParameter(zr);    
@@ -380,8 +407,8 @@ class CrossSections extends SCPattern {
     addParameter(yw);    
     addParameter(zw);
   }
-
-  public void onParameterChanged(LXParameter p) {
+  
+  void onParameterChanged(LXParameter p) {
     if (p == xr) {
       x.setDuration(10000 - 8800*p.getValuef());
     } else if (p == yr) {
@@ -390,20 +417,18 @@ class CrossSections extends SCPattern {
       z.setDuration(10000 - 9000*p.getValuef());
     }
   }
-
-  float xv;
-  float yv;
-  float zv;  
-
-  public void updateXYZVals()
-  {
+  
+  float xv, yv, zv;
+  
+  protected void updateXYZVals() {
     xv = x.getValuef();
     yv = y.getValuef();
-    zv = z.getValuef(); 
+    zv = z.getValuef();    
   }
 
   public void run(int deltaMs) {
-    updateXYZVals();   
+    updateXYZVals();
+    
     float xlv = 100*xl.getValuef();
     float ylv = 100*yl.getValuef();
     float zlv = 100*zl.getValuef();
@@ -463,7 +488,7 @@ class Blinders extends SCPattern {
         colors[p.index] = color(
           (hv + p.fz + p.fy*hs.getValuef()) % 360, 
           min(100, abs(p.fx - s.getValuef())/2.), 
-          max(0, 100 - mv/2. - mv * abs(i - 7.5))
+          max(0, 100 - mv/2. - mv * abs(i - (strip.metrics.length-1)/2.))
         );
         ++i;
       }
@@ -606,3 +631,77 @@ class ShiftingPlane extends SCPattern {
   }
 }
 
+class Traktor extends SCPattern {
+
+  final int FRAME_WIDTH = 60;
+  
+  final BasicParameter speed = new BasicParameter("SPD", 0.5);
+  
+  private float[] bass = new float[FRAME_WIDTH];
+  private float[] treble = new float[FRAME_WIDTH];
+    
+  private int index = 0;
+  private GraphicEQ eq = null;
+
+  public Traktor(GLucose glucose) {
+    super(glucose);
+    for (int i = 0; i < FRAME_WIDTH; ++i) {
+      bass[i] = 0;
+      treble[i] = 0;
+    }
+    addParameter(speed);
+  }
+
+  public void onActive() {
+    if (eq == null) {
+      eq = new GraphicEQ(lx, 16);
+      eq.slope.setValue(0.6);
+      eq.level.setValue(0.65);
+      eq.range.setValue(0.35);
+      eq.release.setValue(0.4);
+      addParameter(eq.level);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
+    }
+  }
+
+  int counter = 0;
+  
+  public void run(int deltaMs) {
+    eq.run(deltaMs);
+    
+    int stepThresh = (int) (40 - 39*speed.getValuef());
+    counter += deltaMs;
+    if (counter < stepThresh) {
+      return;
+    }
+    counter = counter % stepThresh;
+
+    index = (index + 1) % FRAME_WIDTH;
+    
+    float rawBass = eq.getAverageLevel(0, 4);
+    float rawTreble = eq.getAverageLevel(eq.numBands-7, 7);
+    
+    bass[index] = rawBass * rawBass * rawBass * rawBass;
+    treble[index] = rawTreble * rawTreble;
+
+    for (Point p : model.points) {
+      int i = (int) constrain((model.xMax - p.x) / model.xMax * FRAME_WIDTH, 0, FRAME_WIDTH-1);
+      int pos = (index + FRAME_WIDTH - i) % FRAME_WIDTH;
+      
+      colors[p.index] = color(
+        (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
+        100,
+        constrain(9 * (bass[pos]*model.cy - abs(p.fy - model.cy)), 0, 100)
+      );
+      colors[p.index] = blendColor(colors[p.index], color(
+        (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
+        60,
+        constrain(5 * (treble[pos]*.6*model.cy - abs(p.fy - model.cy)), 0, 100)
+
+      ), ADD);
+    }
+  }
+}

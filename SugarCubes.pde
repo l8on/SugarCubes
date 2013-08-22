@@ -106,6 +106,7 @@ LXEffect[] effects(GLucose glucose) {
     new FlashEffect(lx),
     new BoomEffect(glucose),
     new DesaturationEffect(lx),
+    new ColorFuckerEffect(glucose),
   };
 }
 

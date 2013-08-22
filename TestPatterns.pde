@@ -259,6 +259,30 @@ class TestProjectionPattern extends TestPattern {
   } 
 }
 
+class ColorFuckerEffect extends SCEffect {
+  
+  BasicParameter hueShift = new BasicParameter("HSHFT", 0);
+  BasicParameter sat = new BasicParameter("SAT", 1);  
+  BasicParameter bright = new BasicParameter("BRT", 1);
+  
+  ColorFuckerEffect(GLucose glucose) {
+    super(glucose);
+    addParameter(hueShift);
+    addParameter(bright);
+    addParameter(sat);    
+  }
+  
+  public void doApply(int[] colors) {
+    for (int i = 0; i < colors.length; ++i) {
+      colors[i] = color(
+        (hue(colors[i]) + hueShift.getValuef()*360.) % 360,
+        saturation(colors[i]) * sat.getValuef(),
+        brightness(colors[i]) * bright.getValuef()
+      );
+    }
+  }
+}
+
 class TestCubePattern extends TestPattern {
   
   private SawLFO index = new SawLFO(0, Cube.POINTS_PER_CUBE, Cube.POINTS_PER_CUBE*60);

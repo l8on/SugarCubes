@@ -204,6 +204,10 @@ void draw() {
     debugUI.draw();
   }
   
+  // TODO(dan): if you want to, here would be a good place to
+  // put in gamma correction, modifying the colors that get
+  // sent to the pandaboards, without mucking up the UI here
+  
   // TODO(mcslee): move into GLucose engine
   for (PandaDriver p : pandaBoards) {
     p.send(colors);

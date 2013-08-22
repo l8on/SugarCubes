@@ -44,6 +44,9 @@ LXPattern[] patterns(GLucose glucose) {
     new Pong(glucose),
     new Noise(glucose),
 
+    // Alex G
+    new SineSphere(glucose),
+
     // Shaheen
     new HelixPattern(glucose).setEligible(false),
     

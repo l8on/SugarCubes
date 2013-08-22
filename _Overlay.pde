@@ -42,7 +42,7 @@ abstract class OverlayUI {
   protected final int STATE_PENDING = 2;
   
   protected int[] pandaLeft = new int[pandaBoards.length];
-  protected final int pandaWidth = 56;
+  protected final int pandaWidth = 64;
   protected final int pandaHeight = 13;
   protected final int pandaTop = height-16;
   
@@ -79,22 +79,30 @@ abstract class OverlayUI {
     textFont(titleFont);
     textAlign(LEFT);
     fill(#666666);
-    text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);
-    text("Target (-/+):", 50, height-6);
+    int lPos = 4;
+    String fps = "FPS: " + (((int)(frameRate * 10)) / 10.);
+    text(fps, lPos, height-6);
+    lPos += 48;
+    
+    String target = "Target (-/+):";
+    text(target, lPos, height-6);
     fill(#000000);
-    rect(104, height-16, 20, 13);
+    lPos += textWidth(target) + 4;
+    rect(lPos, height-16, 24, 13);
     fill(#666666);
-    text("" + targetFramerate, 108, height-6);
-    text("PandaOutput (p):", 134, height-6);
-    int lPos = 214;
+    text("" + targetFramerate, lPos + (24 - textWidth("" + targetFramerate))/2, height-6);
+    lPos += 32;
+    String pandaOutput = "PandaOutput (p):";
+    text(pandaOutput, lPos, height-6);
+    lPos += textWidth(pandaOutput)+4;
     int pi = 0;
     for (PandaDriver p : pandaBoards) {
       pandaLeft[pi++] = lPos;
       fill(p.enabled ? #666666 : #000000);
       rect(lPos, pandaTop, pandaWidth, pandaHeight);
       fill(p.enabled ? #000000 : #666666);
-      text(p.ip, lPos + 4, height-6);
-      lPos += 60;
+      text(p.ip, lPos + (pandaWidth - textWidth(p.ip)) / 2, height-6);
+      lPos += pandaWidth + 8;
     }
 
   }

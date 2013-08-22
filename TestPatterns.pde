@@ -16,10 +16,10 @@ class TestSpeakerMapping extends TestPattern {
       for (Strip strip : speaker.strips) {
         float b = 100;
         for (Point p : strip.points) {
-        colors[p.index] = color(h % 360, 100, b);
-        b = max(0, b - 10);
-      }
-      h += 70;
+          colors[p.index] = color(h % 360, 100, b);
+          b = max(0, b - 10);
+        }
+        h += 70;
       }
     }
   }

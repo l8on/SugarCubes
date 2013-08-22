@@ -124,17 +124,22 @@ public PandaMapping[] buildPandaList() {
   return new PandaMapping[] {
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
-        new ChannelMapping(),
-        new ChannelMapping(),
-        new ChannelMapping(),
-        new ChannelMapping(),
-        new ChannelMapping(),
-        new ChannelMapping(),
-        new ChannelMapping(),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
         new ChannelMapping(ChannelMapping.MODE_BASS),
         new ChannelMapping(ChannelMapping.MODE_STRUTS_AND_FLOOR),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, LEFT_SPEAKER),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, RIGHT_SPEAKER),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
     }),
 
     new PandaMapping(

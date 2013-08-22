@@ -204,9 +204,16 @@ void draw() {
     debugUI.draw();
   }
   
-  // TODO(dan): if you want to, here would be a good place to
-  // put in gamma correction, modifying the colors that get
-  // sent to the pandaboards, without mucking up the UI here
+  // Gamma correction here. Apply a cubic to the brightness
+  // for better representation of dynamic range
+  for (int i = 0; i < colors.length; ++i) {
+    float b = brightness(colors[i]) / 100.f;
+    colors[i] = color(
+      hue(colors[i]),
+      saturation(colors[i]),
+      (b*b*b) * 100.
+    );
+  }
   
   // TODO(mcslee): move into GLucose engine
   for (PandaDriver p : pandaBoards) {

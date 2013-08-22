@@ -15,6 +15,21 @@ class Graphic
 
 	
 };
+class Graphic2D extends Graphic
+{
+	public int[][] graphicBuffer2D;
+	Graphic2D()
+	{	
+		graphicBuffer = new int[300][200];
+	}
+	public int width()
+	{
+		return graphicBuffer.size();
+	}
+
+	
+};
+
 class Granim extends Graphic
 {
 	HashMap<String,Graphic> displayList;
@@ -123,6 +138,56 @@ class GranimPattern extends SCPattern
 	}
 
 };
+class GranimPattern2D extends SCPattern
+{
+	HashMap<String,Graphic> displayList;
+
+	GranimPattern2D(GLucose glucose)
+	{
+		super(glucose);
+		displayList = new HashMap<String,Graphic>();
+	}
+
+	public Graphic addGraphic(String name, Graphic g)
+	{
+		displayList.put(name,g);
+		return g;
+	}
+
+	public Graphic getGraphicByName(String name)
+	{
+		return displayList.get(name);
+	}
+
+	public void run(int deltaMs) 
+	{
+		drawToPointList();
+	}
+	private Integer[] gbuffer;
+	public void drawToPointList()
+	{
+		for(Graphic g : displayList.values())
+		{
+			if(g instanceof Granim)
+			{
+				((Granim) g).update();
+			}
+			//List<Point> drawList = model.points.subList(Math.min(g.position,colors.length-1), Math.min(g.position + g.width(),colors.length-1));
+			//println("drawlistsize "+drawList.size());
+			
+			gbuffer = g.graphicBuffer.toArray(new Integer[0]);
+			
+			for (int i=0; i < drawList.size(); i++)
+			{
+				colors[drawList.get(i).index] = gbuffer[i];
+			}
+			g.changed = false;
+		}
+	}
+
+};
+
+
 
 class RedsGraphic extends Graphic
 {

@@ -824,7 +824,7 @@ class DebugUI {
         case ChannelMapping.MODE_SPEAKER:
           drawNumBox(xPos, yPos, "S" + channel.objectIndices[0], debugState[channelNum][1]);
           break;
-        case ChannelMapping.MODE_FLOOR:
+        case ChannelMapping.MODE_STRUTS_AND_FLOOR:
           drawNumBox(xPos, yPos, "F", debugState[channelNum][1]);
           break;
         case ChannelMapping.MODE_NULL:
@@ -903,18 +903,25 @@ class DebugUI {
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
-              for (Point p : glucose.model.bassBox.points) {
-                colors[p.index] = debugColor;
+              for (Strip s : glucose.model.bassBox.boxStrips) {
+                for (Point p : s.points) {
+                  colors[p.index] = debugColor;
+                }
               }
            }
            break;
 
-         case ChannelMapping.MODE_FLOOR:
+         case ChannelMapping.MODE_STRUTS_AND_FLOOR:
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
               for (Point p : glucose.model.boothFloor.points) {
                 colors[p.index] = debugColor;
+              }
+              for (Strip s : glucose.model.bassBox.struts) {
+                for (Point p : s.points) {
+                  colors[p.index] = debugColor;
+                }
               }
            }
            break;

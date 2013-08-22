@@ -107,33 +107,43 @@ public Model buildModel() {
 }
 
 public PandaMapping[] buildPandaList() {
+  final int LEFT_SPEAKER = 0;
+  final int RIGHT_SPEAKER = 1;
+  
   return new PandaMapping[] {
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 4, 3 }),
+        new ChannelMapping(),
+        new ChannelMapping(),
+        new ChannelMapping(),
+        new ChannelMapping(),
+        new ChannelMapping(),
+        new ChannelMapping(),
+        new ChannelMapping(),        
+        new ChannelMapping(ChannelMapping.MODE_BASS),
+        new ChannelMapping(ChannelMapping.MODE_STRUTS_AND_FLOOR),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, LEFT_SPEAKER),
+        new ChannelMapping(ChannelMapping.MODE_SPEAKER, RIGHT_SPEAKER),
     }),
 
     new PandaMapping(
       "10.200.1.28", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_BASS),
-        new ChannelMapping(ChannelMapping.MODE_FLOOR),
-        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 0),
-        new ChannelMapping(ChannelMapping.MODE_SPEAKER, 1),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
     }),
   };
 }
@@ -221,7 +231,7 @@ class ChannelMapping {
   public static final int MODE_CUBES = 1;
   public static final int MODE_BASS = 2;
   public static final int MODE_SPEAKER = 3;
-  public static final int MODE_FLOOR = 4;
+  public static final int MODE_STRUTS_AND_FLOOR = 4;
   public static final int MODE_INVALID = 5;
   
   public static final int NO_OBJECT = -1;
@@ -253,7 +263,7 @@ class ChannelMapping {
       if (speakerIndex < 0 || speakerIndex >= glucose.model.speakers.size()) {
         throw new RuntimeException("Invalid speaker channel mapping: " + speakerIndex);
       }
-    } else if ((mode == MODE_FLOOR) || (mode == MODE_BASS) || (mode == MODE_NULL)) {
+    } else if ((mode == MODE_STRUTS_AND_FLOOR) || (mode == MODE_BASS) || (mode == MODE_NULL)) {
       if (rawObjectIndices.length > 0) {
         throw new RuntimeException("Bass/floor/null mappings cannot specify object indices");
       }

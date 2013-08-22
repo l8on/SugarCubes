@@ -5,6 +5,75 @@ abstract class TestPattern extends SCPattern {
   }
 }
 
+class TestSpeakerMapping extends TestPattern {
+  TestSpeakerMapping(GLucose glucose) {
+    super(glucose);
+  }
+  
+  public void run(int deltaMs) {
+    int h = 0;
+    for (Speaker speaker : model.speakers) {
+      for (Strip strip : speaker.strips) {
+        float b = 100;
+        for (Point p : strip.points) {
+        colors[p.index] = color(h % 360, 100, b);
+        b = max(0, b - 10);
+      }
+      h += 70;
+      }
+    }
+  }
+
+}
+
+class TestBassMapping extends TestPattern {
+  TestBassMapping(GLucose glucose) {
+    super(glucose);
+  }
+  
+  public void run(int deltaMs) {
+    int[] strips = { 2, 1, 0, 3, 13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6 };
+    int h = 0;
+    for (int si : strips) {
+      float b = 100;
+      for (Point p : model.bassBox.strips.get(si).points) {
+        colors[p.index] = color(h % 360, 100, b);
+        b = max(0, b - 10);
+      }
+      h += 70;
+    }
+  }
+}
+
+class TestFloorMapping extends TestPattern {
+  TestFloorMapping(GLucose glucose) {
+    super(glucose);
+  }
+
+  public void run(int deltaMs) {
+    int[] strutIndices = {6, 5, 4, 3, 2, 1, 0, 7};
+    int h = 0;
+    for (int si : strutIndices) {
+      float b = 100;
+      for (Point p : model.bassBox.struts.get(si).points) {
+        colors[p.index] = color(h % 360, 100, b);
+        b = max(0, b - 10);
+      }
+      h += 50;
+    }
+    int[] floorIndices = {0, 1, 2, 3};
+    h = 0;
+    for (int fi : floorIndices) {
+      float b = 100;
+      for (Point p : model.boothFloor.strips.get(fi).points) {
+        colors[p.index] = color(h, 100, b);
+        b = max(0, b - 3);
+      }
+      h += 90;
+    }
+  }
+}
+
 class TestStripPattern extends TestPattern {
   
   SinLFO d = new SinLFO(4, 40, 4000);

@@ -25,7 +25,7 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    
+        
     // Slee
     new Swarm(glucose),
     new SpaceTime(glucose),
@@ -82,6 +82,9 @@ LXPattern[] patterns(GLucose glucose) {
     new TestTowerPattern(glucose),
     new TestProjectionPattern(glucose),
     new TestStripPattern(glucose),
+    new TestBassMapping(glucose),
+    new TestFloorMapping(glucose),
+    new TestSpeakerMapping(glucose),    
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

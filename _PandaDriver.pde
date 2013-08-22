@@ -53,6 +53,40 @@ public static class PandaDriver {
   private final static int FORWARD = -1;
   private final static int BACKWARD = -2;
 
+  ////////////////////////////////////////////////////////////////
+  //
+  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
+  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
+  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
+  //
+  // The mappings below indicate the physical order of strips
+  // connected to a pandaboard channel. The strip numbers are a
+  // reflection of how the model is built.
+  //
+  // For ANYTHING in the model which is a rectangular prism,
+  // which means Cubes, the BassBox, and each Speaker, the
+  // strips are numbered incrementally by face. The first
+  // face is always the FRONT, which you are looking at.
+  // The next face is the RIGHT, then the BACK, then the LEFT.
+  //
+  // For every face, the strips are ordered numerically moving
+  // clockwise from the the TOP LEFT.
+  //
+  // So, for a cube:
+  //
+  //  Strip 0: front face, top strip, left to right
+  //  Strip 1: front face, right strip, top to bottom
+  //  Strip 2: front face, bottom strip, right to left
+  //  Strip 3: front face, left strip, bottom to top
+  //
+  //  Strip 4: right face, top strip, left to right
+  //  ... and so on
+  //  Strip 14: left face, bottom strip, right to left
+  //  Strip 15: left face, left strip, bottom to top
+  //
+  ////////////////////////////////////////////////////////////////
+  
+
   /**
    * These constant arrays indicate the order in which the strips of a cube
    * are wired. There are four different options, depending on which bottom
@@ -67,8 +101,8 @@ public static class PandaDriver {
   
   private final static int[][] BASS_STRIP_ORDERING = {
     // front face, counterclockwise from bottom front left
-    {2, BACKWARD }, 
-    {1, BACKWARD },
+    {2, BACKWARD /* if this strip has extra pixels, you can add them here */ /*, 4 */ }, 
+    {1, BACKWARD /* if this strip is short some pixels, substract them here */ /*, -3 */ },
     {0, BACKWARD },
     {3, BACKWARD },
     
@@ -98,7 +132,7 @@ public static class PandaDriver {
     {3, FORWARD},
     {2, BACKWARD},
     {1, FORWARD},
-    {0, BACKWARD, /* dummy pixels at the end of string, remove when strip is fixed  */ 4},
+    {0, BACKWARD},
     {7, FORWARD},    
   };
   

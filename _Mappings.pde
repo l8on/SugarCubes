@@ -22,8 +22,10 @@ public Model buildModel() {
   final Cube.Wiring WRL = Cube.Wiring.REAR_LEFT;
   final Cube.Wiring WRR = Cube.Wiring.REAR_RIGHT;
   
+  // Utility value if you need the height of a cube shorthand
   final float CH = Cube.EDGE_HEIGHT;
   
+  // Positions for the bass box
   final float BBY = BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH;
   final float BBX = 56;
   final float BBZ = 2;
@@ -78,9 +80,14 @@ public Model buildModel() {
 
   // The speakers!
   List<Speaker> speakers = Arrays.asList(new Speaker[] {
+    // each speaker parameter is x, y, z, rotation, the left speaker comes first
     new Speaker(-12, 6, 0, 15),
     new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
   });
+
+  //////////////////////////////////////////////////////////////////////
+  //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //
+  //////////////////////////////////////////////////////////////////////
 
   // These guts just convert the shorthand mappings into usable objects
   ArrayList<Tower> towerList = new ArrayList<Tower>();
@@ -106,6 +113,10 @@ public Model buildModel() {
   return new Model(towerList, cubes, bassBox, speakers);
 }
 
+/**
+ * This function maps the panda boards. We have an array of them, each has
+ * an IP address and a list of channels.
+ */
 public PandaMapping[] buildPandaList() {
   final int LEFT_SPEAKER = 0;
   final int RIGHT_SPEAKER = 1;
@@ -119,7 +130,7 @@ public PandaMapping[] buildPandaList() {
         new ChannelMapping(),
         new ChannelMapping(),
         new ChannelMapping(),
-        new ChannelMapping(),        
+        new ChannelMapping(),
         new ChannelMapping(ChannelMapping.MODE_BASS),
         new ChannelMapping(ChannelMapping.MODE_STRUTS_AND_FLOOR),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, LEFT_SPEAKER),

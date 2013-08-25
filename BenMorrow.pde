@@ -19,6 +19,7 @@ class TowerParams extends SCPattern
 
 	ArrayList<BasicParameter> towerParams;
 	int towerSize;
+	int colorSpan;
 	TowerParams(GLucose glucose) {
 		super(glucose);
 
@@ -44,6 +45,7 @@ class TowerParams extends SCPattern
 			addParameter(p);
 		}
 		towerSize = model.towers.size();
+		colorSpan = 255 / towerSize;
 		println("towers "+towerSize);
 	}
 
@@ -58,7 +60,7 @@ class TowerParams extends SCPattern
 			{
 				if(p.y<towerParams.get(i).getValuef()*200)
 				{
-					colors[p.index]=color(70*i,255,255);
+					colors[p.index]=color(colorSpan*i,255,255);
 				}
 			}
 		}

@@ -14,7 +14,7 @@ import oscP5.*;
  * This class implements the output function to the Panda Boards. It
  * will be moved into GLucose once stabilized.
  */
-public static class PandaDriver {
+public class PandaDriver {
 
   // IP address
   public final String ip;
@@ -50,125 +50,18 @@ public static class PandaDriver {
     }
   }
 
-  private final static int FORWARD = -1;
-  private final static int BACKWARD = -2;
-
-  ////////////////////////////////////////////////////////////////
-  //
-  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
-  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
-  // READ THIS RIGHT NOW BEFORE YOU MODIFY THE BELOW!!!!!!!!!!!!!
-  //
-  // The mappings below indicate the physical order of strips
-  // connected to a pandaboard channel. The strip numbers are a
-  // reflection of how the model is built.
-  //
-  // For ANYTHING in the model which is a rectangular prism,
-  // which means Cubes, the BassBox, and each Speaker, the
-  // strips are numbered incrementally by face. The first
-  // face is always the FRONT, which you are looking at.
-  // The next face is the RIGHT, then the BACK, then the LEFT.
-  //
-  // For every face, the strips are ordered numerically moving
-  // clockwise from the the TOP LEFT.
-  //
-  // So, for a cube:
-  //
-  //  Strip 0: front face, top strip, left to right
-  //  Strip 1: front face, right strip, top to bottom
-  //  Strip 2: front face, bottom strip, right to left
-  //  Strip 3: front face, left strip, bottom to top
-  //
-  //  Strip 4: right face, top strip, left to right
-  //  ... and so on
-  //  Strip 14: left face, bottom strip, right to left
-  //  Strip 15: left face, left strip, bottom to top
-  //
-  ////////////////////////////////////////////////////////////////
-  
-
   /**
    * These constant arrays indicate the order in which the strips of a cube
    * are wired. There are four different options, depending on which bottom
    * corner of the cube the data wire comes in.
    */
-  private final static int[][] CUBE_STRIP_ORDERINGS = new int[][] {
+  private final int[][] CUBE_STRIP_ORDERINGS = new int[][] {
     {  2,  1,  0,  3, 13, 12, 15, 14,  4,  7,  6,  5, 11, 10,  9,  8 }, // FRONT_LEFT
     {  6,  5,  4,  7,  1,  0,  3,  2,  8, 11, 10,  9, 15, 14, 13, 12 }, // FRONT_RIGHT
     { 14, 13, 12, 15,  9,  8, 11, 10,  0,  3,  2,  1,  7,  6,  5,  4 }, // REAR_LEFT
     { 10,  9,  8, 11,  5,  4,  7,  6, 12, 15, 14, 13,  3,  2,  1,  0 }, // REAR_RIGHT
   };
-  
-  private final static int[][] BASS_STRIP_ORDERING = {
-    // front face, counterclockwise from bottom front left
-    {2, BACKWARD /* if this strip has extra pixels, you can add them here */ /*, 4 */ }, 
-    {1, BACKWARD /* if this strip is short some pixels, substract them here */ /*, -3 */ },
-    {0, BACKWARD },
-    {3, BACKWARD },
-    
-    // left face, counterclockwise from bottom front left
-    {13, BACKWARD },
-    {12, BACKWARD },
-    {15, BACKWARD },
-    {14, BACKWARD },
 
-    // back face, counterclockwise from bottom rear left
-    {9, BACKWARD },
-    {8, BACKWARD },
-    {11, BACKWARD },
-    {10, BACKWARD },
-
-    // right face, counterclockwise from bottom rear right
-    {5, BACKWARD },
-    {4, BACKWARD },
-    {7, BACKWARD },
-    {6, BACKWARD },
-  };
-
-  private final static int[][] STRUT_STRIP_ORDERING = {
-    {6, BACKWARD},
-    {5, FORWARD},
-    {4, BACKWARD},
-    {3, FORWARD},
-    {2, BACKWARD},
-    {1, FORWARD},
-    {0, BACKWARD},
-    {7, FORWARD},    
-  };
-  
-  private final static int[][] FLOOR_STRIP_ORDERING = {
-    {0, FORWARD},
-    {1, FORWARD},
-    {2, FORWARD},
-    {3, BACKWARD},
-  };
-  
-  // The speakers are currently configured to be wired the same
-  // as cubes with Wiring.FRONT_LEFT. If this needs to be changed,
-  // remove this null assignment and change the below to have mappings
-  // for the LEFT and RIGHT speaker
-  private final static int[][][] SPEAKER_STRIP_ORDERING = null; /* {
-    // Left speaker
-    { 
-      // Front face, counter-clockwise from bottom left
-      {2, BACKWARD },
-      {1, BACKWARD },
-      {0, BACKWARD },
-      {3, BACKWARD },
-    },
-    // Right speaker
-    {
-      // Front face, counter-clockwise from bottom left
-      {2, BACKWARD },
-      {1, BACKWARD },
-      {0, BACKWARD },
-      {3, BACKWARD },
-    }
-  };*/
-  
-  private final static int[][] LEFT_SPEAKER_STRIP_ORDERING = {
-  };
-  
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
 
@@ -206,47 +99,25 @@ public static class PandaDriver {
               for (int stripIndex : CUBE_STRIP_ORDERINGS[stripOrderIndex]) {
                 // We go backwards here... in the model strips go clockwise, but
                 // the physical wires are run counter-clockwise
-                pi = mapStrip(cube.strips.get(stripIndex), BACKWARD, points, pi);
+                Strip s = cube.strips.get(stripIndex);
+                for (int j = s.points.size() - 1; j >= 0; --j) {
+                  points[pi++] = s.points.get(j).index;
+                }
               }
             }
           }
           break;
           
         case ChannelMapping.MODE_BASS:
-          for (int[] config : BASS_STRIP_ORDERING) {
-            pi = mapStrip(model.bassBox.strips.get(config[0]), config[1], points, pi);
-            if (config.length >= 3) pi += config[2];            
-          }
+          // TODO(mapping): figure out how we end up connecting the bass cabinet
           break;
           
-        case ChannelMapping.MODE_STRUTS_AND_FLOOR:
-          for (int[] config : STRUT_STRIP_ORDERING) {
-            pi = mapStrip(model.bassBox.struts.get(config[0]), config[1], points, pi);
-            if (config.length >= 3) pi += config[2];
-          }     
-          for (int[] config : FLOOR_STRIP_ORDERING) {
-            pi = mapStrip(model.boothFloor.strips.get(config[0]), config[1], points, pi);
-            if (config.length >= 3) pi += config[2];
-          }
+        case ChannelMapping.MODE_FLOOR:        
+          // TODO(mapping): figure out how these strips are wired
           break;
           
         case ChannelMapping.MODE_SPEAKER:
-          int [][] speakerStripOrdering;
-          if (SPEAKER_STRIP_ORDERING == null) {
-            // Copy the cube strip ordering
-            int[] frontLeftCubeWiring = CUBE_STRIP_ORDERINGS[0];
-            speakerStripOrdering = new int[frontLeftCubeWiring.length][];
-            for (int i = 0; i < frontLeftCubeWiring.length; ++i) {
-              speakerStripOrdering[i] = new int[] { frontLeftCubeWiring[0], BACKWARD }; 
-            }
-          } else {
-            speakerStripOrdering = SPEAKER_STRIP_ORDERING[channel.objectIndices[0]];
-          }
-          for (int[] config : speakerStripOrdering) {
-            Speaker speaker = model.speakers.get(channel.objectIndices[0]);
-            pi = mapStrip(speaker.strips.get(config[0]), config[1], points, pi);
-            if (config.length >= 3) pi += config[2];            
-          }
+          // TODO(mapping): figure out how these strips are wired
           break;
           
         case ChannelMapping.MODE_NULL:
@@ -257,35 +128,6 @@ public static class PandaDriver {
           throw new RuntimeException("Invalid/unhandled channel mapping mode: " + channel.mode);
       }
 
-    }
-  }
-  
-  private int mapStrip(Strip s, int direction, int[] points, int pi) {
-    if (direction == FORWARD) {
-      for (Point p : s.points) {
-        points[pi++] = p.index;
-      }
-    } else if (direction == BACKWARD) {
-      for (int i = s.points.size()-1; i >= 0; --i) {
-        points[pi++] = s.points.get(i).index;
-      }
-    } else {
-      throw new RuntimeException("Unidentified strip mapping direction: " + direction);
-    }
-    return pi;
-  }
-
-  public void disable() {
-    if (enabled) {
-      enabled = false;
-      println("PandaBoard/" + ip + ": OFF");
-    }
-  }
-  
-  public void enable() {
-    if (!enabled) {
-      enabled = true;
-      println("PandaBoard/" + ip + ": ON");
     }
   }
 

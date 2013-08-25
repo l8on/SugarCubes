@@ -42,7 +42,7 @@ abstract class OverlayUI {
   protected final int STATE_PENDING = 2;
   
   protected int[] pandaLeft = new int[pandaBoards.length];
-  protected final int pandaWidth = 64;
+  protected final int pandaWidth = 56;
   protected final int pandaHeight = 13;
   protected final int pandaTop = height-16;
   
@@ -79,30 +79,22 @@ abstract class OverlayUI {
     textFont(titleFont);
     textAlign(LEFT);
     fill(#666666);
-    int lPos = 4;
-    String fps = "FPS: " + (((int)(frameRate * 10)) / 10.);
-    text(fps, lPos, height-6);
-    lPos += 48;
-    
-    String target = "Target (-/+):";
-    text(target, lPos, height-6);
+    text("FPS: " + (((int)(frameRate * 10)) / 10.), 4, height-6);
+    text("Target (-/+):", 50, height-6);
     fill(#000000);
-    lPos += textWidth(target) + 4;
-    rect(lPos, height-16, 24, 13);
+    rect(104, height-16, 20, 13);
     fill(#666666);
-    text("" + targetFramerate, lPos + (24 - textWidth("" + targetFramerate))/2, height-6);
-    lPos += 32;
-    String pandaOutput = "PandaOutput (p):";
-    text(pandaOutput, lPos, height-6);
-    lPos += textWidth(pandaOutput)+4;
+    text("" + targetFramerate, 108, height-6);
+    text("PandaOutput (p):", 134, height-6);
+    int lPos = 214;
     int pi = 0;
     for (PandaDriver p : pandaBoards) {
       pandaLeft[pi++] = lPos;
       fill(p.enabled ? #666666 : #000000);
       rect(lPos, pandaTop, pandaWidth, pandaHeight);
       fill(p.enabled ? #000000 : #666666);
-      text(p.ip, lPos + (pandaWidth - textWidth(p.ip)) / 2, height-6);
-      lPos += pandaWidth + 8;
+      text(p.ip, lPos + 4, height-6);
+      lPos += 60;
     }
 
   }
@@ -757,11 +749,11 @@ class MappingUI extends OverlayUI {
 class DebugUI {
   
   final ChannelMapping[] channelList;
-  final int debugX = 5;
-  final int debugY = 5;
+  final int debugX = 10;
+  final int debugY = 42;
   final int debugXSpacing = 28;
-  final int debugYSpacing = 21;
-  final int[][] debugState;
+  final int debugYSpacing = 22;
+  final int[][] debugState = new int[17][6];
   
   final int DEBUG_STATE_ANIM = 0;
   final int DEBUG_STATE_WHITE = 1;
@@ -769,8 +761,6 @@ class DebugUI {
   
   DebugUI(PandaMapping[] pandaMappings) {
     int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
-    debugState = new int[totalChannels+1][ChannelMapping.CUBES_PER_CHANNEL+1];
-    
     channelList = new ChannelMapping[totalChannels];
     int channelIndex = 0;
     for (PandaMapping pm : pandaMappings) {
@@ -790,8 +780,8 @@ class DebugUI {
     int xBase = debugX;
     int yPos = debugY;
     
-    fill(#000000);
-    rect(0, 0, debugX + 5*debugXSpacing, height);
+    fill(color(0, 0, 0, 80));
+    rect(4, 32, 172, 388);
     
     int channelNum = 0;
     for (ChannelMapping channel : channelList) {
@@ -824,7 +814,7 @@ class DebugUI {
         case ChannelMapping.MODE_SPEAKER:
           drawNumBox(xPos, yPos, "S" + channel.objectIndices[0], debugState[channelNum][1]);
           break;
-        case ChannelMapping.MODE_STRUTS_AND_FLOOR:
+        case ChannelMapping.MODE_FLOOR:
           drawNumBox(xPos, yPos, "F", debugState[channelNum][1]);
           break;
         case ChannelMapping.MODE_NULL:
@@ -903,25 +893,18 @@ class DebugUI {
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
-              for (Strip s : glucose.model.bassBox.boxStrips) {
-                for (Point p : s.points) {
-                  colors[p.index] = debugColor;
-                }
+              for (Point p : glucose.model.bassBox.points) {
+                colors[p.index] = debugColor;
               }
            }
            break;
 
-         case ChannelMapping.MODE_STRUTS_AND_FLOOR:
+         case ChannelMapping.MODE_FLOOR:
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
               for (Point p : glucose.model.boothFloor.points) {
                 colors[p.index] = debugColor;
-              }
-              for (Strip s : glucose.model.bassBox.struts) {
-                for (Point p : s.points) {
-                  colors[p.index] = debugColor;
-                }
               }
            }
            break;
@@ -952,7 +935,7 @@ class DebugUI {
     if ((dy >= 0) && (dy < debugState.length)) {
       if ((dx >= 0) && (dx < debugState[dy].length)) {
         int newState = debugState[dy][dx] = (debugState[dy][dx] + 1) % 3;
-        if (dy == debugState.length-1) {
+        if (dy == 16) {
           for (int[] states : debugState) {
             for (int i = 0; i < states.length; ++i) {
               states[i] = newState;

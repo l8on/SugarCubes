@@ -64,7 +64,7 @@ class TowerParams extends SCPattern
 			{
 				if(p.y<towerParams.get(i).getValuef()*200)
 				{
-					colors[p.index]=color(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i,255,255);
+					colors[p.index]=color(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i, 255, 255);
 				}
 			}
 		}

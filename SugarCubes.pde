@@ -71,6 +71,8 @@ LXPattern[] patterns(GLucose glucose) {
     new TimSpheres(glucose),
 
     // Ben
+    //new Sandbox(glucose),
+    new TowerParams(glucose),
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
      

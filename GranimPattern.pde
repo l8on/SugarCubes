@@ -17,20 +17,21 @@ class Graphic
 };
 class Graphic2D extends Graphic
 {
-	public int[][] graphicBuffer2D;
+	public Map<Integer, Map<Integer, Integer>> graphicBuffer2D;
 	Graphic2D()
 	{	
-		graphicBuffer = new int[300][200];
+		super();
+		graphicBuffer2D = Map<Integer, Map<Integer, Integer>>;
 	}
 	public int width()
 	{
-		return graphicBuffer.size();
+		return graphicBuffer2D;
 	}
 
 	
 };
 
-class Granim extends Graphic
+class Granim extends Graphic2D
 {
 	HashMap<String,Graphic> displayList;
 	
@@ -90,6 +91,53 @@ class Granim extends Graphic
 	{
 	}
 };
+class Granim2D extends Granim
+{
+	
+	Granim2D()
+	{
+		super();
+	}
+
+	public Graphic getGraphicByName(String name)
+	{
+		return displayList.get(name);
+	}
+
+	public void update()
+	{
+		
+		for(Graphic g : displayList.values())
+		{
+			if(g instanceof Granim)
+			{
+				((Granim) g).update();
+				
+			}
+			changed = changed || g.changed;
+			if(changed)
+			{
+				while(width()< g.position + g.width())
+				{
+					graphicBuffer2D.clear();
+				}
+				if(g.changed)
+				{
+					drawOne(g);
+					g.changed =false;
+				}
+			}
+		}
+		changed = false;
+
+	}
+	public void drawOne(Graphic2D g)
+	{
+		//graphicBuffer2D.addAll(g.position,g.graphicBuffer);
+		//copy all pixels from lower buffer into this one
+	}
+};
+
 class GranimPattern extends SCPattern
 {
 	HashMap<String,Graphic> displayList;
@@ -138,31 +186,13 @@ class GranimPattern extends SCPattern
 	}
 
 };
-class GranimPattern2D extends SCPattern
+class GranimPattern2D extends GranimPattern
 {
-	HashMap<String,Graphic> displayList;
-
 	GranimPattern2D(GLucose glucose)
 	{
 		super(glucose);
-		displayList = new HashMap<String,Graphic>();
 	}
 
-	public Graphic addGraphic(String name, Graphic g)
-	{
-		displayList.put(name,g);
-		return g;
-	}
-
-	public Graphic getGraphicByName(String name)
-	{
-		return displayList.get(name);
-	}
-
-	public void run(int deltaMs) 
-	{
-		drawToPointList();
-	}
 	private Integer[] gbuffer;
 	public void drawToPointList()
 	{
@@ -175,13 +205,14 @@ class GranimPattern2D extends SCPattern
 			//List<Point> drawList = model.points.subList(Math.min(g.position,colors.length-1), Math.min(g.position + g.width(),colors.length-1));
 			//println("drawlistsize "+drawList.size());
 			
-			gbuffer = g.graphicBuffer.toArray(new Integer[0]);
+			/*gbuffer = g.graphicBuffer.toArray(new Integer[0]);
 			
 			for (int i=0; i < drawList.size(); i++)
 			{
 				colors[drawList.get(i).index] = gbuffer[i];
 			}
-			g.changed = false;
+			g.changed = false;*/
+
 		}
 	}
 

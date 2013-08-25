@@ -1,5 +1,7 @@
 class TowerParams extends SCPattern
 {
+	BasicParameter hueoff = new BasicParameter("Hueoff", 0.0);
+	BasicParameter hueSpan = new BasicParameter("HueRange", 0.0);
 	BasicParameter t1 = new BasicParameter("T1", 0.0);
 	BasicParameter t2 = new BasicParameter("T2", 0.0);
 	BasicParameter t3 = new BasicParameter("T3", 0.0);
@@ -24,6 +26,8 @@ class TowerParams extends SCPattern
 		super(glucose);
 
 		towerParams = new ArrayList<BasicParameter>();
+		addParameter(hueoff);
+		addParameter(hueSpan);
 		towerParams.add(t1);
 		towerParams.add(t2);
 		towerParams.add(t3);
@@ -60,7 +64,7 @@ class TowerParams extends SCPattern
 			{
 				if(p.y<towerParams.get(i).getValuef()*200)
 				{
-					colors[p.index]=color(colorSpan*i,255,255);
+					colors[p.index]=color(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i,255,255);
 				}
 			}
 		}

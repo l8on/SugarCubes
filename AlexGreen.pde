@@ -2,7 +2,7 @@ class SineSphere extends SCPattern {
   float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   private final SinLFO rs = new SinLFO(0, 180, 5000);
   private final SinLFO noisey = new SinLFO(modelrad/8.0, modelrad/4.0, 2300);
-  private final SinLFO band = new SinLFO (0, 10, 2000);
+
   PVector modelcenter = new PVector(model.xMax, model.yMax, model.zMax);
   BasicParameter widthparameter = new BasicParameter("Width", 10);
   
@@ -13,6 +13,7 @@ class SineSphere extends SCPattern {
   private  SinLFO surface;
   private  SinLFO vx;
   float vibration_min, vibration_max, vperiod;
+  final BasicParameter hueshift = new BasicParameter("Width", .5); 
   
   Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) {
    this.f1xcenter = f1xcenter;
@@ -30,7 +31,7 @@ class SineSphere extends SCPattern {
  
  color spheryvalue (float px, float py, float pz , float f1xcenter, float f1ycenter, float f1zcenter) {
 
-   return color(px, dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter) , max(0, 100 - 10*abs(dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter)- vibration.getValuef() ) ) ); 
+   return color(px % 360 , dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter) % 100 , max(0, 100 - 10*abs(dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter)- vibration.getValuef() ) ) % 100 ); 
    
  }
    
@@ -45,7 +46,7 @@ final Sphery[] spherys;
   SineSphere(GLucose glucose) {
     super(glucose);
     addModulator(rs).trigger();
-    //addModulator(band).trigger();
+  
     addModulator(noisey).trigger();
     spherys = new Sphery[NUM_SPHERES];
     spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 2500) ;    
@@ -55,7 +56,7 @@ final Sphery[] spherys;
     public void run(int deltaMs) {
     float rsv = rs.getValuef();
     float noiseyv = noisey.getValuef();
-    float bandv = band.getValuef();
+    
      
       spherys[1].run(deltaMs);
       spherys[2].run(deltaMs);

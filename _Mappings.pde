@@ -46,15 +46,17 @@ public Model buildModel() {
   // The cubes automatically increment their y-position by Cube.EDGE_HEIGHT.
   TowerMapping[] towerCubes = new TowerMapping[] {
     
+   
+  
    //back left cubes: temp Channel 1 
-  //new TowerMapping(0, Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
-    //  new CubeMapping(0, 14,  -45 , WRL), 
-      //new CubeMapping(18, -12, -20, WFL),
-      //new CubeMapping(5, 9, 45, WRR),
+  new TowerMapping(0, Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
+      new CubeMapping(0, 14,  -45 , WRL), 
+      new CubeMapping(18, -12, -20, WFL),
+      new CubeMapping(5, 9, 45, WRR),
      
       
-//      }),
-    //back left cube tower
+    }),
+    //back left cube tower: Channel 2 
     new TowerMapping(0, Cube.EDGE_HEIGHT, 70, new CubeMapping[] {
      new CubeMapping(18, -2.5, 45, WRL),
      new CubeMapping(15, -6, 45, WFR),
@@ -63,24 +65,15 @@ public Model buildModel() {
      
    }),
     
+     //second from left back tower: Channel 3
+      new TowerMapping(31, Cube.EDGE_HEIGHT, 73.5, new CubeMapping[] {
+       new CubeMapping( 12.5, 5.5 , 10 , WRR),
+       new CubeMapping( 16.5, 2.5 , 30, WRR),
+      new CubeMapping( 16.5, 3, 10, WRR),
+      new CubeMapping(.5, 4.5, -10 , WFL)
+    } ), 
     
-//   //back right cubes: temp Channel 
-   new TowerMapping(201, Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
-     new CubeMapping(7.5, 6, 25, WRL),
-     new CubeMapping(-4.5, -0.5, 18, WFR),
-      new CubeMapping(8.5, .5, 30,  WRL),
-      new CubeMapping(-7, -14, 10, WFR)
-     
-   }),
-    //second from back right tower, temp Channel 3
-   
-    new TowerMapping(160, Cube.EDGE_HEIGHT, 78, new CubeMapping[] {
-       new CubeMapping( -31.5, -.5 , 5 , WFR),
-       new CubeMapping( 7, -.5, 60, WRL),
-      new CubeMapping( -5.5, -3, 0, WFR),
-      new CubeMapping(22 , 2 , 30 , WRL)
-    }), 
-           //center tower, temp Channel 4
+          //center tower,  Channel 4
      new TowerMapping(106, Cube.EDGE_HEIGHT, 84, new CubeMapping[] {
        new CubeMapping( -3.5, -2, 10, WFL),
        new CubeMapping( -11, 5, 30, WFR),
@@ -88,13 +81,28 @@ public Model buildModel() {
       new CubeMapping(20.75, -4, 35 , WRL)
     } ), 
     
-    //second from left back tower
-     new TowerMapping(31, Cube.EDGE_HEIGHT, 73.5, new CubeMapping[] {
-       new CubeMapping( 12.5, 5.5 , 10 , WRR),
-       new CubeMapping( 16.5, 2.5 , 30, WRR),
-      new CubeMapping( 16.5, 3, 10, WRR),
-      new CubeMapping(.5, 4.5, -10 , WFL)
-    } ), 
+        //second from back right tower,  Channel 5
+   
+    new TowerMapping(160, Cube.EDGE_HEIGHT, 78, new CubeMapping[] {
+       new CubeMapping( -31.5, -.5 , 5 , WFR),
+       new CubeMapping( 7, -.5, 60, WRL),
+      new CubeMapping( -5.5, -3, 0, WFR),
+      new CubeMapping(22 , 2 , 30 , WRL)
+    }), 
+     
+    
+  //back right cubes: temp Channel 6
+   new TowerMapping(201, Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
+     new CubeMapping(7.5, 6, 25, WRL),
+     new CubeMapping(-4.5, -0.5, 18, WFR),
+      new CubeMapping(8.5, .5, 30,  WRL),
+      new CubeMapping(-7, -14, 10, WFR)
+     
+   }),
+
+    
+   
+   
          
        //tower to the right of BASS BOX
      new TowerMapping (192, Cube.EDGE_HEIGHT, 40, new CubeMapping[] {
@@ -157,6 +165,44 @@ public Model buildModel() {
   
   // Single cubes can be constructed directly here if you need them
   Cube[] singleCubes = new Cube[] {
+    //back left channel behind speaker
+    new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL), 
+    new Cube(-6, int(Cube.EDGE_HEIGHT),  47, 0, 20, 0, WFR), 
+    new Cube(0, int(2*Cube.EDGE_HEIGHT), 46, 0, 40, 0, WRR),  
+    
+    // Top left Channel Above DJ booth
+    new Cube(33, int(4.5*Cube.EDGE_HEIGHT ),  28, 0, 10, 0, WRR), 
+    new Cube(35, int(5*Cube.EDGE_HEIGHT ),  52, 0, 10, 0, WRR), 
+    new Cube(56, int(5*Cube.EDGE_HEIGHT ),  69, 0, 10, 0, WFL), 
+    new Cube(76, int(5*Cube.EDGE_HEIGHT ),  61, 0, -45, 0, WRL), 
+    
+    //next channel to the right, same height
+     new Cube(85, int(5*Cube.EDGE_HEIGHT ),  77, 0, 20, 0, WRL), 
+     new Cube(92, int(6*Cube.EDGE_HEIGHT ),  63, 0,20, 0, WRR), 
+     new Cube(86, int(6*Cube.EDGE_HEIGHT ),  47, 0, -45, 0, WRL), 
+     new Cube(123, int(6*Cube.EDGE_HEIGHT ),  31, 0, 20, 0, WFR), 
+     
+     // next channel to right, same height
+     new Cube(111, int(5*Cube.EDGE_HEIGHT ),  79, 0, 30, 0, WRL), 
+     new Cube(125, int(6*Cube.EDGE_HEIGHT ),  76, 0,27, 0, WRL), 
+     new Cube(144, int(5*Cube.EDGE_HEIGHT ),  44, 0, 45, 0, WRR), 
+     new Cube(134, int(5*Cube.EDGE_HEIGHT ),  42, 0, 45, 0, WRL), 
+     
+     //next channel to right
+      new Cube(185, int(4*Cube.EDGE_HEIGHT ),  73, 0, -45, 0, WRR), 
+     new Cube(170, int(5*Cube.EDGE_HEIGHT ),  58, 0,40, 0, WRL), 
+     new Cube(158, int(6*Cube.EDGE_HEIGHT ),  34, 0, 40, 0, WFR), 
+     new Cube(130, int(6*Cube.EDGE_HEIGHT ),  10, 0, -5, 30, WRL), 
+     
+     //next channel highest to the right
+      new Cube(203, int(5*Cube.EDGE_HEIGHT ),  55, 0, 35, 0, WRR), 
+     new Cube(174, int(5*Cube.EDGE_HEIGHT ),  32, 0,35, 0, WFR), 
+     new Cube(178, int(6.5*Cube.EDGE_HEIGHT ),  16, 0, 20 , 30, WRL), 
+     new Cube(212, int(6.5*Cube.EDGE_HEIGHT ), 23, 0, 20 ,30, WRR), 
+     
+    //last channel
+     new Cube(204, int(5*Cube.EDGE_HEIGHT ),  28, 0, 25, 0, WFR), 
+     new Cube(185, int(6*Cube.EDGE_HEIGHT ),  38, 0,40, 0, WRR), 
     
     // new Cube(x, y, z, rx, ry, rz, wiring),
   };
@@ -212,44 +258,35 @@ public PandaMapping[] buildPandaList() {
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 5, 6, 7, 8 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 9, 10, 11, 12 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 13, 14 , 15, 16 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 17, 18, 19, 20 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 21, 22, 23, 24}),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 25, 26 }),
         new ChannelMapping(ChannelMapping.MODE_BASS),
         new ChannelMapping(ChannelMapping.MODE_STRUTS_AND_FLOOR),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, LEFT_SPEAKER),
         new ChannelMapping(ChannelMapping.MODE_SPEAKER, RIGHT_SPEAKER),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 27, 28, 29, 30 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 31, 32, 33, 34 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 35, 36, 37, 38 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 39, 40, 41, 42 }),
+       new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 43, 44 }),
+       new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {45, 46, 47}), 
     }),
+    
+new PandaMapping(
+      "10.200.1.30", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 48, 49, 50, 51 }),
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 52, 53, 54, 55 }),
+        
+    }),
+  };  
 
-    /*new PandaMapping(
-      "10.200.1.28", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3, 4 }),
-    }),*/
-  };
 }
+
+
 
 class TowerMapping {
   public final float x, y, z;

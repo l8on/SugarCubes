@@ -43,6 +43,7 @@ LXPattern[] patterns(GLucose glucose) {
     // Dan
     new Pong(glucose),
     new Noise(glucose),
+    new Play(glucose),
 
     // Alex G
     new SineSphere(glucose),

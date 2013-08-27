@@ -280,7 +280,11 @@ new PandaMapping(
       "10.200.1.30", new ChannelMapping[] {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 48, 49, 50, 51 }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 52, 53, 54, 55 }),
-        
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 56, 57, 58, 59 }),
+          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 60, 61, 62, 63 }),
+           new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 64, 65, 66, 67 }),
+            new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 68, 69}),
+            
     }),
   };  
 

@@ -222,6 +222,7 @@ void draw() {
 }
 
 void drawBassBox(BassBox b) {
+  /*
   float in = .15;
 
   noStroke();
@@ -263,7 +264,7 @@ void drawBassBox(BassBox b) {
   box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
   translate(BassBox.EDGE_WIDTH-2*in, 0, 0);
   box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
-  popMatrix();
+  popMatrix();*/
   
 }
 

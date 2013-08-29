@@ -1,6 +1,11 @@
 import netP5.*;
 import oscP5.*;
 
+//import hypermedia.net.*;
+
+
+
+
 /**
  *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
  *
@@ -14,7 +19,23 @@ import oscP5.*;
  * This class implements the output function to the Panda Boards. It
  * will be moved into GLucose once stabilized.
  */
-public static class PandaDriver {
+public static class PandaDriver extends Thread{
+  int lastSeen;
+  void start(){super.start();}
+  void run(){
+    while(true){
+      if(queue.size()>0) {
+        for(int i=0; i<queue.size(); i++){
+          this.sendNow(queue.get(0));
+          queue.remove(0);
+        }
+      } else {
+        try{sleep(1);} catch(Exception e){}
+      }
+    }
+  }
+
+  //UDP udp;  // define the UDP object
 
   // IP address
   public final String ip;
@@ -39,15 +60,18 @@ public static class PandaDriver {
   public PandaDriver(String ip) {
     this.ip = ip;
     
+    //udp = new UDP(this, 10000);
+    
     // Initialize our OSC output stuff
     address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
-
+    
     // Build the array of points, initialize all to nothing
     points = new int[PandaMapping.PIXELS_PER_BOARD];
     for (int i = 0; i < points.length; ++i) {
       points[i] = NO_POINT;
     }
+    this.start();
   }
 
   private final static int FORWARD = -1;
@@ -168,9 +192,13 @@ public static class PandaDriver {
   
   private final static int[][] LEFT_SPEAKER_STRIP_ORDERING = {
   };
+
+  ArrayList<int[]> queue;
   
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
+    
+    queue = new ArrayList<int[]>();
 
     // Ok, we are initialized, time to build the array if points in order to
     // send out. We start at the head of our point buffer, and work our way
@@ -295,13 +323,17 @@ public static class PandaDriver {
   }
 
   public final void send(int[] colors) {
-    if (!enabled) {
+     queue.add(colors);
+  }
+  public final void sendNow(int[] colors) {
+    if (!enabled || colors==null) {
       return;
     }
     int len = 0;
     int packetNum = 0;
-    for (int index : points) {
-      int c = (index < 0) ? 0 : colors[index];
+    for (int index = 0; index < colors.length; index++) {
+      int c=0;
+      try { c = colors[index]; } catch (Exception e) { }
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);
@@ -323,16 +355,17 @@ public static class PandaDriver {
     }
   }
   
+
   private void sendPacket(int packetNum) {
     message.clearArguments();
     message.add(packetNum);
     message.add(packet.length);
     message.add(packet);
     try {
+      //udp.send(packet, "10.200.1.29", 9001);
       OscP5.flush(message, address);
     } catch (Exception x) {
       x.printStackTrace();
     }
   }
 }
-

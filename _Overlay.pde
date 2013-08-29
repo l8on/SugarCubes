@@ -75,6 +75,14 @@ abstract class OverlayUI {
     text("Tap 'u' to restore UI", width-4, height-6);
   }
 
+  public void drawDanText() {
+    textFont(itemFont);
+    textAlign(LEFT);
+    fill(#FFFFFF);
+    text(DanTextLine1, 4, height-50);
+    text(DanTextLine2, 4, height-30);
+  }
+
   public void drawFPS() {
     textFont(titleFont);
     textAlign(LEFT);

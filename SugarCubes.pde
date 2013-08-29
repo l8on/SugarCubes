@@ -22,12 +22,18 @@
  * If you're an artist, create a new tab in the Processing environment with
  * your name. Implement your classes there, and add them to the list below.
  */ 
+LXPattern gplay;
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
+    
+    new Gimbal(glucose),
+    
+    // DMK
         
     // Slee
     new Swarm(glucose),
+    //new ScreenScrape(glucose),
     new SpaceTime(glucose),
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
@@ -41,9 +47,9 @@ LXPattern[] patterns(GLucose glucose) {
     new PianoKeyPattern(glucose).setEligible(false),
 
     // Dan
-    new Pong(glucose),
     new Noise(glucose),
-    new Play(glucose),
+    gplay=new Play(glucose),
+    new Pong(glucose),
 
     // Alex G
     new SineSphere(glucose),
@@ -106,8 +112,8 @@ LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
     new FlashEffect(lx),
     new BoomEffect(glucose),
-    new DesaturationEffect(lx),
-    new ColorFuckerEffect(glucose),
+    //new DesaturationEffect(lx),
+    //new ColorFuckerEffect(glucose),
+    new DualBlender(glucose),
   };
 }
-

@@ -368,6 +368,7 @@ void drawUI() {
     ui.drawHelpTip();
   }
   ui.drawFPS();
+  ui.drawDanText();
 }
 
 boolean uiOn = true;

@@ -2,8 +2,8 @@ class SineSphere extends DPat {
   float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   
   PVector modelcenter = new PVector(model.xMax, model.yMax, model.zMax);
-  BasicParameter widthparameter = new BasicParameter("Width", 10);
-  
+  public BasicParameter widthparameter = new BasicParameter("Width", .1);
+  public BasicParameter huespread = new BasicParameter("Hue", .5);
   
   class Sphery {
   float f1xcenter, f1ycenter, f1zcenter, f2xcenter, f2ycenter, f2zcenter;
@@ -12,6 +12,9 @@ class SineSphere extends DPat {
   private  SinLFO vx;
   float vibration_min, vibration_max, vperiod;
   
+  
+  float hsv = huespread.getValuef();
+  float wpv = widthparameter.getValuef();
   Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) {
    this.f1xcenter = f1xcenter;
    this.f1ycenter = f1ycenter;
@@ -35,6 +38,7 @@ class SineSphere extends DPat {
   void run(int deltaMS) {
     final float vv = vibration.getValuef();
     final float vvx = vx.getValuef();
+    
   }
   
   }
@@ -50,7 +54,6 @@ final Sphery[] spherys;
   }
 
 
-	float rsv, noiseyv, bandv;
 
     public void StartRun(int deltaMs) {
 		

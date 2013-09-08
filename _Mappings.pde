@@ -52,9 +52,9 @@ public Model buildModel() {
    
   
    //back left cubes: temp Channel 1 
-  new TowerMapping(0, Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
+  new TowerMapping(0, 3*Cube.EDGE_HEIGHT, 72, new CubeMapping[] {
       new CubeMapping(0, 14,  -45 , WRL), // #1
-      new CubeMapping(18, -12, -20, WFL), //#2
+      new CubeMapping(10, -12, -20, WFL), //#2
       new CubeMapping(5, 9, 45, WRR),  //#3
      
       
@@ -62,8 +62,8 @@ public Model buildModel() {
     //back left cube tower: Channel 2 
     new TowerMapping(0, Cube.EDGE_HEIGHT, 70, new CubeMapping[] {
      new CubeMapping(18, -2.5, 45, WRL),  //#4
-     new CubeMapping(15, -6, 45, WFR),
-      new CubeMapping(-6 , 7, 5,  WRR),
+     new CubeMapping(15, -6, 45, WFR),  //#5
+      new CubeMapping(-6 , 7, 5,  WRR),  //#6
       new CubeMapping(18, 11, -5, WFL)
      
    }),
@@ -124,8 +124,8 @@ public Model buildModel() {
 
  new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
       new CubeMapping(3, 28, 3, WFL),
-      new CubeMapping(-2, 11.5, 10, WFR),
-      new CubeMapping(10.5, 4.5, 40, WFR)
+      new CubeMapping(-4, -8, 10, WFR),
+      new CubeMapping(-15, 8, 40, WFR)
      
       
     }),
@@ -170,11 +170,11 @@ public Model buildModel() {
   Cube[] singleCubes = new Cube[] {
     //back left channel behind speaker
     new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL), 
-    new Cube(-6, int(Cube.EDGE_HEIGHT),  47, 0, 20, 0, WFR), 
-    new Cube(0, int(2*Cube.EDGE_HEIGHT), 46, 0, 40, 0, WRR),  
+    
+   
     
     // Top left Channel Above DJ booth
-    new Cube(33, int(4.5*Cube.EDGE_HEIGHT ),  28, 0, 10, 0, WRR), 
+    
     //new Cube(35, int(5*Cube.EDGE_HEIGHT ),  52, 0, 10, 0, WRR), 
     //new Cube(56, int(5*Cube.EDGE_HEIGHT ),  69, 0, 10, 0, WFL), 
     //new Cube(76, int(5*Cube.EDGE_HEIGHT ),  61, 0, -45, 0, WRL), 
@@ -305,36 +305,36 @@ public PandaMapping[] buildPandaList() {
     new PandaMapping(
     // 8 maps to:  3, 4, 7, 8, 13, 14, 15, 16.  So if it's J4, 
       "10.200.1.30", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 20, 21, 22, 23}),  //30 J3 *
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 24, 25, 26, 27}),  //30 J4 //ORIG *
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 16, 17, 18, 19}),  //30 J7 *
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 39,40,41,42 }), //30 J8 *
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 36, 35}), //30 J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 48,49,50,51}), //30 J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 52,53,54,55 }), // 30 J15
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 56, 57, 58, 75}), // 30 J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 39,40,41,42 }),  //30 J3 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 36, 35}),  //30 J4 //ORIG *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 20,21,22,23}),  //30 J7 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 16, 17, 18, 19}), //30 J8 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //30 J13 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {1,1,1,1}), //30 J14  (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1 }), // 30 J15   (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 53, 54, 55, 72}), // 30 J16
     }),
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 59,60,61,62}), //29 J3  
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 63, 64, 65, 66}), //29 J4
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 67, 68, 69, 70 }), // 29 J7
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 71,72,73,74 }), //29 J8 //XXX
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 17, 18, 19, 20 }), //29 J13 //XX //bassbox
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //29 J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 39, 35}),  //29 J15
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 16, 17,18,19 }),  //29 J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //29 J3  (not connected)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 1, 1, 1}), //29 J4  (not connected)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 28, 29, 30, 2}), // 29 J7
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33,34,32,31}), //29 J8 //XXX   
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 1, 1, 1 }), //29 J13 //XX //bassbox  (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //29 J14  (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {12, 13, 14, 15 }),  //29 J15
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {8,9,10,11 } ),  //29 J16
     }),    
     new PandaMapping(
       "10.200.1.28", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //28 J3
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //28 J4
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 1, 1, 1 }), //28 J7
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 13, 14 , 15, 16 }), //28 J8
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 8,9,10,11 }), //28 J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33,34,32,31}), //28 J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 12, 13, 14, 15 }), //28 J15
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 28, 29, 30, 1}), //28 J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 60, 61, 62, 63 }), //28 J3
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 56, 57, 58, 59}), //28 J4
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45,46,47,48 }), //28 J7
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {24,25,26,27}), //28 J8
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 4,5,6,7}), //28 J13
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 64, 65, 66, 67 }), //28 J14
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 68, 69, 70, 71 }), //28 J15
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 49,50,51,52}), //28 J16
     }),    
   };  
 

@@ -28,7 +28,7 @@ class SineSphere extends DPat {
     float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, float f1z) {
    return dist(px, py, pz, f1x, f1y, f1z);
     }
- 
+ //void updatespherey(deltaMs, )
  color spheryvalue (float px, float py, float pz , float f1xcenter, float f1ycenter, float f1zcenter) {
 
    return color(px, dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter) , max(0, 100 - 10*abs(dist(px, py, pz, f1xcenter, f1ycenter, f1zcenter)- vibration.getValuef() ) ) ); 
@@ -50,7 +50,8 @@ final Sphery[] spherys;
     spherys = new Sphery[NUM_SPHERES];
     spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 2500) ;    
     spherys[2] = new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000);
-    spherys[3] = new Sphery(model.xMax/2, model.yMax/2, model.zMax/2, modelrad/4, modelrad/8, 5000);
+    spherys[3] = new Sphery(model.xMax/2, model.yMax/2, model.zMax/2, modelrad/4, modelrad/8, 2500);
+  
   }
 
 

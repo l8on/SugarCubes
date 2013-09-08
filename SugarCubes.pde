@@ -27,7 +27,7 @@ LXPattern gplay;
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
-    new Gimbal(glucose),
+    
     
     // DMK
         
@@ -82,7 +82,8 @@ LXPattern[] patterns(GLucose glucose) {
     new TowerParams(glucose),
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
-     
+     //JR
+    new Gimbal(glucose),
     // Sam
     new JazzRainbow(glucose),
     
@@ -91,6 +92,7 @@ LXPattern[] patterns(GLucose glucose) {
     new AbstractPainting(glucose),
     new Spirality(glucose),
     
+
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),
     new TestTowerPattern(glucose),

@@ -78,11 +78,18 @@ LXPattern[] patterns(GLucose glucose) {
     new TimSpheres(glucose),
 
     // Ben
+    //new Sandbox(glucose),
+    new TowerParams(glucose),
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
      
     // Sam
     new JazzRainbow(glucose),
+    
+    // Arjun
+    new TelevisionStatic(glucose),
+    new AbstractPainting(glucose),
+    new Spirality(glucose),
     
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),

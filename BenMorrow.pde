@@ -1,3 +1,85 @@
+class TowerParams extends SCPattern
+{
+	BasicParameter hueoff = new BasicParameter("Hueoff", 0.0);
+	BasicParameter hueSpan = new BasicParameter("HueRange", 0.0);
+	BasicParameter t1 = new BasicParameter("T1", 0.0);
+	BasicParameter t2 = new BasicParameter("T2", 0.0);
+	BasicParameter t3 = new BasicParameter("T3", 0.0);
+	BasicParameter t4 = new BasicParameter("T4", 0.0);
+	BasicParameter t5 = new BasicParameter("T5", 0.0);
+	BasicParameter t6 = new BasicParameter("T6", 0.0);
+	BasicParameter t7 = new BasicParameter("T7", 0.0);
+	BasicParameter t8 = new BasicParameter("T8", 0.0);
+	BasicParameter t9 = new BasicParameter("T9", 0.0);
+	BasicParameter t10 = new BasicParameter("T10", 0.0);
+	BasicParameter t11 = new BasicParameter("T11", 0.0);
+	BasicParameter t12 = new BasicParameter("T12", 0.0);
+	BasicParameter t13 = new BasicParameter("T13", 0.0);
+	BasicParameter t14 = new BasicParameter("T14", 0.0);
+	BasicParameter t15 = new BasicParameter("T15", 0.0);
+	BasicParameter t16 = new BasicParameter("T16", 0.0);
+
+	ArrayList<BasicParameter> towerParams;
+	int towerSize;
+	int colorSpan;
+	TowerParams(GLucose glucose) {
+		super(glucose);
+
+		towerParams = new ArrayList<BasicParameter>();
+		addParameter(hueoff);
+		addParameter(hueSpan);
+		towerParams.add(t1);
+		towerParams.add(t2);
+		towerParams.add(t3);
+		towerParams.add(t4);
+		towerParams.add(t5);
+		towerParams.add(t6);
+		towerParams.add(t7);
+		towerParams.add(t8);
+		towerParams.add(t9);
+		towerParams.add(t10);
+		towerParams.add(t11);
+		towerParams.add(t12);
+		towerParams.add(t13);
+		towerParams.add(t14);
+		towerParams.add(t15);
+		towerParams.add(t16);
+		for(BasicParameter p : towerParams)
+		{
+			addParameter(p);
+		}
+		towerSize = model.towers.size();
+		colorSpan = 255 / towerSize;
+		println("towers "+towerSize);
+	}
+
+	void run(int deltaMs)
+	{
+		clearALL();
+		Tower t;
+		for(int i=0; i<towerSize ;i++)
+		{	
+			t= model.towers.get(i);
+			for(Point p : t.points)
+			{
+				if(p.y<towerParams.get(i).getValuef()*200)
+				{
+					colors[p.index]=color(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i, 255, 255);
+				}
+			}
+		}
+
+	}
+
+	public void clearALL()
+	{
+		for(Point p : model.points)
+		{
+			colors[p.index] = 0;
+		}
+	}
+
+}
 class Sandbox extends SCPattern
 {
 	int c=0;

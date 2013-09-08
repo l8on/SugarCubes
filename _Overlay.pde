@@ -771,6 +771,13 @@ class DebugUI {
   final int debugXSpacing = 28;
   final int debugYSpacing = 21;
   final int[][] debugState;
+  final int[] indexState;
+  
+  final int ERROR_STATE_USED = 0;
+  final int ERROR_STATE_DUPLICATED = 1;
+  
+  final int CUBE_STATE_UNUSED = 0;
+  final int CUBE_STATE_USED = 1;
   
   final int DEBUG_STATE_ANIM = 0;
   final int DEBUG_STATE_WHITE = 1;
@@ -779,6 +786,7 @@ class DebugUI {
   DebugUI(PandaMapping[] pandaMappings) {
     int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
     debugState = new int[totalChannels+1][ChannelMapping.CUBES_PER_CHANNEL+1];
+    indexState = new int[glucose.model.cubes.size()+1];
     
     channelList = new ChannelMapping[totalChannels];
     int channelIndex = 0;
@@ -790,6 +798,16 @@ class DebugUI {
     for (int i = 0; i < debugState.length; ++i) {
       for (int j = 0; j < debugState[i].length; ++j) {
         debugState[i][j] = DEBUG_STATE_ANIM;
+      }
+    }
+    
+    for (int rawIndex = 0; rawIndex < glucose.model.cubes.size()+1; rawIndex++) {
+      indexState[rawIndex] = CUBE_STATE_UNUSED;
+    }
+    for (ChannelMapping channel : channelList) {
+      for (int rawCubeIndex : channel.objectIndices) {
+        if (rawCubeIndex > 0)
+          indexState[rawCubeIndex]++;
       }
     }
   }
@@ -822,7 +840,7 @@ class DebugUI {
               stroke(#999999);          
               line(xPos - 12, yPos + 8, xPos, yPos + 8);
             }
-            drawNumBox(xPos, yPos, rawCubeIndex, debugState[channelNum][stateIndex+1]);
+            drawNumBox(xPos, yPos, rawCubeIndex, debugState[channelNum][stateIndex+1], indexState[rawCubeIndex]);
             ++stateIndex;
             xPos += debugXSpacing;            
           }
@@ -846,10 +864,39 @@ class DebugUI {
       ++channelNum;
     }
     drawNumBox(xBase, yPos, "A", debugState[channelNum][0]);
+    yPos += debugYSpacing * 2;
+   
+    noFill();
+    stroke(#CCCCCC);
+    rect(xBase, yPos, 100, 16);
+    fill(#CCCCCC);
+    text("Unused Cubes",  xBase + 5, yPos + 12);
+    yPos += debugYSpacing;
+    
+    int x_index = 0;
+    for (int rawIndex = 1; rawIndex < glucose.model.cubes.size()+1; rawIndex++) {
+      if (indexState[rawIndex] == 0) {
+        drawNumBox(xBase + (x_index * debugXSpacing), yPos, rawIndex, 0, 2);
+        x_index++;
+        if (x_index > 4) {
+          x_index = 0;
+          yPos += debugYSpacing + 2;
+        }
+      }
+    }
   }
+
   
   void drawNumBox(int xPos, int yPos, int label, int state) {
     drawNumBox(xPos, yPos, "" + label, state);
+  }
+  
+  void drawNumBox(int xPos, int yPos, int label, int state, int cube_state) {
+    if (cube_state > 1) {
+      fill(#FF0000);
+      rect(xPos-2, yPos-2, 20, 20);
+    }
+    drawNumBox(xPos, yPos, label, state);
   }
   
   void drawNumBox(int xPos, int yPos, String label, int state) {

@@ -1,24 +1,128 @@
-
-// import org.zeromq.ZMQ;
-// import org.zeromq.ZMQ.Context;
-// import org.zeromq.ZMQ.Socket;
-
-// import java.util.Map;
+import netP5.*;
+import oscP5.*;
 
 public class PointSliceMap {
+  public int X = 0;
+  public int Y = 1;
+  public int Z = 2;
+  public int NUM_AXES = 3;
+  public int[] axes_list = new int[NUM_AXES];
+
   public ArrayList<ArrayList<Point>> x_slices;
   public ArrayList<ArrayList<Point>> y_slices;
   public ArrayList<ArrayList<Point>> z_slices;
+  public ArrayList[] slices = new ArrayList[NUM_AXES];
+
+  private int slice_magnification = 1000;
+  private int slice_size = 0;
+  private int slices_longest_axis = 100;
+  private int[] model_min = new int[NUM_AXES];
+  private int model_min_x = slice_magnification * slices_longest_axis;
+  private int model_min_y = slice_magnification * slices_longest_axis;
+  private int model_min_z = slice_magnification * slices_longest_axis;
+  private int model_max_x = - model_min_x;
+  private int model_max_y = - model_min_y;
+  private int model_max_z = - model_min_z;
+  private int[] model_max = new int[NUM_AXES];
+  private int model_x_range = 0;
+  private int model_y_range = 0;
+  private int model_z_range = 0;
+  private int[] model_range = new int[NUM_AXES];
+  public int num_x_slices = 0;
+  public int num_y_slices = 0;
+  public int num_z_slices = 0;
+  private int[] num_slices = new int[NUM_AXES];
+  private int longest_axis = 0;
+
+  
+
+  public void debugPrint() {
+    println("Slice Size: " + slice_size);
+    println("Longest axis: " + longest_axis);
+    println("Model x range: (" + model_min_x + ") - (" + model_max_x + "); Total: (" + model_x_range +  "); # Slices: " + num_x_slices);
+    println("Model y range: (" + model_min_y + ") - (" + model_max_y + "); Total: (" + model_y_range +  "); # Slices: " + num_y_slices);
+    println("Model z range: (" + model_min_z + ") - (" + model_max_z + "); Total: (" + model_z_range +  "); # Slices: " + num_z_slices);
+  }
+
+  /* Convert float coordinate to integer slice map coordinate */
+  public int magnify(float val) {
+    return (int) (val * slice_magnification);
+  }
+
+  /* Convert magnified point coordinate to slice index in axis (x = 0, y = 1, z = 2) */
+  public int getPointSliceIndex(int axis, int coor) {
+    int mag = coor - model_min[axis] + slice_magnification;
+    return ((mag - (mag % slice_size))) / slice_size;
+  }
+
+  /* Convert magnified point coordinate to slice index in axis (x = 0, y = 1, z = 2) */
+  public int getPointSliceIndex(int axis, float coor) {
+    return getPointSliceIndex(axis, magnify(coor));
+  }
+
+  /* Get the x slice index the point resides in */
+  public int getPointXSliceIndex(Point point) {
+    return getPointSliceIndex(X, magnify(point.x));
+  }
+
+  /* Get the y slice index the point resides in */
+  public int getPointYSliceIndex(Point point) {
+    return getPointSliceIndex(Y, magnify(point.y));
+  }
+
+  /* Get the z slice index the point resides in */
+  public int getPointZSliceIndex(Point point) {
+    return getPointSliceIndex(Z, magnify(point.z));
+  }
 
   public PointSliceMap(GLucose glucose) {
+    for (int axis_i = 0; axis_i < NUM_AXES; axis_i++)
+      axes_list[axis_i] = axis_i;
+
+    for (int axis_i : axes_list)
+      slices[axis_i] = new ArrayList<ArrayList<Point>>();
+
+    // Get minimum and maximum int coordinates for axes
     for (Strip strip: glucose.model.strips) {
-      x_slices = new ArrayList<ArrayList<Point>>();
-      x_slices.add(new ArrayList<Point>());
+      for (Point point: strip.points) {
+        int[] point_coor = {magnify(point.x), magnify(point.y), magnify(point.y)};
+        for (int axis_i : axes_list)
+          if (point_coor[axis_i] > model_max[axis_i])
+            model_max[axis_i] = point_coor[axis_i];
+          else if (point_coor[axis_i] < model_min[axis_i])
+            model_min[axis_i] = point_coor[axis_i];
+      }
+    }
+
+    // Calculate model ranges with margin for slices
+    for (int axis_i : axes_list)
+      model_range[axis_i] = model_max[axis_i] - model_min[axis_i] + slice_magnification * 2;
+
+    // Find the longest axis
+    for (int axis_i : axes_list)
+      if (model_range[axis_i] > longest_axis)
+        longest_axis = model_range[axis_i];
+
+    // Find number of slices per axis
+    slice_size = (int) (longest_axis / slices_longest_axis);
+    for (int axis_i : axes_list)
+      num_slices[axis_i] = (model_range[axis_i] - (model_range[axis_i] % slice_size) + slice_size) / slice_size;
+
+    for (int axis_i : axes_list)
+      for (int slice_i = 0; slice_i < num_slices[axis_i]; slice_i++)
+        slices[axis_i].add(new ArrayList<Point>());
+
+    for (Strip strip: glucose.model.strips) {
+      for (Point point: strip.points) {
+        // slices[X].get(getPointXSliceIndex(point)).add(point);
+      }
     }
   }
 }
 
 class HouseOfTheRisingSun extends SCPattern {
+  private int debug_print = 0;
+
   private float model_max_x = 0;
   private float model_max_y = 0;
   private float model_max_z = 0;
@@ -37,6 +141,8 @@ class HouseOfTheRisingSun extends SCPattern {
   private float sun_z = 0;
   private float sun_r = 0;
 
+  private PointSliceMap slice_map;
+
   SinLFO period = new SinLFO(-30, 30, 600);
   SinLFO radius_modulator = new SinLFO(-1, 1, 500);
   SinLFO radius_random = new SinLFO(350, 1200, 17000);
@@ -54,6 +160,8 @@ class HouseOfTheRisingSun extends SCPattern {
     addParameter(sun_radius);
     radius_modulator.modulateDurationBy(radius_random);
     period.modulateDurationBy(radius_random);
+
+    slice_map = new PointSliceMap(glucose);
 
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
@@ -118,11 +226,18 @@ class HouseOfTheRisingSun extends SCPattern {
     int animation_ms = 0;
   }
 
+  // public void 
+
   void run(int deltaMs) {
     /* psudo code
 
 
     */
+    if (debug_print == 0) {
+      slice_map.debugPrint();
+      debug_print++;
+    }
+
     // updateInnerCoordinates();
     sun_x = center_x;
     sun_y = sun_height.getValuef() * model_max_y;
@@ -130,6 +245,21 @@ class HouseOfTheRisingSun extends SCPattern {
     sun_r = sun_radius.getValuef() * model_max_z;
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
+        // float br_ratio = ((float) slice_map.getPointYSliceIndex(p) / (float) slice_map.num_y_slices * 100);
+        // int x_sin_mod = 20 - (int) (20 + 20 * Math.sin(2.0f * 3.14f * p.x / model_max_x));
+        // int br = (int) (50 * (Math.log((80 - br_ratio) * .9 - 10) / Math.log(10))) + 2 + x_sin_mod;
+        // // println(br_ratio + " "  + br + " " + slice_map.getPointYSliceIndex(p) + " " + slice_map.num_y_slices);
+        // colors[p.index] = color(
+        //     slice_map.getPointXSliceIndex(p)*3.6,
+        //     100,
+        //     br
+        //   );
+      }
+    }
+  }
+};
+
+/* House of the Rising Sun test code before slice map */
         // if (dist(p.x, p.y, p.z, sun_x, sun_y, sun_z) < (sun_r + radius_mod.getValuef())) {
         //   colors[p.index] = color(
         //       hueCalculator(p)
@@ -149,37 +279,43 @@ class HouseOfTheRisingSun extends SCPattern {
           //   /* Brightness */  100 - (int) dist(p.x,p.y,p.z, planet_x, planet_y, planet_z),
           //   /* saturation */ 50);
         // }
-      }
-    }
-  }
-};
 
 class RemoteDriver extends Thread {
-  void run() {
-    while(true) {
+  OscP5 tcp_server;
+  // OscP5 tcp_client;
 
+  void run() {
+    tcp_server = new OscP5(this, port, OscP5.TCP);
+
+    while(true) {
+      // sleep(1);
     }
   }
 
   public ArrayList<color[]> frame_buffers;
-  public color[] temp_color_buffer;
   public int NUMBER_OF_BUFFERS = 5;
+  public int buffer_ready
+  public int port = 0;
 
-  public RemoteDriver(int port) {
+  public RemoteDriver(int port_) {
+    port = port_;
     frame_buffers = new ArrayList<color[]>();
-    temp_color_buffer = glucose.getColors();
     for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++) {
-      
-      System.arraycopy(glucose.getColors(), 0, temp_color_buffer, 0, glucose.getColors().length);
-      frame_buffers.add(temp_color_buffer);
+      frame_buffers.add(new color[glucose.getColors().length]);
+      System.arraycopy(glucose.getColors(), 0, frame_buffers.get(buf_i), 0, glucose.getColors().length);
     }
 
-    ZMQ.Context context = ZMQ.context(1);
-        //  Socket to talk to clients
-    ZMQ.Socket socket = context.socket(ZMQ.REP);
-    socket.bind ("tcp://*:" + Integer.toString(port));
-
     this.start();
+  }
+
+  public void oscEvent(OscMessage osc_msg) {
+    if (osc_msg.checkAddrPattern("/framebuffer/set/index")) {
+      /* ========== /framebuffer/set ==========
+          
+                                                */
+      String security_code = osc_msg.get(0).stringValue();
+      int frame_index = osc_msg.get(0).intValue();
+    }
   }
 };
 
@@ -198,9 +334,24 @@ class Remote extends SCPattern {
 
 
     */
+    int prt_cnt = 0;
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
-        colors[p.index] = color(p.index % 360, 50, 50);
+        colors[p.index] = color(p.index % 3, 50, 50);
+        remote_driver.frame_buffers.get(0)[p.index] = color(10, 50, 50);
+        remote_driver.frame_buffers.get(1)[p.index] = color(100, 50, 50);
+        remote_driver.frame_buffers.get(2)[p.index] = color(150, 50, 50);
+        remote_driver.frame_buffers.get(3)[p.index] = color(200, 50, 50);
+        remote_driver.frame_buffers.get(4)[p.index] = color(250, 50, 50);
+        if (prt_cnt < 5) {
+          println("Original: " + colors[p.index]);
+          println("Copy 1: " + remote_driver.frame_buffers.get(0)[p.index]);
+          println("Copy 2: " + remote_driver.frame_buffers.get(1)[p.index]);
+          println("Copy 3: " + remote_driver.frame_buffers.get(2)[p.index]);
+          println("Copy 4: " + remote_driver.frame_buffers.get(3)[p.index]);
+          println("Copy 5: " + remote_driver.frame_buffers.get(4)[p.index]);
+          prt_cnt++;
+        }
       }
     }
   }

@@ -26,9 +26,9 @@ LXPattern gplay;
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-    new HouseOfTheRisingSun(glucose),
+    // Kepler
     new Remote(glucose),
-    
+    new HouseOfTheRisingSun(glucose),
     
     new Gimbal(glucose),
     

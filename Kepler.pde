@@ -108,10 +108,12 @@ public class PointSliceMap {
     for (int axis_i : axes_list)
       num_slices[axis_i] = (model_range[axis_i] - (model_range[axis_i] % slice_size) + slice_size) / slice_size;
 
+    // Instantiate axis slices
     for (int axis_i : axes_list)
       for (int slice_i = 0; slice_i < num_slices[axis_i]; slice_i++)
         slices[axis_i].add(new ArrayList<Point>());
 
+    // Sort points into slices
     for (Strip strip: glucose.model.strips) {
       for (Point point: strip.points) {
         // slices[X].get(getPointXSliceIndex(point)).add(point);
@@ -294,28 +296,52 @@ class RemoteDriver extends Thread {
 
   public ArrayList<color[]> frame_buffers;
   public int NUMBER_OF_BUFFERS = 5;
-  public int buffer_ready
+  public int[] buffer_ready = new int[NUMBER_OF_BUFFERS];
+  public int[] frame_count = new int[NUMBER_OF_BUFFERS];
+  public int frame_number = 0;
+  public int last_frame = 0;
+  public int frame_next = 0;
   public int port = 0;
+  public int colors_length = 0;
 
   public RemoteDriver(int port_) {
     port = port_;
+    colors_length = glucose.getColors().length;
     frame_buffers = new ArrayList<color[]>();
     for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++) {
-      frame_buffers.add(new color[glucose.getColors().length]);
+      frame_buffers.add(new color[colors_length]);
       System.arraycopy(glucose.getColors(), 0, frame_buffers.get(buf_i), 0, glucose.getColors().length);
     }
-
+    println("TEST");
+    // short int test = 5;
     this.start();
   }
 
   public void oscEvent(OscMessage osc_msg) {
-    if (osc_msg.checkAddrPattern("/framebuffer/set/index")) {
+    if (osc_msg.checkAddrPattern("/framebuffer/set")) {
       /* ========== /framebuffer/set ==========
           
-                                                */
+                                                 */
       String security_code = osc_msg.get(0).stringValue();
       int frame_index = osc_msg.get(0).intValue();
+      int payload_length = osc_msg.get(1).intValue();
+      byte[] payload = osc_msg.get(2).blobValue();
+      for (int payload_index = 0; payload_index < payload_length; payload_index++) {
+        int p_index = ((int) payload[payload_index*6] << 8) + ((int) payload[payload_index*6+1]);
+        int new_color = 0;
+        for (int byte_i = 0; byte_i < 4; byte_i++)
+          new_color += (int) payload[payload_index * 6 + 2 + byte_i] << (8 * (3 - byte_i));
+        if (colors_length > p_index && p_index > 0) {
+          frame_buffers.get(frame_next)[p_index] = new_color;
+        }
+      }
     }
+    if (osc_msg.checkAddrPattern("/framebuffer/ready") {
+
+    }
+    // if (osc_msg.checkAddrPattern("/framebuffer/next") {
+
+    // }
   }
 };
 
@@ -330,7 +356,7 @@ class Remote extends SCPattern {
     remote_driver = new RemoteDriver(5560);
   }
   void run(int deltaMs) {
-    /* psudo code
+    /* psudo codes
 
 
     */

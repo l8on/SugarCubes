@@ -64,7 +64,7 @@ public Model buildModel() {
      new CubeMapping(18, -2.5, 45, WRL),  //#4
      new CubeMapping(15, -6, 45, WFR),  //#5
       new CubeMapping(-6 , 7, 5,  WRR),  //#6
-      new CubeMapping(18, 11, -5, WFL)
+      new CubeMapping(18, 11, -5, WFL) //#7
      
    }),
     
@@ -125,7 +125,7 @@ public Model buildModel() {
  new TowerMapping(BBX, BBY, BBZ, new CubeMapping[] {
       new CubeMapping(3, 28, 3, WFL),
       new CubeMapping(-4, -8, 10, WFR),
-      new CubeMapping(-15, 8, 40, WFR)
+      new CubeMapping(-15, 8, 40, WFR)  //#30
      
       
     }),
@@ -169,7 +169,7 @@ public Model buildModel() {
   // Single cubes can be constructed directly here if you need them
   Cube[] singleCubes = new Cube[] {
     //back left channel behind speaker
-    new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL), 
+    new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL), //#43
     
    
     
@@ -218,7 +218,7 @@ public Model buildModel() {
       new Cube(BBX - 5, BBY + 3*Cube.EDGE_HEIGHT, BBZ + 15.5, 0, -15, 0, WRL), 
       new Cube(BBX + 27, BBY + 3*Cube.EDGE_HEIGHT, BBZ + 12.5, 0, -18, -15, WRR),
       new Cube(BBX + 59, BBY + 3*Cube.EDGE_HEIGHT + 4, BBZ + 12.5, -12, 10, -10, WRL), 
-      new Cube(BBX + 93, BBY + 3*Cube.EDGE_HEIGHT + 7, BBZ + 20.5, -15, 20, -35, WRR), 
+      new Cube(BBX + 93, BBY + 3*Cube.EDGE_HEIGHT + 7, BBZ + 24.5, -15, 20, -35, WFL), //#52
        
        //new cubes on right side of DJ deck
       new Cube(161, BBY + 2*Cube.EDGE_HEIGHT, 15, 0, -40, 0, WFR), 
@@ -253,7 +253,7 @@ public Model buildModel() {
 
      //lonely cube at top left, one cube channel
 
-     new Cube(BBX - 36,  4*Cube.EDGE_HEIGHT + 8, BBZ +BassBox.EDGE_DEPTH- 38, 0, 10, 0, WFL)
+     new Cube(BBX - 36,  5*Cube.EDGE_HEIGHT + 8, BBZ +BassBox.EDGE_DEPTH- 38, 0, 10, 0, WFL)
 
     // new Cube(x, y, z, rx, ry, rz, wiring),
   };
@@ -320,7 +320,7 @@ public PandaMapping[] buildPandaList() {
     }),
     new PandaMapping(
       "10.200.1.29", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //29 J3  (not connected)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 24,25,26,27}), //29 J3  (not connected)
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 1, 1, 1}), //29 J4  (not connected)
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 28, 29, 30, 2}), // 29 J7
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33,34,32,31}), //29 J8 //XXX   
@@ -336,28 +336,28 @@ public PandaMapping[] buildPandaList() {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45,46,47,48 }), //28 J7
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {1,1,1,1}), //28 J8
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 4,5,6,7}), //28 J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 64, 65, 66, 67 }), //28 J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 68, 69, 70, 71 }), //28 J15
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 68, 69, 70, 71 }), //28 J14
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 64, 65, 66, 67 }), //28 J15
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 49,50,51,52}), //28 J16
     }),    
-    new PandaMapping(
-      "10.200.1.31", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]{1,1,1,1}),  //placeholders
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]{1,1,1,1}),
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {1,1,1,1 }), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {24,25,26,27}), //28 J8
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1 }), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 73 }), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //31 J16
+    // new PandaMapping(
+    //   "10.200.1.31", new ChannelMapping[] {
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]{1,1,1,1}),  //placeholders
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]{1,1,1,1}),
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {1,1,1,1 }), 
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  ), //28 J8
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), 
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1 }), 
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 73 }), 
+    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,1,1,1}), //31 J16
 
 
-      }
+      //}
 
 
 
 
-      )
+     // )
   };  
 
 }

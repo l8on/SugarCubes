@@ -364,8 +364,6 @@ class RemoteDriver extends Thread {
 
   /* OSC server event handler */
   public void oscEvent(OscMessage osc_msg) {
-    // println("Received OSC Message");
-    // println("Address: " + osc_msg.addrPattern());
     if (osc_msg.checkAddrPattern("/framebuffer/set")) {
       /* ========== /framebuffer/set ==========
           Sets pixel values in next available buffer 
@@ -405,28 +403,18 @@ class RemoteDriver extends Thread {
 
       // color[] test_buf = frame_buffers.get(frame_index)[point_starting_index];
       for (int payload_index = 0; payload_index < payload_length; payload_index++) {
-        if (colors_length > (point_starting_index + payload_index) && (point_starting_index + payload_index) > 0)
-          frame_buffers.get(frame_index)[point_starting_index + payload_index] = payload[payload_index];
+        if (colors_length > (point_starting_index + payload_index) && (point_starting_index + payload_index) > 0) {
+          int temp_hue = (payload[payload_index] >> 16) & 0xFFFF;
+          int temp_sat = (payload[payload_index] >> 8) & 0xFF;
+          int temp_brt = (payload[payload_index] >> 0) & 0xFF;
+          frame_buffers.get(frame_index)[point_starting_index + payload_index] = color(temp_hue, temp_sat, temp_brt);
+        }
       }
-
-      // for (int payload_index = 0; payload_index < payload_length; payload_index++) {
-      //   // Combine byte 0 and 1 for point index in colors array
-      //   int p_index = ((int) payload[payload_index*6] << 8) + ((int) payload[payload_index*6+1]);
-      //   int new_color = 0;
-      //   // Combine bytes 2-5 into point color as 32 bit int
-      //   for (int byte_i = 0; byte_i < 4; byte_i++)
-      //     new_color += (int) payload[payload_index * 6 + 2 + byte_i] << (8 * (3 - byte_i));
-      //   // If point exists (ignore point 0 for now), set the color in the frame buffer
-      //   if (colors_length > p_index && p_index > 0) {
-      //     frame_buffers.get(frame_index)[p_index] = new_color;
-      //   }
-      // }
     }
     if (osc_msg.checkAddrPattern("/framebuffer/ready")) {
       // TODO: Add locks to prevent race conditions (draw functions will try to copy buffer )
       String security_code = osc_msg.get(0).stringValue();
       int frame_index = osc_msg.get(1).intValue();
-      // println("Security Code: " + security_code);
       if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS) {
         int old_frame_next = frame_next;
         frame_number++;
@@ -441,8 +429,6 @@ class RemoteDriver extends Thread {
 
     // }
     packets_received++;
-    if (packets_received % 250000 < 1)
-      println("Packets received so far: " + packets_received);
   }
 
   /* Returns the index of the next empty or nulled frame 
@@ -524,12 +510,14 @@ class Remote extends SCPattern {
     remote_driver = new RemoteDriver(5560);
   }
 
-  int frame_debug = 0;
-  int frame_cnt = 0;
-  int ms_since_frame = 0;
-  int total_ms = 1;
-  int total_frames = 0;
-  int total_inside = 0;
+  public int frame_debug = 0;
+  public int frame_cnt = 0;
+  public int ms_since_frame = 0;
+  public int last_ms_since_frame = 0;
+  public int total_ms_since_frame = 0;
+  public int total_ms = 1;
+  public int total_frames = 0;
+  public int total_inside = 0;
   void run(int deltaMs) {
     /* psudo codes
 
@@ -539,33 +527,65 @@ class Remote extends SCPattern {
     frame_cnt++;
     ms_since_frame += deltaMs;
     total_ms += deltaMs;
-    if (frame_debug % 1000 < 2) {
-        println("Frame_debug: " + frame_debug);
-        println("ms since frame: " + ms_since_frame);
-        println("FPS between python frames: " + (frame_cnt/ms_since_frame));
-        println("Total draw frames: " + total_frames + ";   Total inside: " + total_inside + "; % of drawn frames from python: " + (total_inside/total_frames));
-        println("Total draw fps: " + (total_frames / (total_ms/1000)) + ";   Python FPS: " + (total_inside / (total_ms / 1000)));
-      }
-    // println("Colors old: " + colors[4500]);
     if (remote_driver.isNextFrameReady()) {
       System.arraycopy(remote_driver.getNextReadyFrame(), 0, colors, 0, colors.length);
       frame_cnt = 0;
+      last_ms_since_frame = ms_since_frame;
+      if (ms_since_frame < 500) {
+        total_ms_since_frame += ms_since_frame;
+      }
       ms_since_frame = 0;
       total_inside++;
     }
     total_frames++;
-    println(color(0, 100, 100));
-    println(color(60, 100, 100));
-    println(color(120, 100, 100));
-    println(color(180, 100, 100));
-    println(color(240, 100, 100));
-    println(color(300, 100, 100));
+
+    drawRemoteDriverDebug(10, 70);
+
     // println("Colors new: " + colors[4500]);
     // for (Strip strip : model.strips) {
     //   for (Point p : strip.points) {
     //     colors[p.index] = color(p.index % 3, 50, 50);
     //   }
     // }
+  }
+
+
+  public void drawRemoteDriverDebug(int start_x, int start_y) {
+    int xBase = start_x;
+    int yPos = start_y;
+    int ySpacing = 21;
+    textAlign(LEFT);
+    // fill(#666666);
+
+    // Draw buffer info
+    text("Buf#", xBase, yPos);
+    text("Status", xBase, yPos + 21);
+    text("Frame#", xBase, yPos + 42);
+    text("Ex Point", xBase, yPos + 42);
+    textAlign(RIGHT);
+    for (int frame_i : remote_driver.framebuffers) {
+      int xPos = xBase + 50 + ((frame_i + 1) * 75);
+      text(frame_i, xBase + 50 + frame_i * 20, yPos);
+      text(remote_driver.buffer_status[frame_i], xPos, yPos + ySpacing);
+      text(remote_driver.frame_count[frame_i], xPos, yPos + ySpacing * 2);
+      text(remote_driver.frame_buffers.get(frame_i)[1], xPos, yPos + ySpacing * 3);
+    }
+    textAlign(LEFT);
+    yPos += ySpacing * 4;
+    text("Draw Frame #: " + frame_debug, xBase, yPos);
+    yPos += ySpacing;
+    text("Frames since last remote frame: " + frame_cnt, xBase, yPos);
+    yPos += ySpacing;
+    text("Total MS: " + total_ms, xBase, yPos);
+    yPos += ySpacing;
+    text("MS since last remote frame: " + last_ms_since_frame, xBase, yPos);
+    yPos += ySpacing;
+    float avg_ms_since_frame = (float) (total_inside) / (float) (total_ms_since_frame / 1000);
+    text("AVG MS since last remote frame: " + Float.toString(avg_ms_since_frame), xBase, yPos);
+    yPos += ySpacing;
+    text("Next empty frame: " + remote_driver.frame_next, xBase, yPos);
+    yPos += ySpacing;
+
   }
 }
 

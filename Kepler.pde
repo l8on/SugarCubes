@@ -280,6 +280,7 @@ class RemoteDriver extends Thread {
   // TODO: Change to static array?
   public ArrayList<color[]> frame_buffers;
 
+
   // Length of buffer and colors array
   public int colors_length = 0;
 
@@ -288,6 +289,7 @@ class RemoteDriver extends Thread {
 
   // Number of frame buffers to allocate
   public int NUMBER_OF_BUFFERS = 5;
+  public int[] framebuffers = new int[NUMBER_OF_BUFFERS];
 
   // Frame set to color(0, 0, 0) and ready to be filled
   public int FRAMEBUFFER_NULLED = -1;
@@ -304,12 +306,17 @@ class RemoteDriver extends Thread {
   // Absolute frame count
   public int frame_number = 0;
 
+  // Index of last frame drawn
+  public int last_frame_sent = -1;
+
   // Index of last frame loaded
   public int last_frame = 0;
   // Index of next empty frame
   public int frame_next = 0;
 
   public int port = 0;
+
+  public int packets_received = 0;
 
 
   public RemoteDriver(int port_) {
@@ -322,6 +329,8 @@ class RemoteDriver extends Thread {
       null_buffer[null_i] = color(0, 0, 0);
     // Create and null frame buffers
     for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++) {
+      framebuffers[buf_i] = buf_i;
+      frame_count[buf_i] = buf_i - 10;
       frame_buffers.add(new color[colors_length]);
       nullFrameBuffer(buf_i);
     }
@@ -338,7 +347,7 @@ class RemoteDriver extends Thread {
     //        Frame index out of bounds
     //        frame_index < 0 = wipe all or out of bounds?
     if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS)
-      for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++)
+      for (int buf_i: framebuffers)
       {
         System.arraycopy(null_buffer, 0, frame_buffers.get(buf_i), 0, colors_length);
         buffer_status[buf_i] = FRAMEBUFFER_NULLED;
@@ -355,8 +364,8 @@ class RemoteDriver extends Thread {
 
   /* OSC server event handler */
   public void oscEvent(OscMessage osc_msg) {
-    println("Received OSC Message");
-    println("Address: " + osc_msg.addrPattern());
+    // println("Received OSC Message");
+    // println("Address: " + osc_msg.addrPattern());
     if (osc_msg.checkAddrPattern("/framebuffer/set")) {
       /* ========== /framebuffer/set ==========
           Sets pixel values in next available buffer 
@@ -379,28 +388,27 @@ class RemoteDriver extends Thread {
           ^ CERTIFIABLY RETARDED ^ - Change to for loop that gets color with starting point index
                                                  */
       String security_code = osc_msg.get(0).stringValue();
-      println("Security Code: " + security_code);
       int frame_index = osc_msg.get(1).intValue();
-      println("Frame Index: " + frame_index);
       int payload_length = osc_msg.get(2).intValue();
-      println("Payload Length: " + payload_length);
-      byte[] payload = new byte[payload_length];
-      // payload = osc_msg.get(3).bytesValue();
-      println("Creating payload debug string...");
-      // String payload_debug = new String(payload);
-      println("Payload: TESTING SHIT SO HOLD ON");
-
+      int point_starting_index = osc_msg.get(3).intValue();
+      // TODO: Check that point starting index does not overflow buffer
+      int[] payload = new int[payload_length];
+      int color_cnt = 0;
+      for (int payload_index = 0; payload_index < payload_length; payload_index++) {
+        payload[payload_index] = osc_msg.get(4 + payload_index).intValue();
+      }
 
       // TODO: Raise exception for -1 > frame_index >= NUMBER_OF_BUFFERS
       // TODO: Interaction of frame_index and frame_next will be weird
       if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS)
         frame_index = frame_next;
 
-       String payload_debug = new String(payload);
-      println("Security Code: " + security_code);
-      println("Frame Index: " + frame_index);
-      println("Payload Length: " + payload_length);
-      println("Payload: " + payload_debug);
+      // color[] test_buf = frame_buffers.get(frame_index)[point_starting_index];
+      for (int payload_index = 0; payload_index < payload_length; payload_index++) {
+        if (colors_length > (point_starting_index + payload_index) && (point_starting_index + payload_index) > 0)
+          frame_buffers.get(frame_index)[point_starting_index + payload_index] = payload[payload_index];
+      }
+
       // for (int payload_index = 0; payload_index < payload_length; payload_index++) {
       //   // Combine byte 0 and 1 for point index in colors array
       //   int p_index = ((int) payload[payload_index*6] << 8) + ((int) payload[payload_index*6+1]);
@@ -417,14 +425,14 @@ class RemoteDriver extends Thread {
     if (osc_msg.checkAddrPattern("/framebuffer/ready")) {
       // TODO: Add locks to prevent race conditions (draw functions will try to copy buffer )
       String security_code = osc_msg.get(0).stringValue();
-      int frame_index = osc_msg.get(0).intValue();
-      println("Security Code: " + security_code);
-      println("Frame Index: " + frame_index);
+      int frame_index = osc_msg.get(1).intValue();
+      // println("Security Code: " + security_code);
       if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS) {
         int old_frame_next = frame_next;
         frame_number++;
         frame_count[old_frame_next] = frame_number;
-        frame_next = getNextFrameIndex(frame_count[old_frame_next]);
+        buffer_status[old_frame_next] = FRAMEBUFFER_READY;
+        frame_next = getNextEmptyFrameIndex(frame_count[old_frame_next]);
       } else {
         // TODO: Implement checks on buffer status before setting it
       }
@@ -432,19 +440,76 @@ class RemoteDriver extends Thread {
     // if (osc_msg.checkAddrPattern("/framebuffer/next") {
 
     // }
+    packets_received++;
+    if (packets_received % 250000 < 1)
+      println("Packets received so far: " + packets_received);
   }
 
   /* Returns the index of the next empty or nulled frame 
       frame_num = frame count of the last set frame buffer */
-  public int getNextFrameIndex(int frame_num) {
-    int lowest_frame_cnt = frame_count[frame_next];
-    int temp_frame_next = 0;
-    for (int frame_i = 0; frame_i < NUMBER_OF_BUFFERS; frame_i++)
+  public int getNextEmptyFrameIndex(int frame_num) {
+    int lowest_frame_cnt = frame_number;
+    int temp_frame_next = -1;
+    for (int frame_i: framebuffers)
         if (buffer_status[frame_i] < FRAMEBUFFER_READY && frame_count[frame_i] < lowest_frame_cnt) {
           lowest_frame_cnt = frame_count[frame_i];
           temp_frame_next = frame_i;
         }
     return temp_frame_next;
+  }
+
+  public boolean isNextFrameReady() {
+    int lowest_frame_cnt = frame_number;
+    int temp_frame_next = -1;
+    // println("Drawing next ready frame");
+    for (int frame_i: framebuffers)
+      if (buffer_status[frame_i] == FRAMEBUFFER_READY && frame_count[frame_i] < lowest_frame_cnt) {
+        lowest_frame_cnt = frame_count[frame_i];
+        temp_frame_next = frame_i;
+      }
+    if (temp_frame_next < 0)
+      return false;
+    else
+      return true; 
+  }
+
+  public color[] getNextReadyFrame() {
+    color[] colors = glucose.getColors();
+    int lowest_frame_cnt = frame_number;
+    int temp_frame_next = -1;
+    // println("Drawing next ready frame");
+    for (int frame_i: framebuffers)
+      if (buffer_status[frame_i] == FRAMEBUFFER_READY && frame_count[frame_i] < lowest_frame_cnt) {
+        lowest_frame_cnt = frame_count[frame_i];
+        temp_frame_next = frame_i;
+      }
+    if (temp_frame_next >= 0) {
+      // println("Sending frame with frame_index = " + temp_frame_next);
+      System.arraycopy(frame_buffers.get(temp_frame_next), 0, colors, 0, colors_length);
+      buffer_status[temp_frame_next] = FRAMEBUFFER_EMPTY;
+      last_frame_sent = temp_frame_next;
+    } else {
+      if (last_frame_sent > -1) {
+        // Resend last frame
+        // println("Sending Nothing");
+      } else {
+        // Send null frame
+        // println("Sending null buffer" + null_buffer[4300]);
+        System.arraycopy(null_buffer, 0, colors, 0, colors_length);
+      }
+    }
+    // println("Buffer Status: " + buffer_status[0] + "   " +
+    //                             buffer_status[1] + "   " +
+    //                             buffer_status[2] + "   " +
+    //                             buffer_status[3] + "   " +
+    //                             buffer_status[4] + "   ");
+    // println("Frame Count: " +   frame_count[0] + "     " +
+    //                             frame_count[1] + "     " +
+    //                             frame_count[2] + "     " +
+    //                             frame_count[3] + "     " +
+    //                             frame_count[4] + "     ");
+    // println("Tmp_frame: " + temp_frame_next + "   " + last_frame_sent + "   ");
+    return colors;
   }
 };
 
@@ -459,17 +524,48 @@ class Remote extends SCPattern {
     remote_driver = new RemoteDriver(5560);
   }
 
+  int frame_debug = 0;
+  int frame_cnt = 0;
+  int ms_since_frame = 0;
+  int total_ms = 1;
+  int total_frames = 0;
+  int total_inside = 0;
   void run(int deltaMs) {
     /* psudo codes
 
 
     */
-    
-    for (Strip strip : model.strips) {
-      for (Point p : strip.points) {
-        colors[p.index] = color(p.index % 3, 50, 50);
+    frame_debug++;
+    frame_cnt++;
+    ms_since_frame += deltaMs;
+    total_ms += deltaMs;
+    if (frame_debug % 1000 < 2) {
+        println("Frame_debug: " + frame_debug);
+        println("ms since frame: " + ms_since_frame);
+        println("FPS between python frames: " + (frame_cnt/ms_since_frame));
+        println("Total draw frames: " + total_frames + ";   Total inside: " + total_inside + "; % of drawn frames from python: " + (total_inside/total_frames));
+        println("Total draw fps: " + (total_frames / (total_ms/1000)) + ";   Python FPS: " + (total_inside / (total_ms / 1000)));
       }
+    // println("Colors old: " + colors[4500]);
+    if (remote_driver.isNextFrameReady()) {
+      System.arraycopy(remote_driver.getNextReadyFrame(), 0, colors, 0, colors.length);
+      frame_cnt = 0;
+      ms_since_frame = 0;
+      total_inside++;
     }
+    total_frames++;
+    println(color(0, 100, 100));
+    println(color(60, 100, 100));
+    println(color(120, 100, 100));
+    println(color(180, 100, 100));
+    println(color(240, 100, 100));
+    println(color(300, 100, 100));
+    // println("Colors new: " + colors[4500]);
+    // for (Strip strip : model.strips) {
+    //   for (Point p : strip.points) {
+    //     colors[p.index] = color(p.index % 3, 50, 50);
+    //   }
+    // }
   }
 }
 

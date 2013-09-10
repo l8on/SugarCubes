@@ -261,87 +261,190 @@ class HouseOfTheRisingSun extends SCPattern {
   }
 };
 
-/* House of the Rising Sun test code before slice map */
-        // if (dist(p.x, p.y, p.z, sun_x, sun_y, sun_z) < (sun_r + radius_mod.getValuef())) {
-        //   colors[p.index] = color(
-        //       hueCalculator(p)
-        //     );
-          // colors[p.index] = color(
-          //   30 - dist(p.x, p.y, p.z, sun_x, sun_y, sun_z)/sun_r + (int) ((radius_mod.getValuef() / 10 - 0.5) * 10),
-          //   100, 100);
-        // } else {
-          // colors[p.index] = color(
-          //     (int) ((color_shift.getValuef()) * 2 - 1) * 30 + (int) period.getValuef() + ( (int) dist(p.x, p.y, p.z, sun_x, sun_y, sun_z)),
-          //     int(140 - dist(0, p.y, 0, 0, sun_y, 0)),
-          //     80
-          //   );
-          // float color_b = dist(p.x, p.y, p.z, planet_x, planet_y, planet_z);
-          // colors[p.index] = color(
-          //   /* hue */ (int) (period.getValue() + (abs(p.x-(planet_x-planet_r))*40) + (abs(p.y-(planet_y-planet_r))*25) + (abs(p.z-(planet_z-planet_r))*15)) % 360,
-          //   /* Brightness */  100 - (int) dist(p.x,p.y,p.z, planet_x, planet_y, planet_z),
-          //   /* saturation */ 50);
-        // }
-
 class RemoteDriver extends Thread {
-  OscP5 tcp_server;
-  // OscP5 tcp_client;
+
+  // TODO: IMPLEMENT SYNCHRONIZATION TO AVOID MISSED PACKETS
+  OscP5 udp_server;
 
   void run() {
-    tcp_server = new OscP5(this, port, OscP5.TCP);
+    // Create UDP server for secure (NOT)  transmission of frame data packets 
+    // containing LED indices
+    udp_server = new OscP5(this, port);
 
     while(true) {
-      // sleep(1);
+      // TODO: Find something to do here; sleep?
     }
   }
 
+  // Dynamic array of frame buffers
+  // TODO: Change to static array?
   public ArrayList<color[]> frame_buffers;
-  public int NUMBER_OF_BUFFERS = 5;
-  public int[] buffer_ready = new int[NUMBER_OF_BUFFERS];
-  public int[] frame_count = new int[NUMBER_OF_BUFFERS];
-  public int frame_number = 0;
-  public int last_frame = 0;
-  public int frame_next = 0;
-  public int port = 0;
+
+  // Length of buffer and colors array
   public int colors_length = 0;
+
+  // Buffer set to all color(0, 0, 0)
+  public color[] null_buffer;
+
+  // Number of frame buffers to allocate
+  public int NUMBER_OF_BUFFERS = 5;
+
+  // Frame set to color(0, 0, 0) and ready to be filled
+  public int FRAMEBUFFER_NULLED = -1;
+  // Frame ready to be filled but there is no guarantee of existing pixel color
+  public int FRAMEBUFFER_EMPTY = 0;
+  // Frame is ready to be drawn by the remote pattern
+  public int FRAMEBUFFER_READY = 1;
+  public int FRAMEBUFFER_SENDING = 2;
+  public int[] buffer_status = new int[NUMBER_OF_BUFFERS];
+
+  // Absolute frame count of last frame loaded into buffer
+  public int[] frame_count = new int[NUMBER_OF_BUFFERS];
+
+  // Absolute frame count
+  public int frame_number = 0;
+
+  // Index of last frame loaded
+  public int last_frame = 0;
+  // Index of next empty frame
+  public int frame_next = 0;
+
+  public int port = 0;
+
 
   public RemoteDriver(int port_) {
     port = port_;
     colors_length = glucose.getColors().length;
     frame_buffers = new ArrayList<color[]>();
+    null_buffer = new color[colors_length];
+    // Set null buffer to all color(0, 0, 0)
+    for (int null_i = 0; null_i < colors_length; null_i++)
+      null_buffer[null_i] = color(0, 0, 0);
+    // Create and null frame buffers
     for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++) {
       frame_buffers.add(new color[colors_length]);
-      System.arraycopy(glucose.getColors(), 0, frame_buffers.get(buf_i), 0, glucose.getColors().length);
+      nullFrameBuffer(buf_i);
     }
-    println("TEST");
-    // short int test = 5;
+
     this.start();
   }
 
+  /* Sets all pixels in a frame buffer to color(0, 0, 0)
+      Arguments:
+        int frame_index: Index of frame to null
+          If the frame does not exist, it nulls all frames (CHANGE) */
+  public void nullFrameBuffer(int frame_index) {
+    // TODO: Add exceptions
+    //        Frame index out of bounds
+    //        frame_index < 0 = wipe all or out of bounds?
+    if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS)
+      for (int buf_i = 0; buf_i < NUMBER_OF_BUFFERS; buf_i++)
+      {
+        System.arraycopy(null_buffer, 0, frame_buffers.get(buf_i), 0, colors_length);
+        buffer_status[buf_i] = FRAMEBUFFER_NULLED;
+      }
+    else {
+      System.arraycopy(null_buffer, 0, frame_buffers.get(frame_index), 0, colors_length);
+      buffer_status[frame_index] = FRAMEBUFFER_NULLED;
+    }
+  }
+
+  public void sendOscErrorCode(OscMessage osc_msg, int error_code) {
+
+  }
+
+  /* OSC server event handler */
   public void oscEvent(OscMessage osc_msg) {
+    println("Received OSC Message");
+    println("Address: " + osc_msg.addrPattern());
     if (osc_msg.checkAddrPattern("/framebuffer/set")) {
       /* ========== /framebuffer/set ==========
-          
+          Sets pixel values in next available buffer 
+
+          Parameters:
+            String security_code: Reserved for authentication in the future
+            int frame_index: Index of frame to set or -1 for next empty frame
+            int payload_length: Length of packet data contents
+            byte[] payload: Packet data contents
+
+
+          Payload Point Array Format @ 6 Bytes/Pixel
+            unsigned short int point_index:
+              byte 0          - high byte
+              byte 1          - low byte
+                ([byte 0] << 8) + ([byte 1])
+            color/int point_color:
+              byte 2-5        - high to low bytes
+              ([byte 2] << 24) + ([byte 3] << 16) + ([byte 4] << 8) + ([byte 5])
+          ^ CERTIFIABLY RETARDED ^ - Change to for loop that gets color with starting point index
                                                  */
       String security_code = osc_msg.get(0).stringValue();
-      int frame_index = osc_msg.get(0).intValue();
-      int payload_length = osc_msg.get(1).intValue();
-      byte[] payload = osc_msg.get(2).blobValue();
-      for (int payload_index = 0; payload_index < payload_length; payload_index++) {
-        int p_index = ((int) payload[payload_index*6] << 8) + ((int) payload[payload_index*6+1]);
-        int new_color = 0;
-        for (int byte_i = 0; byte_i < 4; byte_i++)
-          new_color += (int) payload[payload_index * 6 + 2 + byte_i] << (8 * (3 - byte_i));
-        if (colors_length > p_index && p_index > 0) {
-          frame_buffers.get(frame_next)[p_index] = new_color;
-        }
-      }
-    }
-    if (osc_msg.checkAddrPattern("/framebuffer/ready") {
+      println("Security Code: " + security_code);
+      int frame_index = osc_msg.get(1).intValue();
+      println("Frame Index: " + frame_index);
+      int payload_length = osc_msg.get(2).intValue();
+      println("Payload Length: " + payload_length);
+      byte[] payload = new byte[payload_length];
+      // payload = osc_msg.get(3).bytesValue();
+      println("Creating payload debug string...");
+      // String payload_debug = new String(payload);
+      println("Payload: TESTING SHIT SO HOLD ON");
 
+
+      // TODO: Raise exception for -1 > frame_index >= NUMBER_OF_BUFFERS
+      // TODO: Interaction of frame_index and frame_next will be weird
+      if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS)
+        frame_index = frame_next;
+
+       String payload_debug = new String(payload);
+      println("Security Code: " + security_code);
+      println("Frame Index: " + frame_index);
+      println("Payload Length: " + payload_length);
+      println("Payload: " + payload_debug);
+      // for (int payload_index = 0; payload_index < payload_length; payload_index++) {
+      //   // Combine byte 0 and 1 for point index in colors array
+      //   int p_index = ((int) payload[payload_index*6] << 8) + ((int) payload[payload_index*6+1]);
+      //   int new_color = 0;
+      //   // Combine bytes 2-5 into point color as 32 bit int
+      //   for (int byte_i = 0; byte_i < 4; byte_i++)
+      //     new_color += (int) payload[payload_index * 6 + 2 + byte_i] << (8 * (3 - byte_i));
+      //   // If point exists (ignore point 0 for now), set the color in the frame buffer
+      //   if (colors_length > p_index && p_index > 0) {
+      //     frame_buffers.get(frame_index)[p_index] = new_color;
+      //   }
+      // }
+    }
+    if (osc_msg.checkAddrPattern("/framebuffer/ready")) {
+      // TODO: Add locks to prevent race conditions (draw functions will try to copy buffer )
+      String security_code = osc_msg.get(0).stringValue();
+      int frame_index = osc_msg.get(0).intValue();
+      println("Security Code: " + security_code);
+      println("Frame Index: " + frame_index);
+      if (frame_index < 0 || frame_index >= NUMBER_OF_BUFFERS) {
+        int old_frame_next = frame_next;
+        frame_number++;
+        frame_count[old_frame_next] = frame_number;
+        frame_next = getNextFrameIndex(frame_count[old_frame_next]);
+      } else {
+        // TODO: Implement checks on buffer status before setting it
+      }
     }
     // if (osc_msg.checkAddrPattern("/framebuffer/next") {
 
     // }
+  }
+
+  /* Returns the index of the next empty or nulled frame 
+      frame_num = frame count of the last set frame buffer */
+  public int getNextFrameIndex(int frame_num) {
+    int lowest_frame_cnt = frame_count[frame_next];
+    int temp_frame_next = 0;
+    for (int frame_i = 0; frame_i < NUMBER_OF_BUFFERS; frame_i++)
+        if (buffer_status[frame_i] < FRAMEBUFFER_READY && frame_count[frame_i] < lowest_frame_cnt) {
+          lowest_frame_cnt = frame_count[frame_i];
+          temp_frame_next = frame_i;
+        }
+    return temp_frame_next;
   }
 };
 
@@ -355,29 +458,16 @@ class Remote extends SCPattern {
 
     remote_driver = new RemoteDriver(5560);
   }
+
   void run(int deltaMs) {
     /* psudo codes
 
 
     */
-    int prt_cnt = 0;
+    
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
         colors[p.index] = color(p.index % 3, 50, 50);
-        remote_driver.frame_buffers.get(0)[p.index] = color(10, 50, 50);
-        remote_driver.frame_buffers.get(1)[p.index] = color(100, 50, 50);
-        remote_driver.frame_buffers.get(2)[p.index] = color(150, 50, 50);
-        remote_driver.frame_buffers.get(3)[p.index] = color(200, 50, 50);
-        remote_driver.frame_buffers.get(4)[p.index] = color(250, 50, 50);
-        if (prt_cnt < 5) {
-          println("Original: " + colors[p.index]);
-          println("Copy 1: " + remote_driver.frame_buffers.get(0)[p.index]);
-          println("Copy 2: " + remote_driver.frame_buffers.get(1)[p.index]);
-          println("Copy 3: " + remote_driver.frame_buffers.get(2)[p.index]);
-          println("Copy 4: " + remote_driver.frame_buffers.get(3)[p.index]);
-          println("Copy 5: " + remote_driver.frame_buffers.get(4)[p.index]);
-          prt_cnt++;
-        }
       }
     }
   }

@@ -329,7 +329,7 @@ public PandaMapping[] buildPandaList() {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 60, 61, 62, 63 }), //28 J3
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 56, 57, 58, 59}), //28 J4
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45,46,47,48 }), //28 J7
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {1,1,1,1}), //28 J8
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[]  {73}), //28 J8
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 4,5,6,7}), //28 J13
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 68, 69, 70, 71 }), //28 J14
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 64, 65, 66, 67 }), //28 J15

@@ -63,11 +63,12 @@ class SineSphere extends DPat {
 public void onParameterChanged(LXParameter parameter){
      double bampv = bounceamp.getValue();
       double brv = bouncerate.getValue();
-     if (parameter == bounceamp) {
-      
-    //  ybounce.setRange(bampv*model.yMax/3 , bampv*2*model.yMax/3));
+     if (parameter == bounceamp) 
+      {
+     // ybounce.setRange(bampv*model.yMax/3 , bampv*2*model.yMax/3, brv);
        }
-  else if ( parameter == bouncerate ){
+  else if ( parameter == bouncerate )   
+    {
       ybounce.setDuration(brv*2000);
 
     }
@@ -89,7 +90,7 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
    return color(huespread.getValuef()*5*px, dist(model.xMax-px, model.yMax-py, model.zMax-pz, f1xc, f1yc, f1zc) , 
     max(0, 100 - 100*widthparameter.getValuef() *
       abs( (dist(px, py, pz, f1xcenter, ybounce.getValuef(), f1zcenter) + 
-        (dist(px, py , pz, f2xcenter, ybounce.getValuef(), f2zcenter) ) )/2   
+        (dist(px, py , pz, f2xcenter, ybounce.getValuef(), f2zcenter) ) )/2  
       - vibration.getValuef() ) ) ) ; 
   }
 
@@ -108,8 +109,8 @@ final Sphery[] spherys;
     super(glucose);
    
     spherys = new Sphery[NUM_SPHERES];
-    spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000) ;    
-    spherys[2] = new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000);
+    //spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000) ;    
+    //spherys[2] = new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000);
     spherys[3] = new Sphery(model.xMax/2, model.yMax/2, model.zMax/2, modelrad/4, modelrad/8, 2300);
   
   }
@@ -118,8 +119,8 @@ final Sphery[] spherys;
 
     public void StartRun(int deltaMs) {
 		
-		spherys[1].run(deltaMs);
-		spherys[2].run(deltaMs);
+		//spherys[1].run(deltaMs);
+		//spherys[2].run(deltaMs);
     spherys[3].run(deltaMs);
 	}
 
@@ -128,9 +129,9 @@ final Sphery[] spherys;
 
       color c = 0; 
       
-      c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-      c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-      c = blendColor(c, spherys[3].spheryvalue(Px.x, Px.y, Px.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+      //c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+      //c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+      c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/3, model.yMax/3, model.zMax/3, 2*model.xMax/3, 2*model.yMax/3, 2*model.zMax/3),ADD);
       
 
   

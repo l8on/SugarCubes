@@ -187,9 +187,13 @@ void draw() {
   noFill();
   strokeWeight(2);
   beginShape(POINTS);
-  for (Point p : glucose.model.points) {
-    stroke(colors[p.index]);
-    vertex(p.fx, p.fy, p.fz);
+  // TODO(mcslee): restore when bassBox/speakers are right again
+  // for (Point p : glucose.model.points) {
+  for (Cube cube : glucose.model.cubes) {
+    for (Point p : cube.points) {
+      stroke(colors[p.index]);
+      vertex(p.fx, p.fy, p.fz);
+    }
   }
   endShape();
   

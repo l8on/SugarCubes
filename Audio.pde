@@ -35,7 +35,7 @@ public static class GraphicEQ {
     numBands = this.fft.avgSize();
     bandVals = new LinearEnvelope[numBands];
     for (int i = 0; i < bandVals.length; ++i) {
-      bandVals[i] = new LinearEnvelope(0, 0, 500).trigger();
+      (bandVals[i] = new LinearEnvelope(0, 0, 500)).trigger();
     }
   }
   

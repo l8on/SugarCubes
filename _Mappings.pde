@@ -255,16 +255,14 @@ public Model buildModel() {
   };
 
   // The bass box!
-  /*
   BassBox bassBox = new BassBox(BBX, 0, BBZ);
  
   // The speakers!
   List<Speaker> speakers = Arrays.asList(new Speaker[] {
      // Each speaker parameter is x, y, z, rotation, the left speaker comes first
-     new Speaker(-12, 6, 0, 15),
-     new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
+//     new Speaker(-12, 6, 0, 15),
+//     new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
   });
-  */
 
   //////////////////////////////////////////////////////////////////////
   //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //
@@ -291,7 +289,7 @@ public Model buildModel() {
     cubes[cubeIndex++] = cube;
   }
 
-  return new Model(towerList, cubes, null, null);
+  return new Model(towerList, cubes, bassBox, speakers);
 }
 
 /**

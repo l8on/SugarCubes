@@ -22,18 +22,15 @@
  * If you're an artist, create a new tab in the Processing environment with
  * your name. Implement your classes there, and add them to the list below.
  */ 
+ 
+// TODO(mcslee): get rid of this global, make engine support two decks
 LXPattern gplay;
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
-    
-    
-    // DMK
-        
     // Slee
     new Swarm(glucose),
-    //new ScreenScrape(glucose),
     new SpaceTime(glucose),
     new ShiftingPlane(glucose),
     new AskewPlanes(glucose),
@@ -48,7 +45,7 @@ LXPattern[] patterns(GLucose glucose) {
 
     // DanH
     new Noise(glucose),
-    gplay=new Play(glucose), // XXX do this properly
+    gplay = new Play(glucose), // XXX do this properly
     new Pong(glucose),
 
     // Alex G
@@ -78,12 +75,14 @@ LXPattern[] patterns(GLucose glucose) {
     new TimSpheres(glucose),
 
     // Ben
-    //new Sandbox(glucose),
+    // new Sandbox(glucose),
     new TowerParams(glucose),
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
-     //JR
+    
+    //JR
     new Gimbal(glucose),
+    
     // Sam
     new JazzRainbow(glucose),
     
@@ -91,7 +90,6 @@ LXPattern[] patterns(GLucose glucose) {
     new TelevisionStatic(glucose),
     new AbstractPainting(glucose),
     new Spirality(glucose),
-    
 
     // Basic test patterns for reference, not art    
     new TestCubePattern(glucose),
@@ -121,8 +119,8 @@ LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
     new FlashEffect(lx),
     new BoomEffect(glucose),
-    //new DesaturationEffect(lx),
-    //new ColorFuckerEffect(glucose),
+    // new DesaturationEffect(lx),
+    // new ColorFuckerEffect(glucose),
     new DualBlender(glucose),
   };
 }

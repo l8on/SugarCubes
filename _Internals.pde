@@ -124,42 +124,16 @@ void setup() {
   println("Hit the 'p' key to toggle Panda Board output");
 }
 
-boolean[] noteState = new boolean[16];
 
 void controllerChangeReceived(rwmidi.Controller cc) {
   if (debugMode) {
     println("CC: " + cc.toString());
   }
-  //println(cc.getInput().getName());
-  int c = cc.getCC();
-  if(c==1){
-    for(int i=0; i<16; i++){
-      if(noteState[i] && i<8)  { LXParameter p = glucose.patternKnobs.get(i); p.setValue(cc.getValue()/127.0); }
-      else if(noteState[i] && i<16) { try { LXParameter p = gparams.get(i-8); p.setValue(cc.getValue()/127.0); } catch(Exception e) {} }
-    }
-  }
-  if(c==2){
-    for(int i=0; i<16; i++){
-      //sif(noteState[i] && i<8)  { println( gplay.Sliders ); }
-      //else if(noteState[i] && i<16) { try { LXParameter p = gparams.get(i-8); p.setValue(cc.getValue()/127.0); } catch(Exception e) {} }
-    }
-  }
-  
-    
-  //if(c>=16 || c<16+8){
-  //    LXParameter p = gparams.get(c-16);
-  //    p.setValue(c/127.0);     
-  //}
 }
-
 
 void noteOnReceived(Note note) {
   if (debugMode) {
     println("Note On: " + note.toString());
-  }
-  int pitch = note.getPitch();  
-  if(pitch>=36 && pitch <36+16){
-    noteState[pitch-36]=true;
   }
 }
 
@@ -167,12 +141,7 @@ void noteOffReceived(Note note) {
   if (debugMode) {
     println("Note Off: " + note.toString());
   }
-  int pitch = note.getPitch();
-  if(pitch>=36 && pitch <36+16){
-    noteState[pitch-36]=false;
-  }
 }
-
 
 void logTime(String evt) {
   int now = millis();
@@ -207,10 +176,10 @@ void draw() {
   endShape();
   
   noStroke();
-  drawBassBox(glucose.model.bassBox);
-  for (Speaker s : glucose.model.speakers) {
-    drawSpeaker(s);
-  }
+//  drawBassBox(glucose.model.bassBox);
+//  for (Speaker s : glucose.model.speakers) {
+//    drawSpeaker(s);
+//  }
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
   }
@@ -249,12 +218,11 @@ void draw() {
   
   // TODO(mcslee): move into GLucose engine
   for (PandaDriver p : pandaBoards) {
-    p.sendNow(colors);
+    p.send(colors);
   }
 }
 
 void drawBassBox(BassBox b) {
-  /*
   float in = .15;
 
   noStroke();
@@ -296,7 +264,7 @@ void drawBassBox(BassBox b) {
   box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
   translate(BassBox.EDGE_WIDTH-2*in, 0, 0);
   box(0, BassBox.EDGE_HEIGHT - in*2, Cube.CHANNEL_WIDTH-in);
-  popMatrix();*/
+  popMatrix();
   
 }
 
@@ -326,8 +294,7 @@ void drawSpeaker(Speaker s) {
   noStroke();
   fill(#393939);  
   drawBox(s.x+in, s.y+in, s.z+in, 0, s.ry, 0, Speaker.EDGE_WIDTH-in*2, Speaker.EDGE_HEIGHT-in*2, Speaker.EDGE_DEPTH-in*2, Cube.CHANNEL_WIDTH-in);
-}  
-
+}
 
 void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, float yd, float zd, float sw) {
   pushMatrix();
@@ -375,6 +342,7 @@ boolean uiOn = true;
 int restoreToIndex = -1;
 
 boolean doDual = false;
+
 void keyPressed() {
   if (mappingMode) {
     mappingTool.keyPressed();

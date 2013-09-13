@@ -171,48 +171,45 @@ public Model buildModel() {
     //back left channel behind speaker
     new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL), //#43
     
-   
-    
     // Top left Channel Above DJ booth
     
     //new Cube(35, int(5*Cube.EDGE_HEIGHT ),  52, 0, 10, 0, WRR), 
     //new Cube(56, int(5*Cube.EDGE_HEIGHT ),  69, 0, 10, 0, WFL), 
     //new Cube(76, int(5*Cube.EDGE_HEIGHT ),  61, 0, -45, 0, WRL), 
     
-    //next channel to the right, same height
-     //new Cube(85, int(5*Cube.EDGE_HEIGHT ),  77, 0, 20, 0, WRL), 
-     //new Cube(92, int(6*Cube.EDGE_HEIGHT ),  63, 0,20, 0, WRR), 
-     //new Cube(86, int(6*Cube.EDGE_HEIGHT ),  47, 0, -45, 0, WRL), 
-     //new Cube(123, int(6*Cube.EDGE_HEIGHT ),  31, 0, 20, 0, WFR), 
+    // Next channel to the right, same height
+    //new Cube(85, int(5*Cube.EDGE_HEIGHT ),  77, 0, 20, 0, WRL), 
+    //new Cube(92, int(6*Cube.EDGE_HEIGHT ),  63, 0,20, 0, WRR), 
+    //new Cube(86, int(6*Cube.EDGE_HEIGHT ),  47, 0, -45, 0, WRL), 
+    //new Cube(123, int(6*Cube.EDGE_HEIGHT ),  31, 0, 20, 0, WFR), 
      
-     // next channel to right, same height
-     //new Cube(111, int(5*Cube.EDGE_HEIGHT ),  79, 0, 30, 0, WRL), 
-     //new Cube(125, int(6*Cube.EDGE_HEIGHT ),  76, 0,27, 0, WRL), 
-     //new Cube(144, int(5*Cube.EDGE_HEIGHT ),  44, 0, 45, 0, WRR), 
-     //new Cube(134, int(5*Cube.EDGE_HEIGHT ),  42, 0, 45, 0, WRL), 
+    // Next channel to right, same height
+    //new Cube(111, int(5*Cube.EDGE_HEIGHT ),  79, 0, 30, 0, WRL), 
+    //new Cube(125, int(6*Cube.EDGE_HEIGHT ),  76, 0,27, 0, WRL), 
+    //new Cube(144, int(5*Cube.EDGE_HEIGHT ),  44, 0, 45, 0, WRR), 
+    //new Cube(134, int(5*Cube.EDGE_HEIGHT ),  42, 0, 45, 0, WRL), 
      
-     //next channel to right
-      new Cube(185, int(4*Cube.EDGE_HEIGHT ),  73, 0, -45, 0, WRR), 
-     //new Cube(170, int(5*Cube.EDGE_HEIGHT ),  58, 0,40, 0, WRL), 
-     //new Cube(158, int(6*Cube.EDGE_HEIGHT ),  34, 0, 40, 0, WFR), 
-     //new Cube(130, int(6*Cube.EDGE_HEIGHT ),  10, 0, -5, 30, WRL), 
+    // Next channel to right
+    new Cube(185, int(4*Cube.EDGE_HEIGHT ),  73, 0, -45, 0, WRR), 
+    //new Cube(170, int(5*Cube.EDGE_HEIGHT ),  58, 0,40, 0, WRL), 
+    //new Cube(158, int(6*Cube.EDGE_HEIGHT ),  34, 0, 40, 0, WFR), 
+    //new Cube(130, int(6*Cube.EDGE_HEIGHT ),  10, 0, -5, 30, WRL), 
      
-     //next channel highest to the right
-      //new Cube(203, int(5*Cube.EDGE_HEIGHT ),  55, 0, 35, 0, WRR), 
-     //new Cube(174, int(5*Cube.EDGE_HEIGHT ),  32, 0,35, 0, WFR), 
-     //new Cube(178, int(6.5*Cube.EDGE_HEIGHT ),  16, 0, 20 , 30, WRL), 
-     //new Cube(212, int(6.5*Cube.EDGE_HEIGHT ), 23, 0, 20 ,30, WRR), 
+    // Next channel highest to the right
+    //new Cube(203, int(5*Cube.EDGE_HEIGHT ),  55, 0, 35, 0, WRR), 
+    //new Cube(174, int(5*Cube.EDGE_HEIGHT ),  32, 0,35, 0, WFR), 
+    //new Cube(178, int(6.5*Cube.EDGE_HEIGHT ),  16, 0, 20 , 30, WRL), 
+    //new Cube(212, int(6.5*Cube.EDGE_HEIGHT ), 23, 0, 20 ,30, WRR), 
      
-    //last channel
-     //new Cube(204, int(5*Cube.EDGE_HEIGHT ),  28, 0, 25, 0, WFR), 
-     ///new Cube(185, int(6*Cube.EDGE_HEIGHT ),  38, 0,40, 0, WRR), 
+    // Last channel
+    //new Cube(204, int(5*Cube.EDGE_HEIGHT ),  28, 0, 25, 0, WFR), 
+    //new Cube(185, int(6*Cube.EDGE_HEIGHT ),  38, 0,40, 0, WRR), 
     
-   //new cubes above DJ deck
-
-      new Cube(BBX + 78.5, BBY + 2*Cube.EDGE_HEIGHT, BBZ, 0, 10, 0, WRR), 
-      new Cube(BBX + 49.5, BBY + 2*Cube.EDGE_HEIGHT, BBZ - 7, 0, 10, 0, WRR),
-      new Cube(BBX + 13, BBY + 2*Cube.EDGE_HEIGHT, BBZ + 11, 0, -30, 0, WRL), 
-      new Cube(BBX - 15, BBY + 2*Cube.EDGE_HEIGHT, BBZ + 30, 0, -35, 0, WRR), 
+    // New cubes above DJ deck
+    new Cube(BBX + 78.5, BBY + 2*Cube.EDGE_HEIGHT, BBZ, 0, 10, 0, WRR), 
+    new Cube(BBX + 49.5, BBY + 2*Cube.EDGE_HEIGHT, BBZ - 7, 0, 10, 0, WRR),
+    new Cube(BBX + 13, BBY + 2*Cube.EDGE_HEIGHT, BBZ + 11, 0, -30, 0, WRL), 
+    new Cube(BBX - 15, BBY + 2*Cube.EDGE_HEIGHT, BBZ + 30, 0, -35, 0, WRR), 
        
       // new cubes above DJ deck at crazy angles
       new Cube(BBX - 5, BBY + 3*Cube.EDGE_HEIGHT, BBZ + 15.5, 0, -15, 0, WRL), 
@@ -220,54 +217,52 @@ public Model buildModel() {
       new Cube(BBX + 59, BBY + 3*Cube.EDGE_HEIGHT + 4, BBZ + 12.5, -12, 10, -10, WRL), 
       new Cube(BBX + 93, BBY + 3*Cube.EDGE_HEIGHT + 7, BBZ + 24.5, -15, 20, -35, WFL), //#52
        
-       //new cubes on right side of DJ deck
-      new Cube(161, BBY + 2*Cube.EDGE_HEIGHT, 15, 0, -40, 0, WFR), 
-      new Cube(161, BBY + 3*Cube.EDGE_HEIGHT, 24, 0, -30, 0, WFL),
-      new Cube(165, BBY + 4*Cube.EDGE_HEIGHT, 41, 0, 5, 0, WFR), 
-      
-       //new cubes top back left
-      new Cube(BBX + 32, 5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 7, 0, -25, 0, WFR), 
-      new Cube(BBX + 5.5,  5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH +7, 0, -25, 0, WFL),
-      new Cube(BBX - 23,  5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 11, 0, -25, 0, WFL), 
-      new Cube(BBX - 33,  5*Cube.EDGE_HEIGHT + 8, BBZ +BassBox.EDGE_DEPTH- 29, 0, 10, 0, WFL), 
+    // New cubes on right side of DJ deck
+    new Cube(161, BBY + 2*Cube.EDGE_HEIGHT, 15, 0, -40, 0, WFR), 
+    new Cube(161, BBY + 3*Cube.EDGE_HEIGHT, 24, 0, -30, 0, WFL),
+    new Cube(165, BBY + 4*Cube.EDGE_HEIGHT, 41, 0, 5, 0, WFR), 
+     
+    // New cubes top back left
+    new Cube(BBX + 32, 5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 7, 0, -25, 0, WFR), 
+    new Cube(BBX + 5.5,  5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH +7, 0, -25, 0, WFL),
+    new Cube(BBX - 23,  5*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 11, 0, -25, 0, WFL), 
+    new Cube(BBX - 33,  5*Cube.EDGE_HEIGHT + 8, BBZ +BassBox.EDGE_DEPTH- 29, 0, 10, 0, WFL), 
       
       //on top of previous channel
        new Cube(BBX + 22, 6*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH , 0, 5, 0, WRL), 
       new Cube(BBX + 27,  6*Cube.EDGE_HEIGHT - 13, BBZ + BassBox.EDGE_DEPTH- 25, 0, 3, -20, WRR),
       new Cube(BBX +5,  6*Cube.EDGE_HEIGHT - 13, BBZ + BassBox.EDGE_DEPTH -27, 0, 5, -15, WRL), 
       new Cube(BBX - 11,  6*Cube.EDGE_HEIGHT -1.5, BBZ +BassBox.EDGE_DEPTH - 11, 0, 30, 0, WRR), 
-      
-      //top center
+       //top center
        new Cube(BBX +37, 6*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH +13 , 0, 15, 0, WRR), 
       new Cube(BBX + 64,  6*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 25, 0, 15, 0, WFR),
       new Cube(BBX + 64,  6*Cube.EDGE_HEIGHT - 3, BBZ + BassBox.EDGE_DEPTH -4 , 0, 0, -30, WRL), 
       new Cube(BBX + 87.5,  6*Cube.EDGE_HEIGHT + 13, BBZ +BassBox.EDGE_DEPTH - 10, 0, 0, 0, WRL), 
+    // Top right
+    new Cube(BBX + 76, 107.5, BBZ + BassBox.EDGE_DEPTH + 23, 0, -40, 0, WRR), 
+    new Cube(BBX +  98, 129, BBZ + BassBox.EDGE_DEPTH - 5, 0, 10, 0, WRR),
+    new Cube(BBX + 104,  107.5, BBZ + BassBox.EDGE_DEPTH + 17, 0, -35, 0, WRR), 
+    new Cube(BBX + 129,  107.5, BBZ +BassBox.EDGE_DEPTH +10, 0, -35, 0, WFL), 
       
-      //top right
-      new Cube(BBX + 76, 107.5, BBZ + BassBox.EDGE_DEPTH + 23, 0, -40, 0, WRR), 
-      new Cube(BBX +  98, 129, BBZ + BassBox.EDGE_DEPTH - 5, 0, 10, 0, WRR),
-      new Cube(BBX + 104,  107.5, BBZ + BassBox.EDGE_DEPTH + 17, 0, -35, 0, WRR), 
-      new Cube(BBX + 129,  107.5, BBZ +BassBox.EDGE_DEPTH +10, 0, -35, 0, WFL), 
-      
-     new Cube(179, 4*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 14,0, -20, 0 , WFR),
+    new Cube(179, 4*Cube.EDGE_HEIGHT, BBZ + BassBox.EDGE_DEPTH + 14,0, -20, 0 , WFR),
 
-     //lonely cube at top left, one cube channel
-
+    // Lonely cube at top left, one cube channel
      new Cube(BBX - 36,  5*Cube.EDGE_HEIGHT + 8, BBZ +BassBox.EDGE_DEPTH- 38, 0, 10, 0, WFL)
 
     // new Cube(x, y, z, rx, ry, rz, wiring),
   };
 
   // The bass box!
-  //BassBox bassBox = new BassBox(BBX, 0, BBZ);
-  //test for Alex, should be commented out
+  /*
+  BassBox bassBox = new BassBox(BBX, 0, BBZ);
  
   // The speakers!
-  //List<Speaker> speakers = Arrays.asList(new Speaker[] {
-    // each speaker parameter is x, y, z, rotation, the left speaker comes first
-   // new Speaker(-12, 6, 0, 15),
-   // new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
- // });
+  List<Speaker> speakers = Arrays.asList(new Speaker[] {
+     // Each speaker parameter is x, y, z, rotation, the left speaker comes first
+     new Speaker(-12, 6, 0, 15),
+     new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
+  });
+  */
 
   //////////////////////////////////////////////////////////////////////
   //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //
@@ -305,9 +300,9 @@ public PandaMapping[] buildPandaList() {
   final int LEFT_SPEAKER = 0;
   final int RIGHT_SPEAKER = 1;
   
+  // 8 channels map to:  3, 4, 7, 8, 13, 14, 15, 16.
   return new PandaMapping[] {
     new PandaMapping(
-    // 8 maps to:  3, 4, 7, 8, 13, 14, 15, 16.  So if it's J4, 
       "10.200.1.30", new ChannelMapping[] {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 39,40,41,42 }),  //30 J3 *
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 36, 35}),  //30 J4 //ORIG *
@@ -359,10 +354,7 @@ public PandaMapping[] buildPandaList() {
 
      // )
   };  
-
 }
-
-
 
 class TowerMapping {
   public final float x, y, z;
@@ -477,11 +469,11 @@ class ChannelMapping {
       }
       int speakerIndex = rawObjectIndices[0];
       if (speakerIndex < 0 || speakerIndex >= glucose.model.speakers.size()) {
-        //throw new RuntimeException("Invalid speaker channel mapping: " + speakerIndex);
+        throw new RuntimeException("Invalid speaker channel mapping: " + speakerIndex);
       }
     } else if ((mode == MODE_STRUTS_AND_FLOOR) || (mode == MODE_BASS) || (mode == MODE_NULL)) {
       if (rawObjectIndices.length > 0) {
-        //throw new RuntimeException("Bass/floor/null mappings cannot specify object indices");
+        throw new RuntimeException("Bass/floor/null mappings cannot specify object indices");
       }
     } else if (mode == MODE_CUBES) {
       for (int rawCubeIndex : rawObjectIndices) {

@@ -1,11 +1,6 @@
 import netP5.*;
 import oscP5.*;
 
-//import hypermedia.net.*;
-
-
-
-
 /**
  *     DOUBLE BLACK DIAMOND        DOUBLE BLACK DIAMOND
  *
@@ -19,24 +14,7 @@ import oscP5.*;
  * This class implements the output function to the Panda Boards. It
  * will be moved into GLucose once stabilized.
  */
-public static class PandaDriver extends Thread{
-  int lastSeen;
-  void start(){super.start();}
-  void run(){
-    while(true){
-      if(queue.size()>0) {
-        for(int i=0; i<queue.size(); i++){
-          this.sendNow(queue.get(queue.size()-1));
-          queue.clear();
-        }
-      } else {
-        try{sleep(1);} catch(Exception e){}
-      }
-    }
-  }
-
-  //UDP udp;  // define the UDP object
-
+public static class PandaDriver {
   // IP address
   public final String ip;
   
@@ -60,8 +38,6 @@ public static class PandaDriver extends Thread{
   public PandaDriver(String ip) {
     this.ip = ip;
     
-    //udp = new UDP(this, 10000);
-    
     // Initialize our OSC output stuff
     address = new NetAddress(ip, 9001);
     message = new OscMessage("/shady/pointbuffer");
@@ -71,7 +47,6 @@ public static class PandaDriver extends Thread{
     for (int i = 0; i < points.length; ++i) {
       points[i] = NO_POINT;
     }
-    this.start();
   }
 
   private final static int FORWARD = -1;
@@ -171,7 +146,7 @@ public static class PandaDriver extends Thread{
   // as cubes with Wiring.FRONT_LEFT. If this needs to be changed,
   // remove this null assignment and change the below to have mappings
   // for the LEFT and RIGHT speaker
-  private final static int[][][] SPEAKER_STRIP_ORDERING = null; /* {
+  private final static int[][][] SPEAKER_STRIP_ORDERING = {
     // Left speaker
     { 
       // Front face, counter-clockwise from bottom left
@@ -188,18 +163,11 @@ public static class PandaDriver extends Thread{
       {0, BACKWARD },
       {3, BACKWARD },
     }
-  };*/
-  
-  private final static int[][] LEFT_SPEAKER_STRIP_ORDERING = {
   };
-
-  ArrayList<int[]> queue;
   
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
     
-    queue = new ArrayList<int[]>();
-
     // Ok, we are initialized, time to build the array if points in order to
     // send out. We start at the head of our point buffer, and work our way
     // down. This is the order in which points will be sent down the wire.
@@ -323,18 +291,13 @@ public static class PandaDriver extends Thread{
   }
 
   public final void send(int[] colors) {
-     queue.add(colors);
-  }
-  public final void sendNow(int[] colors) {
-    if (!enabled || colors==null) {
+    if (!enabled) {
       return;
     }
     int len = 0;
     int packetNum = 0;
-    if(points==null) { return; }
-    for (int index: points) {
-      int c = 0;
-      if(index>0) { c= colors[index]; }
+    for (int index : points) {
+      int c = (index < 0) ? 0 : colors[index];
       byte r = (byte) ((c >> 16) & 0xFF);
       byte g = (byte) ((c >> 8) & 0xFF);
       byte b = (byte) ((c) & 0xFF);
@@ -363,7 +326,6 @@ public static class PandaDriver extends Thread{
     message.add(packet.length);
     message.add(packet);
     try {
-      //udp.send(packet, "10.200.1.29", 9001);
       OscP5.flush(message, address);
     } catch (Exception x) {
       x.printStackTrace();

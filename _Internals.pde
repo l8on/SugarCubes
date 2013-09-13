@@ -249,7 +249,7 @@ void draw() {
   
   // TODO(mcslee): move into GLucose engine
   for (PandaDriver p : pandaBoards) {
-    p.sendNow(colors);
+    p.send(colors);
   }
 }
 

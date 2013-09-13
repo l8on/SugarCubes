@@ -339,14 +339,14 @@ public PandaMapping[] buildPandaList() {
     }),    
     new PandaMapping(
       "10.200.1.31", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),  //placeholders
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 24,25,26,27}), //28 J8
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 24, 25, 26, 27}),  // 31 J8
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), 
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), 
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 73 }), 
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), //31 J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 31 J16
     }),
   };
 }

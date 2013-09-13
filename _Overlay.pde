@@ -772,16 +772,15 @@ class DebugUI {
   final int debugYSpacing = 21;
   final int[][] debugState;
   final int[] indexState;
-  
-  final int ERROR_STATE_USED = 0;
-  final int ERROR_STATE_DUPLICATED = 1;
-  
+    
   final int CUBE_STATE_UNUSED = 0;
   final int CUBE_STATE_USED = 1;
+  final int CUBE_STATE_DUPLICATED = 2;
   
   final int DEBUG_STATE_ANIM = 0;
   final int DEBUG_STATE_WHITE = 1;
   final int DEBUG_STATE_OFF = 2;
+  final int DEBUG_STATE_UNUSED = 3;  
   
   DebugUI(PandaMapping[] pandaMappings) {
     int totalChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
@@ -801,18 +800,18 @@ class DebugUI {
       }
     }
     
-    for (int rawIndex = 0; rawIndex < glucose.model.cubes.size()+1; rawIndex++) {
+    for (int rawIndex = 0; rawIndex < glucose.model.cubes.size()+1; ++rawIndex) {
       indexState[rawIndex] = CUBE_STATE_UNUSED;
     }
     for (ChannelMapping channel : channelList) {
       for (int rawCubeIndex : channel.objectIndices) {
         if (rawCubeIndex > 0)
-          indexState[rawCubeIndex]++;
+          ++indexState[rawCubeIndex];
       }
     }
   }
   
-  void draw() {    
+  void draw() {
     noStroke();
     int xBase = debugX;
     int yPos = debugY;
@@ -867,19 +866,17 @@ class DebugUI {
     yPos += debugYSpacing * 2;
    
     noFill();
-    stroke(#CCCCCC);
-    rect(xBase, yPos, 100, 16);
     fill(#CCCCCC);
-    text("Unused Cubes",  xBase + 5, yPos + 12);
+    text("Unused Cubes",  xBase, yPos + 12);
     yPos += debugYSpacing;
     
-    int x_index = 0;
-    for (int rawIndex = 1; rawIndex < glucose.model.cubes.size()+1; rawIndex++) {
-      if (indexState[rawIndex] == 0) {
-        drawNumBox(xBase + (x_index * debugXSpacing), yPos, rawIndex, 0, 2);
-        x_index++;
-        if (x_index > 4) {
-          x_index = 0;
+    int xIndex = 0;
+    for (int rawIndex = 1; rawIndex <= glucose.model.cubes.size(); ++rawIndex) {
+      if (indexState[rawIndex] == CUBE_STATE_UNUSED) {
+        drawNumBox(xBase + (xIndex * debugXSpacing), yPos, rawIndex, DEBUG_STATE_UNUSED);
+        ++xIndex;
+        if (xIndex > 4) {
+          xIndex = 0;
           yPos += debugYSpacing + 2;
         }
       }
@@ -891,15 +888,15 @@ class DebugUI {
     drawNumBox(xPos, yPos, "" + label, state);
   }
   
-  void drawNumBox(int xPos, int yPos, int label, int state, int cube_state) {
-    if (cube_state > 1) {
-      fill(#FF0000);
-      rect(xPos-2, yPos-2, 20, 20);
-    }
-    drawNumBox(xPos, yPos, label, state);
+  void drawNumBox(int xPos, int yPos, String label, int state) {
+    drawNumBox(xPos, yPos, "" + label, state, CUBE_STATE_USED);
+  }
+
+  void drawNumBox(int xPos, int yPos, int label, int state, int cubeState) {
+    drawNumBox(xPos, yPos, "" + label, state, cubeState);
   }
   
-  void drawNumBox(int xPos, int yPos, String label, int state) {
+  void drawNumBox(int xPos, int yPos, String label, int state, int cubeState) {
     noFill();
     color textColor = #cccccc;
     switch (state) {
@@ -911,24 +908,29 @@ class DebugUI {
         rect(xPos, yPos+8, 16, 8);
         noFill();
         stroke(textColor);
-        rect(xPos, yPos, 16, 16); 
         break;
       case DEBUG_STATE_WHITE:
         stroke(textColor);
         fill(#e9e9e9);
-        rect(xPos, yPos, 16, 16);
         textColor = #333333;
         break;
       case DEBUG_STATE_OFF:
         stroke(textColor);
-        rect(xPos, yPos, 16, 16);
+        break;
+      case DEBUG_STATE_UNUSED:
+        stroke(textColor);
+        fill(#880000);
         break;
     }
     
+    if (cubeState >= CUBE_STATE_DUPLICATED) {
+      stroke(textColor = #FF0000);
+    }
+
+    rect(xPos, yPos, 16, 16);     
     noStroke();
     fill(textColor);
     text(label, xPos + 2, yPos + 12);
-  
   }
   
   void maskColors(color[] colors) {

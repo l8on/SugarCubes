@@ -86,6 +86,7 @@ abstract class OverlayUI {
   public void drawFPS() {
     textFont(titleFont);
     textAlign(LEFT);
+    noStroke();
     fill(#666666);
     int lPos = 4;
     String fps = "FPS: " + (((int)(frameRate * 10)) / 10.);

@@ -8,7 +8,7 @@ class SineSphere extends DPat {
   private  SinLFO surface;
   private  SinLFO vx;
   private SinLFO xbounce;
-  public SinLFO ybounce = new SinLFO(model.yMax/3, 2*model.yMax/3, 2000);
+  public SinLFO ybounce;
   private SinLFO zbounce;
   float vibration_min, vibration_max, vperiod;
   public BasicParameter widthparameter;
@@ -27,16 +27,16 @@ class SineSphere extends DPat {
    this.vibration_max = vibration_max;
    this.vperiod = vperiod;
    addParameter(bounceamp = new BasicParameter("Amp", .5));
-   addParameter( bouncerate = new BasicParameter("Rate", .5));
+   addParameter( bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
    addParameter(widthparameter = new BasicParameter("Width", .1));
    addParameter(huespread = new BasicParameter("Hue", .2));
   
    addModulator( vx = new SinLFO(-4000, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce).trigger(); //ybounce.modulateDurationBy
-   addParameter(bouncerate); //ybounce.modulateDurationBy(bouncerate);
+   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 2000)).trigger(); //ybounce.modulateDurationBy
+    
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, vperiod)).trigger(); //vibration.modulateDurationBy(vx);
+   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 200000/lx.tempo.bpm())).trigger(); //vibration.modulateDurationBy(vx);
    
   }
  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
@@ -53,7 +53,7 @@ class SineSphere extends DPat {
    addModulator( vx = new SinLFO(-4000, 10000, 100000)).trigger();
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
    addModulator(ybounce).trigger(); 
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, vperiod)).trigger(); //vibration.modulateDurationBy(vx);
+   addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
    addParameter(widthparameter = new BasicParameter("Width", .1));
    addParameter(huespread = new BasicParameter("Hue", .2));
   
@@ -63,9 +63,10 @@ class SineSphere extends DPat {
 public void onParameterChanged(LXParameter parameter){
      double bampv = bounceamp.getValue();
       double brv = bouncerate.getValue();
+     
      if (parameter == bounceamp) 
       {
-     // ybounce.setRange(bampv*model.yMax/3 , bampv*2*model.yMax/3, brv);
+      ybounce.setRange(bampv*model.yMax/3 , bampv*2*model.yMax/3, brv);
        }
   else if ( parameter == bouncerate )   
     {
@@ -109,9 +110,9 @@ final Sphery[] spherys;
     super(glucose);
    
     spherys = new Sphery[NUM_SPHERES];
-    //spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000) ;    
-    //spherys[2] = new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000);
-    spherys[3] = new Sphery(model.xMax/2, model.yMax/2, model.zMax/2, modelrad/4, modelrad/8, 2300);
+    spherys[1] = new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000) ;    
+    spherys[2] = new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000);
+    spherys[3] = new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300);
   
   }
 
@@ -119,8 +120,8 @@ final Sphery[] spherys;
 
     public void StartRun(int deltaMs) {
 		
-		//spherys[1].run(deltaMs);
-		//spherys[2].run(deltaMs);
+		spherys[1].run(deltaMs);
+		spherys[2].run(deltaMs);
     spherys[3].run(deltaMs);
 	}
 
@@ -129,9 +130,9 @@ final Sphery[] spherys;
 
       color c = 0; 
       
-      //c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-      //c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-      c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/3, model.yMax/3, model.zMax/3, 2*model.xMax/3, 2*model.yMax/3, 2*model.zMax/3),ADD);
+      c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+      c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+      c = blendColor(c, spherys[3].spheryvalue(Px.x, Px.y, Px.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
       
 
   

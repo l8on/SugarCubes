@@ -29,19 +29,19 @@ LXPattern gplay;
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
-    // Slee
-    new Swarm(glucose),
-    new SpaceTime(glucose),
-    new ShiftingPlane(glucose),
-    new AskewPlanes(glucose),
-    new Blinders(glucose),
-    new CrossSections(glucose),
-    new Psychedelia(glucose),
+    // // Slee
+    // new Swarm(glucose),
+    // new SpaceTime(glucose),
+    // new ShiftingPlane(glucose),
+    // new AskewPlanes(glucose),
+    // new Blinders(glucose),
+    // new CrossSections(glucose),
+    // new Psychedelia(glucose),
     
-    new Traktor(glucose).setEligible(false),
-    new BassPod(glucose).setEligible(false),
-    new CubeEQ(glucose).setEligible(false),
-    new PianoKeyPattern(glucose).setEligible(false),
+    // new Traktor(glucose).setEligible(false),
+    // new BassPod(glucose).setEligible(false),
+    // new CubeEQ(glucose).setEligible(false),
+    // new PianoKeyPattern(glucose).setEligible(false),
 
     // DanH
     new Noise(glucose),

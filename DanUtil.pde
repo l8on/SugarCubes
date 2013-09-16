@@ -63,7 +63,7 @@ public class xyz {	float x,y,z;
 	xyz		interpolate(float i, xyz d)		{ return new xyz ( interp(i,x,d.x), interp(i,y,d.y), interp(i,z,d.z)); }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-public class DPat extends SCPattern
+abstract public class DPat extends SCPattern
 {
 	float		zSpinHue;
 	xyz			xyzdMax, xyz0, xyzMid, xyzHalf;
@@ -87,7 +87,7 @@ public class DPat extends SCPattern
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
 		UpdateLights();
 	}
-	void  	StartRun(int deltaMs) 				{	}
+	abstract void  	StartRun(int deltaMs); 				
 	color	CalcPoint(xyz p) 					{ return color(0,0,0); }
 	float 	CalcCone (xyz v1, xyz v2, xyz c) 	{
 		return degrees( acos ( v1.minus(c).dot(v2.minus(c)) / (sqrt(v1.minus(c).dot(v1.minus(c))) * sqrt(v2.minus(c).dot(v2.minus(c))) ) ));

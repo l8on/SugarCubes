@@ -367,6 +367,8 @@ void keyPressed() {
       debugMode = !debugMode;
       println("Debug output: " + (debugMode ? "ON" : "OFF"));
       break;
+    // case 's':
+    //   ssphere.keyPressed();
     case 'm':
       mappingMode = !mappingMode;
       if (mappingMode) {

@@ -25,7 +25,7 @@
  
 // TODO(mcslee): get rid of this global, make engine support two decks
 LXPattern gplay;
-
+DPat ssphere;
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
@@ -46,13 +46,13 @@ LXPattern[] patterns(GLucose glucose) {
     // DanH
     new Noise(glucose),
     gplay = new Play(glucose), // XXX do this properly
-    new Pong(glucose),
+    //new Pong(glucose),
 
     // Alex G
-    new SineSphere(glucose),
+    ssphere = new SineSphere(glucose),
 
     // Shaheen
-    new HelixPattern(glucose).setEligible(false),
+    //new HelixPattern(glucose).setEligible(false),
     
     // Toby
     new GlitchPlasma(glucose),
@@ -68,11 +68,11 @@ LXPattern[] patterns(GLucose glucose) {
 
     // Tim
     new TimPlanes(glucose),
-    new TimPinwheels(glucose),
+    //new TimPinwheels(glucose),
     new TimRaindrops(glucose),
     new TimCubes(glucose),
     // new TimTrace(glucose),
-    new TimSpheres(glucose),
+    //new TimSpheres(glucose),
 
     // Ben
     // new Sandbox(glucose),
@@ -81,10 +81,10 @@ LXPattern[] patterns(GLucose glucose) {
     new GranimTestPattern2(glucose),
     
     //JR
-    new Gimbal(glucose),
+    //new Gimbal(glucose),
     
     // Sam
-    new JazzRainbow(glucose),
+    //new JazzRainbow(glucose),
     
     // Arjun
     new TelevisionStatic(glucose),
@@ -92,13 +92,13 @@ LXPattern[] patterns(GLucose glucose) {
     new Spirality(glucose),
 
     // Basic test patterns for reference, not art    
-    new TestCubePattern(glucose),
-    new TestTowerPattern(glucose),
-    new TestProjectionPattern(glucose),
-    new TestStripPattern(glucose),
-    new TestBassMapping(glucose),
-    new TestFloorMapping(glucose),
-    new TestSpeakerMapping(glucose),    
+   // new TestCubePattern(glucose),
+    //new TestTowerPattern(glucose),
+    //new TestProjectionPattern(glucose),
+    //new TestStripPattern(glucose),
+    //new TestBassMapping(glucose),
+    //new TestFloorMapping(glucose),
+    //new TestSpeakerMapping(glucose),    
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

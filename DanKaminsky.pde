@@ -215,7 +215,7 @@ import processing.serial.*;
 
 List<LXParameter> gparams;
 
-class DualBlender extends SCEffect {
+  class DualBlender extends SCEffect {
   int lastSeen;
   BasicParameter p1 = new BasicParameter("p1", 0);
   BasicParameter p2 = new BasicParameter("p2", 0);  
@@ -250,9 +250,9 @@ class DualBlender extends SCEffect {
     if(p==p7) { gparams.get(6).setValue(p.getValuef()); }
     if(p==p8) { gparams.get(7).setValue(p.getValuef()); }    
   }
-  
+    
   void doApply(int[] colors){
-    if(doDual==true){
+    if (enabled) {
       //gplay.onActive();
       gplay.go(millis()-lastSeen);
       lastSeen=millis();

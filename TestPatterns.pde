@@ -315,6 +315,10 @@ class MappingTool extends TestPattern {
     numChannels = pandaMappings.length * PandaMapping.CHANNELS_PER_BOARD;
     setChannel();
   }
+
+  public int numChannels() {
+    return numChannels;
+  }
   
   private void setChannel() {
     activePanda = pandaMappings[channelIndex / PandaMapping.CHANNELS_PER_BOARD];
@@ -367,7 +371,7 @@ class MappingTool extends TestPattern {
       switch (mappingMode) {
         case MAPPING_MODE_ALL: cubeOn = true; break;
         case MAPPING_MODE_SINGLE_CUBE: cubeOn = (cubeIndex == ci); break;
-        case MAPPING_MODE_CHANNEL: cubeOn = (channelIndex > 0); break;
+        case MAPPING_MODE_CHANNEL: cubeOn = (indexOfCubeInChannel > 0); break;
       }
       if (cubeOn) {
         if (mappingMode == MAPPING_MODE_CHANNEL) {
@@ -408,7 +412,10 @@ class MappingTool extends TestPattern {
       }
       ++ci;
     }
-    
+  }
+  
+  public void setCube(int index) {
+    cubeIndex = index % model.cubes.size();
   }
   
   public void incCube() {
@@ -421,6 +428,11 @@ class MappingTool extends TestPattern {
       cubeIndex += model.cubes.size();
     }
   }
+  
+  public void setChannel(int index) {
+    channelIndex = index % numChannels;
+    setChannel();
+  }
 
   public void incChannel() {
     channelIndex = (channelIndex + 1) % numChannels;
@@ -432,6 +444,10 @@ class MappingTool extends TestPattern {
     setChannel();    
   }
   
+  public void setStrip(int index) {
+    stripIndex = index % Cube.STRIPS_PER_CUBE;
+  }
+  
   public void incStrip() {
     stripIndex = (stripIndex + 1) % Cube.STRIPS_PER_CUBE;
   }
@@ -440,7 +456,7 @@ class MappingTool extends TestPattern {
     stripIndex = (stripIndex + Cube.STRIPS_PER_CUBE - 1) % Cube.STRIPS_PER_CUBE;
   }
   
-  public void keyPressed() {
+  public void keyPressed(UIMapping uiMapping) {
     switch (keyCode) {
       case UP: if (mappingMode == MAPPING_MODE_CHANNEL) incChannel(); else incCube(); break;
       case DOWN: if (mappingMode == MAPPING_MODE_CHANNEL) decChannel(); else decCube(); break;
@@ -452,5 +468,10 @@ class MappingTool extends TestPattern {
       case 'g': channelModeGreen = !channelModeGreen; break;
       case 'b': channelModeBlue = !channelModeBlue; break;
     }
+    uiMapping.setChannelID(channelIndex+1);
+    uiMapping.setCubeID(cubeIndex+1);
+    uiMapping.setStripID(stripIndex+1);
+    uiMapping.redraw();
   }
+
 }

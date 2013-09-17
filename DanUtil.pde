@@ -80,7 +80,7 @@ public class DPat extends SCPattern
 	int 		unmapRow (int a) 					{ return btwn(a,0 , 4) ? a+53 : a;			}
 	void 		SetLight (int row, int col, int clr){ if (midiout != null) midiout.sendNoteOn(col, unmapRow(row), clr); }
 	void 		keypad   (int row, int col)			{ println(row + " " + col); }
-	void 		onInactive() 						{ bIsActive=false; DanTextLine1 = ""; DanTextLine2 = "";}
+	void 		onInactive() 						{ bIsActive=false; DanTextLine1 = ""; DanTextLine2 = ""; uiDebugText.setText(""); }
 	void 		onActive  () 						{ bIsActive=true;
 		zSpinHue = 0;
 		for (int i=0; i<paramlist.size(); i++) ((_DhP)paramlist.get(i)).reset();
@@ -105,6 +105,8 @@ public class DPat extends SCPattern
 
 		DanTextLine2  = "SLIDERS: ";
 		for (int i=0; i<8; i++) if (SliderText[i] != "") { DanTextLine2 += SliderText[i] + ": " + Sliders[i] + "     "; }
+
+		uiDebugText.setText(DanTextLine1, DanTextLine2);
 	}
 
 	void  	run(int deltaMs) {

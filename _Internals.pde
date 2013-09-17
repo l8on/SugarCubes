@@ -48,16 +48,27 @@ MappingTool mappingTool;
 LXPattern[] patterns;
 LXTransition[] transitions;
 LXEffect[] effects;
-OverlayUI ui;
-ControlUI controlUI;
-MappingUI mappingUI;
 PandaDriver[] pandaBoards;
 boolean mappingMode = false;
 boolean debugMode = false;
 DebugUI debugUI;
+String displayMode;
+
+UIContext[] overlays;
+UIPatternDeck uiPatternA;
+UIMapping uiMapping;
+UIDebugText uiDebugText;
 
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
+
+LXPattern[] _patterns(GLucose glucose) {
+  LXPattern[] patterns = patterns(glucose);
+  for (LXPattern p : patterns) {
+    p.setTransition(new DissolveTransition(glucose.lx).setDuration(1000));
+  }
+  return patterns;
+}
 
 void setup() {
   startMillis = lastMillis = millis();
@@ -76,12 +87,15 @@ void setup() {
   logTime("Built GLucose engine");
   
   // Set the patterns
-  glucose.lx.setPatterns(patterns = patterns(glucose));
+  Engine engine = lx.engine;
+  glucose.setTransitions(transitions = transitions(glucose));
+  logTime("Built transitions");
+  engine.setPatterns(patterns = _patterns(glucose));
+  engine.addDeck(_patterns(glucose));
+  engine.getDeck(1).setBlendTransition(transitions[0]);
   logTime("Built patterns");
   glucose.lx.addEffects(effects = effects(glucose));
   logTime("Built effects");
-  glucose.setTransitions(transitions = transitions(glucose));
-  logTime("Built transitions");
     
   // Build output driver
   PandaMapping[] pandaMappings = buildPandaList();
@@ -94,9 +108,20 @@ void setup() {
   logTime("Built PandaDriver");
   
   // Build overlay UI
-  ui = controlUI = new ControlUI();
-  mappingUI = new MappingUI(mappingTool);
   debugUI = new DebugUI(pandaMappings);
+  overlays = new UIContext[] {
+    uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 344),
+    new UICrossfader(4, 352, 140, 152),
+    new UIOutput(4, 508, 140, 122),
+    
+    new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 344),
+    new UIEffects(width-144, 352, 140, 144),
+    new UITempo(width-144, 498, 140, 50),
+    
+    uiDebugText = new UIDebugText(4, height-64, width-8, 44),
+    uiMapping = new UIMapping(mappingTool, 4, 4, 140, 344),
+  };
+  uiMapping.setVisible(false);
   logTime("Built overlay UI");
     
   // MIDI devices
@@ -107,12 +132,12 @@ void setup() {
   logTime("Setup MIDI devices");
     
   // Setup camera
-  midX = TRAILER_WIDTH/2. + 20;
+  midX = TRAILER_WIDTH/2.;
   midY = glucose.model.yMax/2;
   midZ = TRAILER_DEPTH/2.;
   eyeR = -290;
   eyeA = .15;
-  eyeY = midY + 20;
+  eyeY = midY + 70;
   eyeX = midX + eyeR*sin(eyeA);
   eyeZ = midZ + eyeR*cos(eyeA);
   addMouseWheelListener(new java.awt.event.MouseWheelListener() { 
@@ -152,7 +177,12 @@ void logTime(String evt) {
 void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
-  color[] colors = glucose.getColors();
+  color[] colors = glucose.getColors();;
+  if (displayMode == "A") {
+    colors = lx.engine.getDeck(0).getColors();
+  } else if (displayMode == "B") {
+    colors = lx.engine.getDeck(1).getColors();
+  }
   if (debugMode) {
     debugUI.maskColors(colors);
   }
@@ -162,6 +192,8 @@ void draw() {
     midX, midY, midZ,
     0, -1, 0
   );
+
+  translate(0, 10, 0);
 
   noStroke();
   fill(#141414);
@@ -197,16 +229,13 @@ void draw() {
   }
   endShape();
   
-  // 2D Overlay
-  camera();
-  javax.media.opengl.GL gl = ((PGraphicsOpenGL)g).beginGL();
-  gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
-  ((PGraphicsOpenGL)g).endGL();
-  strokeWeight(1);
+  // 2D Overlay UI
   drawUI();
-  
+    
+  // Send output colors
+  color[] sendColors = glucose.getColors();
   if (debugMode) {
-    debugUI.draw();
+    debugUI.maskColors(colors);
   }
   
   // Gamma correction here. Apply a cubic to the brightness
@@ -333,28 +362,37 @@ void drawBox(float x, float y, float z, float rx, float ry, float rz, float xd, 
 }
 
 void drawUI() {
+  camera();
+  javax.media.opengl.GL gl = ((PGraphicsOpenGL)g).beginGL();
+  gl.glClear(javax.media.opengl.GL.GL_DEPTH_BUFFER_BIT);
+  ((PGraphicsOpenGL)g).endGL();
+  strokeWeight(1);
+
   if (uiOn) {
-    ui.draw();
-  } else {
-    ui.drawHelpTip();
+    for (UIContext context : overlays) {
+      context.draw();
+    }
   }
-  ui.drawFPS();
-  ui.drawDanText();
+  
+  // Always draw FPS meter
+  fill(#555555);
+  textSize(9);
+  textAlign(LEFT, BASELINE);
+  text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + targetFramerate + " (-/+)", 4, height-4);
+
+  if (debugMode) {
+    debugUI.draw();
+  }
 }
 
 boolean uiOn = true;
-int restoreToIndex = -1;
-
-boolean doDual = false;
+LXPattern restoreToPattern = null;
 
 void keyPressed() {
   if (mappingMode) {
-    mappingTool.keyPressed();
+    mappingTool.keyPressed(uiMapping);
   }
   switch (key) {
-    case 'w':
-       doDual = !doDual;
-       break;
     case '-':
     case '_':
       frameRate(--targetFramerate);
@@ -369,20 +407,14 @@ void keyPressed() {
       break;
     case 'm':
       mappingMode = !mappingMode;
+      uiPatternA.setVisible(!mappingMode);
+      uiMapping.setVisible(mappingMode);
       if (mappingMode) {
-        LXPattern pattern = lx.getPattern();
-        for (int i = 0; i < patterns.length; ++i) {
-          if (pattern == patterns[i]) {
-            restoreToIndex = i;
-            break;
-          }
-        }
-        ui = mappingUI;
+        restoreToPattern = lx.getPattern();
         lx.setPatterns(new LXPattern[] { mappingTool });
       } else {
-        ui = controlUI;
         lx.setPatterns(patterns);
-        lx.goIndex(restoreToIndex);
+        lx.goPattern(restoreToPattern);
       }
       break;
     case 'p':
@@ -398,20 +430,25 @@ void keyPressed() {
 
 int mx, my;
 void mousePressed() {
-  ui.mousePressed();
-  if (mouseX < ui.leftPos) {
-    if (debugMode) {
-      debugUI.mousePressed();
-    }    
-    mx = mouseX;
-    my = mouseY;
+  boolean debugged = false;
+  if (debugMode) {
+    debugged = debugUI.mousePressed();
   }
+  if (!debugged) {
+    for (UIContext context : overlays) {
+      context.mousePressed(mouseX, mouseY);
+    }
+  }
+  mx = mouseX;
+  my = mouseY;
 }
 
 void mouseDragged() {
-  if (mouseX > ui.leftPos) {
-    ui.mouseDragged();
-  } else {
+  boolean dragged = false;
+  for (UIContext context : overlays) {
+    dragged |= context.mouseDragged(mouseX, mouseY);
+  }
+  if (!dragged) {
     int dx = mouseX - mx;
     int dy = mouseY - my;
     mx = mouseX;
@@ -424,13 +461,20 @@ void mouseDragged() {
 }
 
 void mouseReleased() {
-  ui.mouseReleased();
+  for (UIContext context : overlays) {
+    context.mouseReleased(mouseX, mouseY);
+  }
+
+  // ui.mouseReleased();
 }
  
 void mouseWheel(int delta) {
-  if (mouseX > ui.leftPos) {
-    ui.mouseWheel(delta);
-  } else {
+  boolean wheeled = false;
+  for (UIContext context : overlays) {
+    wheeled |= context.mouseWheel(mouseX, mouseY, delta);
+  }
+  
+  if (!wheeled) {
     eyeR = constrain(eyeR - delta, -500, -80);
     eyeX = midX + eyeR*sin(eyeA);
     eyeZ = midZ + eyeR*cos(eyeA);

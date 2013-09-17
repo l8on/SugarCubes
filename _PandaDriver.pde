@@ -15,6 +15,13 @@ import oscP5.*;
  * will be moved into GLucose once stabilized.
  */
 public static class PandaDriver {
+  
+  interface Listener {
+    public void onToggle(boolean enabled);
+  }
+  
+  private Listener listener = null;
+  
   // IP address
   public final String ip;
   
@@ -34,23 +41,6 @@ public static class PandaDriver {
   private final byte[] packet = new byte[4*352]; // magic number, our UDP packet size
 
   private static final int NO_POINT = -1;
-
-  public PandaDriver(String ip) {
-    this.ip = ip;
-    
-    // Initialize our OSC output stuff
-    address = new NetAddress(ip, 9001);
-    message = new OscMessage("/shady/pointbuffer");
-    
-    // Build the array of points, initialize all to nothing
-    points = new int[PandaMapping.PIXELS_PER_BOARD];
-    for (int i = 0; i < points.length; ++i) {
-      points[i] = NO_POINT;
-    }
-  }
-
-  private final static int FORWARD = -1;
-  private final static int BACKWARD = -2;
 
   ////////////////////////////////////////////////////////////////
   //
@@ -85,6 +75,8 @@ public static class PandaDriver {
   //
   ////////////////////////////////////////////////////////////////
   
+  private final static int FORWARD = -1;
+  private final static int BACKWARD = -2;
 
   /**
    * These constant arrays indicate the order in which the strips of a cube
@@ -164,7 +156,21 @@ public static class PandaDriver {
       {3, BACKWARD },
     }
   };
-  
+
+  public PandaDriver(String ip) {
+    this.ip = ip;
+    
+    // Initialize our OSC output stuff
+    address = new NetAddress(ip, 9001);
+    message = new OscMessage("/shady/pointbuffer");
+    
+    // Build the array of points, initialize all to nothing
+    points = new int[PandaMapping.PIXELS_PER_BOARD];
+    for (int i = 0; i < points.length; ++i) {
+      points[i] = NO_POINT;
+    }
+  }
+    
   public PandaDriver(String ip, Model model, PandaMapping pm) {
     this(ip);
     
@@ -271,23 +277,31 @@ public static class PandaDriver {
     return pi;
   }
 
-  public void disable() {
-    if (enabled) {
-      enabled = false;
-      println("PandaBoard/" + ip + ": OFF");
-    }
+  public PandaDriver setListener(Listener listener) {
+    this.listener = listener;
+    return this;
   }
-  
-  public void enable() {
-    if (!enabled) {
-      enabled = true;
-      println("PandaBoard/" + ip + ": ON");
+
+  public void setEnabled(boolean enabled) {
+    if (this.enabled != enabled) {
+      this.enabled = enabled;
+      println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));
+      if (listener != null) {
+        listener.onToggle(enabled);
+      }
     }
   }
 
+  public void disable() {
+    setEnabled(false);
+  }
+  
+  public void enable() {
+    setEnabled(true);
+  }
+
   public void toggle() {
-    enabled = !enabled;
-    println("PandaBoard/" + ip + ": " + (enabled ? "ON" : "OFF"));    
+    setEnabled(!enabled);
   }
 
   public final void send(int[] colors) {

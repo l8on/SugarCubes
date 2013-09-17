@@ -720,6 +720,9 @@ class ColorFuckerEffect extends SCEffect {
   }
   
   public void doApply(int[] colors) {
+    if (!enabled) {
+      return;
+    }
     float bMod = bright.getValuef();
     float sMod = sat.getValuef();
     float hMod = hueShift.getValuef();

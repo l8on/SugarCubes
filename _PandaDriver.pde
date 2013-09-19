@@ -291,6 +291,10 @@ public static class PandaDriver {
       }
     }
   }
+  
+  public boolean isEnabled() {
+    return this.enabled;
+  }
 
   public void disable() {
     setEnabled(false);

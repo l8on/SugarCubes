@@ -655,8 +655,11 @@ public class UIScrollList extends UIObject {
         itemColor = pendingColor;
       } else {
         labelColor = #000000;
-        itemColor = even ? #666666 : #777777;
+        itemColor = #707070;
       }
+      float factor = even ? .92 : 1.08;
+      itemColor = color(hue(itemColor), saturation(itemColor), min(100, factor*brightness(itemColor)));
+      
       pg.noStroke();
       pg.fill(itemColor);
       pg.rect(0, yp, w, itemHeight);

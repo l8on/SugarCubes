@@ -220,21 +220,39 @@ class UIOutput extends UIWindow {
   public UIOutput(float x, float y, float w, float h) {
     super("OUTPUT", x, y, w, h);
     float yp = titleHeight;
+    
+    final UIScrollList outputs = new UIScrollList(1, titleHeight, w-2, 80);
+    
+    List<ScrollItem> items = new ArrayList<ScrollItem>();
     for (final PandaDriver panda : pandaBoards) {
-      final UIButton button = new UIButton(4, yp, w-10, 20) {
-        protected void onToggle(boolean active) {
-          panda.setEnabled(active);
-        }
-      }.setLabel(panda.ip);
-      button.addToContainer(this);
+      items.add(new PandaScrollItem(panda));
       panda.setListener(new PandaDriver.Listener() {
         public void onToggle(boolean active) {
-          button.setActive(active);
+           outputs.redraw();
         }
       });
-      yp += 24;
     }
-  }  
+    outputs.setItems(items).addToContainer(this);
+  } 
+ 
+  class PandaScrollItem extends AbstractScrollItem {
+    final PandaDriver panda;
+    PandaScrollItem(PandaDriver panda) {
+      this.panda = panda;
+    }
+    
+    public String getLabel() {
+      return panda.ip;
+    }
+    
+    public boolean isSelected() {
+      return panda.isEnabled();
+    }
+    
+    public void select() {
+      panda.toggle();
+    }
+  } 
 }
 
 class UITempo extends UIWindow {

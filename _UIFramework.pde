@@ -696,7 +696,6 @@ public class UIScrollList extends UIObject {
       if (scrollOffset + index < items.size()) {
         pressedItem = items.get(scrollOffset + index);
         pressedItem.onMousePressed();
-        pressedItem.select();
         redraw();
       }
     }
@@ -754,7 +753,6 @@ public interface ScrollItem {
   public boolean isSelected();
   public boolean isPending();
   public String getLabel();
-  public void select();
   public void onMousePressed();
   public void onMouseReleased();  
 }

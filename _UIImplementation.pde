@@ -80,7 +80,7 @@ class UIPatternDeck extends UIWindow {
       return deck.getNextPattern() == pattern;
     }
     
-    public void select() {
+    public void onMousePressed() {
       deck.goPattern(pattern);
     }
   }
@@ -126,7 +126,7 @@ class TransitionScrollItem extends AbstractScrollItem {
     return false;
   }
   
-  public void select() {
+  public void onMousePressed() {
     lx.engine.getDeck(1).setBlendTransition(transition);
   }
 }
@@ -192,10 +192,6 @@ class UIEffects extends UIWindow {
       return effect.isEnabled();
     }
     
-    public void select() {
-      glucose.setSelectedEffect(effect);
-    }
-    
     public void onMousePressed() {
       if (glucose.getSelectedEffect() == effect) {
         if (effect.isMomentary()) {
@@ -203,6 +199,8 @@ class UIEffects extends UIWindow {
         } else {
           effect.toggle();
         }
+      } else {
+        glucose.setSelectedEffect(effect);
       }
     }
     
@@ -249,7 +247,7 @@ class UIOutput extends UIWindow {
       return panda.isEnabled();
     }
     
-    public void select() {
+    public void onMousePressed() {
       panda.toggle();
     }
   } 

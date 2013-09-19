@@ -173,7 +173,7 @@ class OSC_Balls extends OSCPattern {
     balls[ballnum].y = msg.get(1).floatValue();    
   }
   
-  void run(int deltaMs){
+  void run(double deltaMs){
     for(Point p: model.points){ colors[p.index]=0; }
     for(int i=1; i<balls.length; i++){
       if(millis() - balls[i].lastSeen < 1000) {
@@ -199,7 +199,7 @@ import processing.serial.*;
     pret = new PImage(8, 128, ARGB);
     ss = new ScreenShot();
   }
-  void run(int deltaMs){
+  void run(double deltaMs){
      int x=(1366/2)+516;
      int y=768-516;
      int w=8;

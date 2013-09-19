@@ -11,7 +11,7 @@ class JazzRainbow extends SamPattern {
   }
 
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     // Access the core master hue via this method call
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length*5; i=i+27) {

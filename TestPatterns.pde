@@ -10,7 +10,7 @@ class TestSpeakerMapping extends TestPattern {
     super(glucose);
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int h = 0;
     for (Speaker speaker : model.speakers) {
       for (Strip strip : speaker.strips) {
@@ -31,7 +31,7 @@ class TestBassMapping extends TestPattern {
     super(glucose);
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int[] strips = { 2, 1, 0, 3, 13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6 };
     int h = 0;
     for (int si : strips) {
@@ -50,7 +50,7 @@ class TestFloorMapping extends TestPattern {
     super(glucose);
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int[] strutIndices = {6, 5, 4, 3, 2, 1, 0, 7};
     int h = 0;
     for (int si : strutIndices) {
@@ -83,7 +83,7 @@ class TestStripPattern extends TestPattern {
     addModulator(d).trigger();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     for (Strip s : model.strips) {
       for (Point p : s.points) {
         colors[p.index] = color(
@@ -105,7 +105,7 @@ class TestHuePattern extends TestPattern {
     super(glucose);
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     // Access the core master hue via this method call
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length; ++i) {
@@ -123,7 +123,7 @@ class TestXPattern extends TestPattern {
     super(glucose);
     addModulator(xPos).trigger();
   }
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
       // This is a common technique for modulating brightness.
@@ -145,7 +145,7 @@ class TestYPattern extends TestPattern {
     super(glucose);
     addModulator(yPos).trigger();
   }
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
       float bv = max(0, 100 - abs(p.fy - yPos.getValuef()));
@@ -163,7 +163,7 @@ class TestZPattern extends TestPattern {
     super(glucose);
     addModulator(zPos).trigger();
   }
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
       float bv = max(0, 100 - abs(p.fz - zPos.getValuef()));
@@ -183,7 +183,7 @@ class TestTowerPattern extends TestPattern {
     addModulator(towerIndex).trigger();
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int ti = 0;
     for (Tower t : model.towers) {
       for (Point p : t.points) {
@@ -230,7 +230,7 @@ class TestProjectionPattern extends TestPattern {
     addModulator(yPos).trigger();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     // For the same reasons described above, it may logically feel to you that
     // some of these operations are in reverse order. Again, just keep in mind that
     // the car itself is what's moving, not the object
@@ -268,7 +268,7 @@ class TestCubePattern extends TestPattern {
     addModulator(index).start();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     for (Cube c : model.cubes) {
       int i = 0;
       for (Point p : c.points) {
@@ -354,7 +354,7 @@ class MappingTool extends TestPattern {
     printInfo();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     color off = color(0, 0, 0);
     color c = off;
     color r = #FF0000;

@@ -23,7 +23,7 @@ class GlitchPlasma extends SCPattern {
     }
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     for (Point p : model.points) {
       float hv = sin(dist(p.fx + pos, p.fy, 128.0, 128.0) / 8.0)
 	  + sin(dist(p.fx, p.fy, 64.0, 64.0) / 8.0)
@@ -67,7 +67,7 @@ class FireEffect extends SCPattern {
     float br=min(100,sqrt(level)*15);
     return color(level/1.7,100,br);
   }
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     for (int x=10;x<xm-10;x++) {
         if (x%50>45 || x%50<5) {
           intensity[x][ym-1] = random(30,100);
@@ -111,7 +111,7 @@ class StripBounce extends SCPattern {
     }
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float[] bright = new float[model.points.size()];
     for (Strip strip : model.strips) {
       for (int i=0;i<numOsc;i++) {
@@ -168,7 +168,7 @@ class SoundRain extends SCPattern {
     }
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     this.fft.forward(this.lx.audioInput().mix);
     for (int i = 0; i < avgSize; ++i) {
       float value = this.fft.getAvg(i);
@@ -211,7 +211,7 @@ class FaceSync extends SCPattern {
     col2.setValue(model.xMax);
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int i=0;
     for (Strip s : model.strips) {
       i++;
@@ -269,7 +269,7 @@ class SoundSpikes extends SCPattern {
     }
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     this.fft.forward(this.lx.audioInput().mix);
     for (int i = 0; i < avgSize; ++i) {
       float value = this.fft.getAvg(i);

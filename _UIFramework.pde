@@ -602,11 +602,28 @@ public class UIParameterSlider extends UIParameterControl {
   }
   
   private boolean editing = false;
+  private long lastClick = 0;
+  private float doubleClickMode = 0;
+  private float doubleClickX = 0;
   protected void onMousePressed(float mx, float my) {
+    long now = millis();
     float handleLeft = 4 + parameter.getValuef() * (w-8-handleWidth);
     if (mx >= handleLeft && mx < handleLeft + handleWidth) {
       editing = true;
+    } else {
+      if ((now - lastClick) < 300 && abs(mx - doubleClickX) < 3) {
+        parameter.setValue(doubleClickMode);  
+      }
+      doubleClickX = mx;
+      if (mx < w*.25) {
+        doubleClickMode = 0;
+      } else if (mx > w*.75) {
+        doubleClickMode = 1;
+      } else {
+        doubleClickMode = 0.5;
+      }
     }
+    lastClick = now;
   }
   
   protected void onMouseReleased(float mx, float my) {

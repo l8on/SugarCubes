@@ -41,7 +41,7 @@ class TimSpheres extends SCPattern {
     spheres[1].radius = 50;
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     // Access the core master hue via this method call
     float hv = hueParameter.getValuef();
     float lfoValue = lfo.getValuef();
@@ -224,8 +224,8 @@ class TimRaindrops extends SCPattern {
     }
     
     // returns TRUE when this should die
-    boolean age(int ms) {
-      p.add(v, ms / 1000.0);
+    boolean age(double ms) {
+      p.add(v, (float) (ms / 1000.0));
       return this.p.y < (0 - this.radius);
     }
   }
@@ -239,7 +239,7 @@ class TimRaindrops extends SCPattern {
     raindrops = new LinkedList<Raindrop>();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     leftoverMs += deltaMs;
     while (leftoverMs > msPerRaindrop) {
       leftoverMs -= msPerRaindrop;
@@ -300,16 +300,16 @@ class TimCubes extends SCPattern {
     }
     
     // returns TRUE if this should die
-    boolean age(int ms) {
+    boolean age(double ms) {
       if (!hasPeaked) {
-        value = value + (ms / 1000.0f * ((attackParameter.getValuef() + 0.01) * 5));
+        value = value + (float) (ms / 1000.0f * ((attackParameter.getValuef() + 0.01) * 5));
         if (value >= 1.0) {
           value = 1.0;
           hasPeaked = true;
         }
         return false;
       } else {
-        value = value - (ms / 1000.0f * ((decayParameter.getValuef() + 0.01) * 10));
+        value = value - (float) (ms / 1000.0f * ((decayParameter.getValuef() + 0.01) * 10));
         return value <= 0;
       }
     }
@@ -329,7 +329,7 @@ class TimCubes extends SCPattern {
     flashes = new LinkedList<CubeFlash>();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     leftoverMs += deltaMs;
     float msPerFlash = 1000 / ((rateParameter.getValuef() + .01) * 100);
     while (leftoverMs > msPerFlash) {
@@ -416,7 +416,7 @@ class TimPlanes extends SCPattern {
   float prevRamp = 0;
   float[] wobbleSpeeds = { 1.0/8, 1.0/4, 1.0/2, 1.0 };
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float ramp = (float)lx.tempo.ramp();
     if (ramp < prevRamp) {
       beat = (beat + 1) % 32;
@@ -609,7 +609,7 @@ class TimPinwheels extends SCPattern {
   
   private float prevRamp = 0;
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float ramp = lx.tempo.rampf();
     float numBeats = (1 + ramp - prevRamp) % 1;
     prevRamp = ramp;
@@ -620,7 +620,7 @@ class TimPinwheels extends SCPattern {
     // 1 -> 180
     float hueSpread = (hueSpreadParameter.getValuef() - 0.5) * 360;
     
-    float fadeAmount = (deltaMs / 1000.0) * pow(sharpnessParameter.getValuef() * 10, 1);
+    float fadeAmount = (float) (deltaMs / 1000.0) * pow(sharpnessParameter.getValuef() * 10, 1);
     
     for (Pinwheel pw : pinwheels) {
       pw.age(numBeats);
@@ -816,7 +816,7 @@ class TimTrace extends SCPattern {
     return m;
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     for (Point p : model.points) {
       color c = colors[p.index];
       colors[p.index] = color(hue(c), saturation(c), brightness(c) - 3);

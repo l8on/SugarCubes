@@ -103,7 +103,7 @@ class HelixPattern extends SCPattern {
       return phase;
     }
 
-    void step(int deltaMs) {
+    void step(double deltaMs) {
       // Rotate
       if (rotationPeriod != 0) {
         this.phase = (phase + ((float)deltaMs / (float)rotationPeriod) * TWO_PI);
@@ -243,7 +243,7 @@ class HelixPattern extends SCPattern {
     return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80.f, b);
   }
 
-  void run(int deltaMs) {
+  void run(double deltaMs) {
     boolean h1on = helix1On.getValue() > 0.5;
     boolean h2on = helix2On.getValue() > 0.5;
     boolean spokesOn = (float)basePairsOn.getValue() > 0.5;

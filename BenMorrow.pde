@@ -53,7 +53,7 @@ class TowerParams extends SCPattern
 		println("towers "+towerSize);
 	}
 
-	void run(int deltaMs)
+	void run(double deltaMs)
 	{
 		clearALL();
 		Tower t;
@@ -101,7 +101,7 @@ class Sandbox extends SCPattern
 		println("towers "+towerrange);
 	}
 	
-	public void run(int deltaMs) {
+	public void run(double deltaMs) {
 		
 
 		if(counter % 10 ==0)
@@ -137,7 +137,7 @@ class GranimTestPattern extends GranimPattern
 		getGraphicByName("myOtherColors").position=100;
 	}
 	int counter=0;
-	public void run(int deltaMs) 
+	public void run(double deltaMs) 
 	{
 		clearALL();
 		super.run(deltaMs);
@@ -177,7 +177,7 @@ class GranimTestPattern2 extends GranimPattern
 	}
 	int counter=0;
 	float count=0;
-	public void run(int deltaMs) 
+	public void run(double deltaMs) 
 	{
 		clearALL();
 		super.run(deltaMs);

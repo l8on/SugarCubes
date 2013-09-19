@@ -28,7 +28,7 @@ class SpaceTime extends SCPattern {
     }
   }
 
-  void run(int deltaMs) {    
+  void run(double deltaMs) {    
     angle += deltaMs * 0.0007;
     float sVal1 = model.strips.size() * (0.5 + 0.5*sin(angle));
     float sVal2 = model.strips.size() * (0.5 + 0.5*cos(angle));
@@ -84,7 +84,7 @@ class Swarm extends SCPattern {
     }
   }
 
-  void run(int deltaMs) {
+  void run(double deltaMs) {
     float s = 0;
     for (Strip strip : model.strips  ) {
       int i = 0;
@@ -93,7 +93,7 @@ class Swarm extends SCPattern {
         colors[p.index] = color(
         (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
-        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, (int) (offset.getValuef() * strip.metrics.numPoints), strip.metrics.numPoints), 0, 100)
+        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
           );
         ++i;
       }
@@ -226,7 +226,7 @@ class BassPod extends SCPattern {
     }
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     eq.run(deltaMs);
     
     float bassLevel = eq.getAverageLevel(0, 5);
@@ -276,7 +276,7 @@ class CubeEQ extends SCPattern {
     }
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     eq.run(deltaMs);
 
     float edgeConst = 2 + 30*edge.getValuef();
@@ -434,7 +434,7 @@ public class PianoKeyPattern extends SCPattern {
     getEnvelope(note.getPitch()).setEndVal(0, getReleaseTime()).start();
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     int i = 0;
     float huef = lx.getBaseHuef();
     float levelf = level.getValuef();
@@ -504,7 +504,7 @@ class CrossSections extends SCPattern {
     zv = z.getValuef();    
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     updateXYZVals();
     
     float xlv = 100*xl.getValuef();
@@ -556,7 +556,7 @@ class Blinders extends SCPattern {
     s.modulateDurationBy(r);
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     int si = 0;
     for (Strip strip : model.strips) {
@@ -591,7 +591,7 @@ class Psychedelia extends SCPattern {
     addModulator(c).trigger();
   }
 
-  void run(int deltaMs) {
+  void run(double deltaMs) {
     float huev = h.getValuef();
     float cv = c.getValuef();
     float sv = s.getValuef();
@@ -627,7 +627,7 @@ class AskewPlanes extends SCPattern {
       addModulator(c = new SinLFO(-50, 50, 4000 + 1000*i * ((i % 2 == 0) ? 1 : -1))).trigger();      
     }
     
-    void run(int deltaMs) {
+    void run(double deltaMs) {
       av = a.getValuef();
       bv = b.getValuef();
       cv = c.getValuef();
@@ -646,7 +646,7 @@ class AskewPlanes extends SCPattern {
     }
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float huev = lx.getBaseHuef();
     
     // This is super fucking bizarre. But if this is a for loop, the framerate
@@ -691,7 +691,7 @@ class ShiftingPlane extends SCPattern {
     addModulator(d).trigger();    
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     float av = a.getValuef();
     float bv = b.getValuef();
@@ -747,7 +747,7 @@ class Traktor extends SCPattern {
 
   int counter = 0;
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     eq.run(deltaMs);
     
     int stepThresh = (int) (40 - 39*speed.getValuef());

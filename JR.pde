@@ -39,7 +39,7 @@ class Gimbal extends SCPattern {
 
   float a = 0, b = 0, g = 0;
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
 
     if (DEBUG_MANUAL_ABG) {
       a = aP.getValuef() * (2 * PI); 
@@ -186,7 +186,7 @@ class Zebra extends SCPattern {
     return f > 0 ? 1 : 0;
   }
 
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     float a = (millis() / 1000.f) % (2 * PI);
     float b = (millis() / 1200.f) % (2 * PI);
     float g = (millis() / 1600.f) % (2 * PI);

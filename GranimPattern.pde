@@ -96,7 +96,7 @@ class GranimPattern extends SCPattern
 		return displayList.get(name);
 	}
 
-	public void run(int deltaMs) 
+	public void run(double deltaMs) 
 	{
 		drawToPointList();
 	}

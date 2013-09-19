@@ -34,7 +34,7 @@ class Swim extends SCPattern {
 
   int beat = 0;
   float prevRamp = 0;
-  void run(int deltaMs) {
+  void run(double deltaMs) {
 
     // Sync to the beat
     float ramp = (float)lx.tempo.ramp();
@@ -146,7 +146,7 @@ class Balance extends SCPattern {
 
   int beat = 0;
   float prevRamp = 0;
-  void run(int deltaMs) {
+  void run(double deltaMs) {
 
     // Sync to the beat
     float ramp = (float)lx.tempo.ramp();

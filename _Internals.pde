@@ -48,11 +48,14 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
+final List<MidiListener> midiListeners = new ArrayList<MidiListener>();
 
 // Display configuration mode
 boolean mappingMode = false;
 boolean debugMode = false;
 DebugUI debugUI;
+boolean uiOn = true;
+LXPattern restoreToPattern = null;
 
 // Handles to UI objects
 UIContext[] overlays;
@@ -64,12 +67,21 @@ UIDebugText uiDebugText;
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
 
+/**
+ * Engine construction and initialization.
+ */
 LXPattern[] _patterns(GLucose glucose) {
   LXPattern[] patterns = patterns(glucose);
   for (LXPattern p : patterns) {
     p.setTransition(new DissolveTransition(glucose.lx).setDuration(1000));
   }
   return patterns;
+}
+
+void logTime(String evt) {
+  int now = millis();
+  println(evt + ": " + (now - lastMillis) + "ms");
+  lastMillis = now;
 }
 
 void setup() {
@@ -113,11 +125,12 @@ void setup() {
   overlays = new UIContext[] {
     uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 344),
     uiCrossfader = new UICrossfader(4, 352, 140, 212),
+    new UIOutput(4, 568, 140, 106),
     
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 344),
     new UIEffects(width-144, 352, 140, 144),
     new UITempo(width-144, 498, 140, 50),
-    new UIOutput(width-144, 552, 140, 106),
+    new UISpeed(width-144, 552, 140, 50),
     
     uiDebugText = new UIDebugText(4, height-64, width-8, 44),
     uiMapping = new UIMapping(mappingTool, 4, 4, 140, 344),
@@ -126,8 +139,9 @@ void setup() {
   logTime("Built overlay UI");
     
   // MIDI devices
+  midiListeners.add(new MidiListener().setEnabled(true));
   for (MidiInputDevice d : RWMidi.getInputDevices()) {
-    d.createInput(this);
+    midiListeners.add(new MidiListener(d));
   }
   SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
@@ -150,31 +164,74 @@ void setup() {
   println("Hit the 'p' key to toggle Panda Board output");
 }
 
-
-void controllerChangeReceived(rwmidi.Controller cc) {
-  if (debugMode) {
+public class MidiListener {
+  private boolean enabled = false;
+  private final String name;
+  
+  MidiListener(MidiInputDevice d) {
+    d.createInput(this);
+    name = d.getName();
+  }
+  
+  MidiListener() {
+    registerKeyEvent(this);
+    name = "Keyboard";
+  }
+  
+  public String getName() {
+    return name;
+  }
+  
+  public void keyEvent(KeyEvent e) {
+    if (e.getID() == KeyEvent.KEY_PRESSED) {
+      switch (e.getKeyChar()) {
+        case 'q':
+          noteOnReceived(new Note(60, 127));
+          break;
+      }
+    } else if (e.getID() == KeyEvent.KEY_RELEASED) {
+      switch (e.getKeyChar()) {
+        case 'q':
+          noteOffReceived(new Note(60, 0));
+          break;
+      }
+    }
+  }
+  
+  public MidiListener setEnabled(boolean enabled) {
+    if (enabled != this.enabled) {
+      this.enabled = enabled;
+      // notify midi UI to update
+    }
+    return this;
+  }
+  
+  void controllerChangeReceived(rwmidi.Controller cc) {
+    if (!enabled) {
+      return;
+    }
     println("CC: " + cc.toString());
   }
-}
 
-void noteOnReceived(Note note) {
-  if (debugMode) {
+  void noteOnReceived(Note note) {
+    if (!enabled) {
+      return;
+    }
     println("Note On: " + note.toString());
   }
-}
 
-void noteOffReceived(Note note) {
-  if (debugMode) {
+  void noteOffReceived(Note note) {
+    if (!enabled) {
+      return;
+    }
     println("Note Off: " + note.toString());
   }
+
 }
 
-void logTime(String evt) {
-  int now = millis();
-  println(evt + ": " + (now - lastMillis) + "ms");
-  lastMillis = now;
-}
-
+/**
+ * Core render loop and drawing functionality.
+ */
 void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
@@ -388,9 +445,9 @@ void drawUI() {
   }
 }
 
-boolean uiOn = true;
-LXPattern restoreToPattern = null;
-
+/**
+ * Top-level keyboard event handling
+ */
 void keyPressed() {
   if (mappingMode) {
     mappingTool.keyPressed(uiMapping);
@@ -434,6 +491,9 @@ void keyPressed() {
   }
 }
 
+/**
+ * Top-level mouse event handling
+ */
 int mx, my;
 void mousePressed() {
   boolean debugged = false;
@@ -470,8 +530,6 @@ void mouseReleased() {
   for (UIContext context : overlays) {
     context.mouseReleased(mouseX, mouseY);
   }
-
-  // ui.mouseReleased();
 }
  
 void mouseWheel(int delta) {

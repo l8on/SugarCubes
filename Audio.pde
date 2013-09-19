@@ -57,7 +57,7 @@ public static class GraphicEQ {
     return avg;
   }
   
-  public void run(int deltaMs) {
+  public void run(double deltaMs) {
     fft.forward(lx.audioInput().mix);
     float zeroDBReference = pow(10, 100*(1-level.getValuef())/20.);
     float decibelRange = 12 + range.getValuef() * 60;

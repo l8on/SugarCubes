@@ -87,7 +87,7 @@ public class DPat extends SCPattern
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
 		UpdateLights();
 	}
-	void  	StartRun(int deltaMs) 				{	}
+	void  	StartRun(double deltaMs) 				{	}
 	color	CalcPoint(xyz p) 					{ return color(0,0,0); }
 	float 	CalcCone (xyz v1, xyz v2, xyz c) 	{
 		return degrees( acos ( v1.minus(c).dot(v2.minus(c)) / (sqrt(v1.minus(c).dot(v1.minus(c))) * sqrt(v2.minus(c).dot(v2.minus(c))) ) ));
@@ -109,7 +109,7 @@ public class DPat extends SCPattern
 		uiDebugText.setText(DanTextLine1, DanTextLine2);
 	}
 
-	void  	run(int deltaMs) {
+	void  	run(double deltaMs) {
 		NoiseMove   += deltaMs;
 		xdMax 		=  model.xMax;
 		ydMax 		=  model.yMax;
@@ -154,7 +154,7 @@ public class DPat extends SCPattern
 
 			cNew = color( (hue(cNew) + modhue + zSpinHue - noizhue) % 360,
 						saturation(cNew) + 100*s_Saturate(),
-						100 *  (s_Trails()==0 ? b : max(b, brightness(cOld)/100. - (1-s_Trails()) * deltaMs/200.))
+						100 *  (s_Trails()==0 ? b : max(b, (float) (brightness(cOld)/100. - (1-s_Trails()) * deltaMs/200.)))
 							*  (s_Dim   ()==0 ? 1 : 1-s_Dim())
 						);
 						   

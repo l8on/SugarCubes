@@ -459,6 +459,18 @@ class UIDebugText extends UIContext {
   }
 }
 
+class UISpeed extends UIWindow {
+  UISpeed(float x, float y, float w, float h) {
+    super("SPEED", x, y, w, h);
+    new UIParameterSlider(4, titleHeight, w-10, 20)
+    .setParameter(new BasicParameter("SPEED", 0.5).addListener(new LXParameter.Listener() {
+      public void onParameterChanged(LXParameter parameter) {
+        lx.setSpeed(parameter.getValuef() * 2);
+      }
+    })).addToContainer(this);
+  }
+}
+
 String className(Object p, String suffix) {
   String s = p.getClass().getName();
   int li;

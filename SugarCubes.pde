@@ -110,6 +110,7 @@ LXPattern[] patterns(GLucose glucose) {
 LXTransition[] transitions(GLucose glucose) {
   return new LXTransition[] {
     new DissolveTransition(lx),
+    new MaskTransition(glucose),
     new SwipeTransition(glucose),
     new FadeTransition(lx),
   };

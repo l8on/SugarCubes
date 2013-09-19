@@ -128,6 +128,34 @@ class SwipeTransition extends SCTransition {
   }
 }
 
+class MaskTransition extends SCTransition {
+  
+  MaskTransition(GLucose glucose) {
+    super(glucose);
+  }
+
+  void computeBlend(int[] c1, int[] c2, double progress) {
+    if (progress < 0.5) {
+      for (int i = 0; i < c1.length; ++i) {
+        colors[i] = lerpColor(
+          c1[i],
+          blendColor(c1[i], c2[i], MULTIPLY),
+          (float) (2.*progress),
+          RGB);
+      }
+    } else {
+      for (int i = 0; i < c1.length; ++i) {
+        colors[i] = lerpColor(
+          c2[i],
+          blendColor(c1[i], c2[i], MULTIPLY),
+          (float) (2.*(1. - progress)),
+          RGB);
+      }
+    }
+  }
+}
+
+
 class BassPod extends SCPattern {
 
   private GraphicEQ eq = null;

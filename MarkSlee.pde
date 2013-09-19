@@ -128,10 +128,13 @@ class SwipeTransition extends SCTransition {
   }
 }
 
-class MaskTransition extends SCTransition {
+abstract class BlendTransition extends SCTransition {
   
-  MaskTransition(GLucose glucose) {
+  final int blendType;
+  
+  BlendTransition(GLucose glucose, int blendType) {
     super(glucose);
+    this.blendType = blendType;
   }
 
   void computeBlend(int[] c1, int[] c2, double progress) {
@@ -139,7 +142,7 @@ class MaskTransition extends SCTransition {
       for (int i = 0; i < c1.length; ++i) {
         colors[i] = lerpColor(
           c1[i],
-          blendColor(c1[i], c2[i], MULTIPLY),
+          blendColor(c1[i], c2[i], blendType),
           (float) (2.*progress),
           RGB);
       }
@@ -147,7 +150,7 @@ class MaskTransition extends SCTransition {
       for (int i = 0; i < c1.length; ++i) {
         colors[i] = lerpColor(
           c2[i],
-          blendColor(c1[i], c2[i], MULTIPLY),
+          blendColor(c1[i], c2[i], blendType),
           (float) (2.*(1. - progress)),
           RGB);
       }
@@ -155,6 +158,53 @@ class MaskTransition extends SCTransition {
   }
 }
 
+class MultiplyTransition extends BlendTransition {
+  MultiplyTransition(GLucose glucose) {
+    super(glucose, MULTIPLY);
+  }
+}
+
+class ScreenTransition extends BlendTransition {
+  ScreenTransition(GLucose glucose) {
+    super(glucose, SCREEN);
+  }
+}
+
+class BurnTransition extends BlendTransition {
+  BurnTransition(GLucose glucose) {
+    super(glucose, BURN);
+  }
+}
+
+class DodgeTransition extends BlendTransition {
+  DodgeTransition(GLucose glucose) {
+    super(glucose, DODGE);
+  }
+}
+
+class OverlayTransition extends BlendTransition {
+  OverlayTransition(GLucose glucose) {
+    super(glucose, OVERLAY);
+  }
+}
+
+class AddTransition extends BlendTransition {
+  AddTransition(GLucose glucose) {
+    super(glucose, ADD);
+  }
+}
+
+class SubtractTransition extends BlendTransition {
+  SubtractTransition(GLucose glucose) {
+    super(glucose, SUBTRACT);
+  }
+}
+
+class SoftLightTransition extends BlendTransition {
+  SoftLightTransition(GLucose glucose) {
+    super(glucose, SOFT_LIGHT);
+  }
+}
 
 class BassPod extends SCPattern {
 

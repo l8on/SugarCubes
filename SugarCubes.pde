@@ -23,9 +23,6 @@
  * your name. Implement your classes there, and add them to the list below.
  */ 
  
-// TODO(mcslee): get rid of this global, make engine support two decks
-LXPattern gplay;
-
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
@@ -45,7 +42,7 @@ LXPattern[] patterns(GLucose glucose) {
 
     // DanH
     new Noise(glucose),
-    gplay = new Play(glucose), // XXX do this properly
+    new Play(glucose),
     new Pong(glucose),
 
     // Alex G
@@ -110,7 +107,14 @@ LXPattern[] patterns(GLucose glucose) {
 LXTransition[] transitions(GLucose glucose) {
   return new LXTransition[] {
     new DissolveTransition(lx),
-    new MaskTransition(glucose),
+    new MultiplyTransition(glucose),
+    new ScreenTransition(glucose),
+    new BurnTransition(glucose),
+    new DodgeTransition(glucose),
+    new OverlayTransition(glucose),
+    new AddTransition(glucose),
+    new SubtractTransition(glucose),
+    new SoftLightTransition(glucose),
     new SwipeTransition(glucose),
     new FadeTransition(lx),
   };
@@ -120,8 +124,7 @@ LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
     new FlashEffect(lx),
     new BoomEffect(glucose),
-    new DualBlender(glucose),
-    // new DesaturationEffect(lx),
+    new DesaturationEffect(lx),
     new ColorFuckerEffect(glucose),
   };
 }

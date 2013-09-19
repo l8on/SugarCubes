@@ -95,9 +95,9 @@ class UICrossfader extends UIWindow {
     for (LXTransition t : transitions) {
       items.add(new TransitionScrollItem(t));
     }    
-    new UIScrollList(1, titleHeight, w-2, 60).setItems(items).addToContainer(this);
-    new UIParameterSlider(4, titleHeight + 66, w-10, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
-    new UIToggleSet(4, 122, w-10, 20) {
+    new UIScrollList(1, titleHeight, w-2, 120).setItems(items).addToContainer(this);
+    new UIParameterSlider(4, titleHeight + 126, w-10, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
+    new UIToggleSet(4, 182, w-10, 20) {
       protected void onToggle(String value) {
         displayMode = value;
       }

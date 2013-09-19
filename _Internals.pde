@@ -111,12 +111,12 @@ void setup() {
   debugUI = new DebugUI(pandaMappings);
   overlays = new UIContext[] {
     uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 344),
-    new UICrossfader(4, 352, 140, 152),
-    new UIOutput(4, 508, 140, 122),
+    new UICrossfader(4, 352, 140, 212),
     
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 344),
     new UIEffects(width-144, 352, 140, 144),
     new UITempo(width-144, 498, 140, 50),
+    new UIOutput(width-144, 552, 140, 122),
     
     uiDebugText = new UIDebugText(4, height-64, width-8, 44),
     uiMapping = new UIMapping(mappingTool, 4, 4, 140, 344),

@@ -96,8 +96,8 @@ class UICrossfader extends UIWindow {
       items.add(new TransitionScrollItem(t));
     }    
     new UIScrollList(1, titleHeight, w-2, 60).setItems(items).addToContainer(this);
-    new UIParameterSlider(6, titleHeight + 66, w-12, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
-    new UIToggleSet(6, 122, w-12, 20) {
+    new UIParameterSlider(4, titleHeight + 66, w-10, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
+    new UIToggleSet(4, 122, w-10, 20) {
       protected void onToggle(String value) {
         displayMode = value;
       }
@@ -221,7 +221,7 @@ class UIOutput extends UIWindow {
     super("OUTPUT", x, y, w, h);
     float yp = titleHeight;
     for (final PandaDriver panda : pandaBoards) {
-      final UIButton button = new UIButton(4, yp, w-8, 20) {
+      final UIButton button = new UIButton(4, yp, w-10, 20) {
         protected void onToggle(boolean active) {
           panda.setEnabled(active);
         }
@@ -243,7 +243,7 @@ class UITempo extends UIWindow {
   
   UITempo(float x, float y, float w, float h) {
     super("TEMPO", x, y, w, h);
-    tempoButton = new UIButton(4, titleHeight, w-8, 20) {
+    tempoButton = new UIButton(4, titleHeight, w-10, 20) {
       protected void onToggle(boolean active) {
         if (active) {
           lx.tempo.tap();
@@ -285,7 +285,7 @@ class UIMapping extends UIWindow {
     mappingTool = tool;
     
     int yp = titleHeight;
-    new UIToggleSet(4, yp, w-8, 20) {
+    new UIToggleSet(4, yp, w-10, 20) {
       protected void onToggle(String value) {
         if (value == MAP_MODE_ALL) mappingTool.mappingMode = mappingTool.MAPPING_MODE_ALL;
         else if (value == MAP_MODE_CHANNEL) mappingTool.mappingMode = mappingTool.MAPPING_MODE_CHANNEL;
@@ -293,25 +293,25 @@ class UIMapping extends UIWindow {
       }
     }.setOptions(new String[] { MAP_MODE_ALL, MAP_MODE_CHANNEL, MAP_MODE_CUBE }).addToContainer(this);
     yp += 24;
-    new UILabel(4, yp+8, w-8, 20).setLabel("CHANNEL ID").addToContainer(this);
+    new UILabel(4, yp+8, w-10, 20).setLabel("CHANNEL ID").addToContainer(this);
     yp += 24;
-    (channelBox = new UIIntegerBox(4, yp, w-8, 20) {
+    (channelBox = new UIIntegerBox(4, yp, w-10, 20) {
       protected void onValueChange(int value) {
         mappingTool.setChannel(value-1);
       }
     }).setRange(1, mappingTool.numChannels()).addToContainer(this);
     yp += 24;
     
-    new UILabel(4, yp+8, w-8, 20).setLabel("CUBE ID").addToContainer(this);
+    new UILabel(4, yp+8, w-10, 20).setLabel("CUBE ID").addToContainer(this);
     yp += 24;
-    (cubeBox = new UIIntegerBox(4, yp, w-8, 20) {
+    (cubeBox = new UIIntegerBox(4, yp, w-10, 20) {
       protected void onValueChange(int value) {
         mappingTool.setCube(value-1);
       }
     }).setRange(1, glucose.model.cubes.size()).addToContainer(this);
     yp += 24;
     
-    new UILabel(4, yp+8, w-8, 20).setLabel("COLORS").addToContainer(this);
+    new UILabel(4, yp+8, w-10, 20).setLabel("COLORS").addToContainer(this);
     yp += 24;
     
     new UIScrollList(1, yp, w-2, 60).setItems(Arrays.asList(new ScrollItem[] {
@@ -321,10 +321,10 @@ class UIMapping extends UIWindow {
     })).addToContainer(this);
     yp += 64;
 
-    new UILabel(4, yp+8, w-8, 20).setLabel("STRIP MODE").addToContainer(this);
+    new UILabel(4, yp+8, w-10, 20).setLabel("STRIP MODE").addToContainer(this);
     yp += 24;
     
-    new UIToggleSet(4, yp, w-8, 20) {
+    new UIToggleSet(4, yp, w-10, 20) {
       protected void onToggle(String value) {
         if (value == CUBE_MODE_ALL) mappingTool.cubeMode = mappingTool.CUBE_MODE_ALL;
         else if (value == CUBE_MODE_STRIP) mappingTool.cubeMode = mappingTool.CUBE_MODE_SINGLE_STRIP;
@@ -333,10 +333,10 @@ class UIMapping extends UIWindow {
     }.setOptions(new String[] { CUBE_MODE_ALL, CUBE_MODE_STRIP, CUBE_MODE_PATTERN }).addToContainer(this);
     
     yp += 24;
-    new UILabel(4, yp+8, w-8, 20).setLabel("STRIP ID").addToContainer(this);
+    new UILabel(4, yp+8, w-10, 20).setLabel("STRIP ID").addToContainer(this);
     
     yp += 24;
-    (stripBox = new UIIntegerBox(4, yp, w-8, 20) {
+    (stripBox = new UIIntegerBox(4, yp, w-10, 20) {
       protected void onValueChange(int value) {
         mappingTool.setStrip(value-1);
       }

@@ -783,7 +783,7 @@ public class UIIntegerBox extends UIObject {
   }
   
   protected void onDraw(PGraphics pg) {
-    pg.stroke(#999999);
+    pg.stroke(#666666);
     pg.fill(#222222);
     pg.rect(0, 0, w, h);
     pg.textAlign(CENTER, CENTER);

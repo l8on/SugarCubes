@@ -34,7 +34,7 @@ class UIPatternDeck extends UIWindow {
       parameterKnobs[ki].addToContainer(this);
     }
     
-    Engine.Listener lxListener = new Engine.Listener() {
+    Engine.Listener lxListener = new Engine.AbstractListener() {
       public void patternWillChange(Engine.Deck deck, LXPattern pattern, LXPattern nextPattern) {
         patternList.redraw();
       }
@@ -87,21 +87,30 @@ class UIPatternDeck extends UIWindow {
 }
 
 class UICrossfader extends UIWindow {
-    
+  
+  private final UIToggleSet displayMode;
+  
   public UICrossfader(float x, float y, float w, float h) {
     super("CROSSFADER", x, y, w, h);
 
     List<ScrollItem> items = new ArrayList<ScrollItem>();
-    for (LXTransition t : transitions) {
+    for (LXTransition t : glucose.getTransitions()) {
       items.add(new TransitionScrollItem(t));
-    }    
-    new UIScrollList(1, titleHeight, w-2, 120).setItems(items).addToContainer(this);
+    }
+    final UIScrollList tList;
+    (tList = new UIScrollList(1, titleHeight, w-2, 120)).setItems(items).addToContainer(this);
     new UIParameterSlider(4, titleHeight + 126, w-10, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
-    new UIToggleSet(4, 182, w-10, 20) {
-      protected void onToggle(String value) {
-        displayMode = value;
+    (displayMode = new UIToggleSet(4, 182, w-10, 20)).setOptions(new String[] { "A", "COMP", "B" }).setValue("COMP").addToContainer(this);
+    
+    lx.engine.getDeck(1).addListener(new Engine.AbstractListener() {
+      public void blendTransitionDidChange(Engine.Deck deck, LXTransition transition) {
+        tList.redraw();
       }
-    }.setOptions(new String[] { "A", "COMP", "B" }).setValue(displayMode = "COMP").addToContainer(this);
+    });
+  }
+  
+  public String getDisplayMode() {
+    return displayMode.getValue();
   }
 }
 
@@ -119,7 +128,7 @@ class TransitionScrollItem extends AbstractScrollItem {
   }
   
   public boolean isSelected() {
-    return transition == lx.engine.getDeck(1).getBlendTransition();
+    return transition == glucose.getSelectedTransition();
   }
   
   public boolean isPending() {
@@ -127,7 +136,7 @@ class TransitionScrollItem extends AbstractScrollItem {
   }
   
   public void onMousePressed() {
-    lx.engine.getDeck(1).setBlendTransition(transition);
+    glucose.setSelectedTransition(transition);
   }
 }
 

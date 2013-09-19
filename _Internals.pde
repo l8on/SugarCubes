@@ -40,22 +40,24 @@ final float TRAILER_DEPTH = 97;
 final float TRAILER_HEIGHT = 33;
 
 int targetFramerate = 60;
-
 int startMillis, lastMillis;
+
+// Core engine variables
 GLucose glucose;
 HeronLX lx;
-MappingTool mappingTool;
 LXPattern[] patterns;
-LXTransition[] transitions;
-LXEffect[] effects;
+MappingTool mappingTool;
 PandaDriver[] pandaBoards;
+
+// Display configuration mode
 boolean mappingMode = false;
 boolean debugMode = false;
 DebugUI debugUI;
-String displayMode;
 
+// Handles to UI objects
 UIContext[] overlays;
 UIPatternDeck uiPatternA;
+UICrossfader uiCrossfader;
 UIMapping uiMapping;
 UIDebugText uiDebugText;
 
@@ -88,13 +90,12 @@ void setup() {
   
   // Set the patterns
   Engine engine = lx.engine;
-  glucose.setTransitions(transitions = transitions(glucose));
-  logTime("Built transitions");
   engine.setPatterns(patterns = _patterns(glucose));
   engine.addDeck(_patterns(glucose));
-  engine.getDeck(1).setBlendTransition(transitions[0]);
   logTime("Built patterns");
-  glucose.lx.addEffects(effects = effects(glucose));
+  glucose.setTransitions(transitions(glucose));
+  logTime("Built transitions");
+  glucose.lx.addEffects(effects(glucose));
   logTime("Built effects");
     
   // Build output driver
@@ -111,7 +112,7 @@ void setup() {
   debugUI = new DebugUI(pandaMappings);
   overlays = new UIContext[] {
     uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 344),
-    new UICrossfader(4, 352, 140, 212),
+    uiCrossfader = new UICrossfader(4, 352, 140, 212),
     
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 344),
     new UIEffects(width-144, 352, 140, 144),
@@ -177,7 +178,9 @@ void logTime(String evt) {
 void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
-  color[] colors = glucose.getColors();;
+  color[] colors = glucose.getColors();
+
+  String displayMode = uiCrossfader.getDisplayMode();
   if (displayMode == "A") {
     colors = lx.engine.getDeck(0).getColors();
   } else if (displayMode == "B") {
@@ -414,7 +417,10 @@ void keyPressed() {
         lx.setPatterns(new LXPattern[] { mappingTool });
       } else {
         lx.setPatterns(patterns);
+        LXTransition pop = restoreToPattern.getTransition();
+        restoreToPattern.setTransition(null);
         lx.goPattern(restoreToPattern);
+        restoreToPattern.setTransition(pop);
       }
       break;
     case 'p':

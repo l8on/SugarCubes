@@ -57,6 +57,7 @@ boolean debugMode = false;
 DebugUI debugUI;
 boolean uiOn = true;
 LXPattern restoreToPattern = null;
+PImage logo;
 
 // Handles to UI objects
 UIContext[] overlays;
@@ -153,7 +154,10 @@ void setup() {
   };
   uiMapping.setVisible(false);
   logTime("Built overlay UI");
-    
+
+  // Load logo image
+  logo = loadImage("data/logo.png");
+  
   // Setup camera
   midX = TRAILER_WIDTH/2.;
   midY = glucose.model.yMax/2;
@@ -402,6 +406,14 @@ void draw() {
   vertex(TRAILER_WIDTH, 0, TRAILER_DEPTH);
   vertex(0, 0, TRAILER_DEPTH);
   endShape();
+
+  // Draw the logo on the front of platform  
+  pushMatrix();
+  translate(0, 0, -1);
+  float s = .07;
+  scale(s, -s, s);
+  image(logo, TRAILER_WIDTH/2/s-logo.width/2, TRAILER_HEIGHT/2/s-logo.height/2-2/s);
+  popMatrix();
   
   noStroke();
 //  drawBassBox(glucose.model.bassBox);
@@ -581,6 +593,7 @@ void drawUI() {
   }
 }
 
+
 /**
  * Top-level keyboard event handling
  */
@@ -596,7 +609,7 @@ void keyPressed() {
     case '=':
     case '+':
       frameRate(++targetFramerate);
-      break;
+      break;      
     case 'd':
       if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
         debugMode = !debugMode;

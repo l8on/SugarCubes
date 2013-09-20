@@ -17,7 +17,7 @@ public class Pong extends DPat {
 	    pChoose = addPick	("Animiation"	, 0	, 3	);
 	}
 
-	void  	StartRun(int deltaMs) 	{ cRad = xdMax*pSize.Val()/6; }
+	void  	StartRun(double deltaMs) 	{ cRad = xdMax*pSize.Val()/6; }
 	color	CalcPoint(xyz p) 	  	{
 		xyz v = new xyz(x.getValuef(), y.getValuef(), z.getValuef());
 		switch(pChoose.Cur()) {
@@ -56,7 +56,7 @@ public class Noise extends DPat
 		pSymm 	= addPick("Symmetry", 0, 4);	pChoose 	= addPick("Animation", 1, 6);
 	}
 
-	void StartRun(int deltaMs) {
+	void StartRun(double deltaMs) {
 		zTime 	+= deltaMs*(pSpeed.Val()-.5)*.002	;
 		zTheta	+= deltaMs*(pRotZ .Val()-.5)*.01	;
 		rtime	+= deltaMs;
@@ -135,7 +135,7 @@ public class Play extends DPat
 	float	LastBeat=3, LastMeasure=3;
 	int		CurRandTempo = 1;
 
-	void StartRun(int deltaMs) {
+	void StartRun(double deltaMs) {
 		t = lx.tempo.rampf();
 		a = pAmp.Val();
 

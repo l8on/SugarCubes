@@ -185,7 +185,7 @@ public class DPat extends SCPattern
 		xyz0	= new xyz(0,0,0);
 		pSharp	= addParam("Shrp", 0);
 		
-	    for (MidiInputDevice  input  : RWMidi.getInputDevices ()) { if (input.toString().contains("APC")) input .createInput (this);}
+	    // for (MidiInputDevice  input  : RWMidi.getInputDevices ()) { if (input.toString().contains("APC")) input .createInput (this);}
 	    for (MidiOutputDevice output : RWMidi.getOutputDevices()) {
 			if (midiout == null && output.toString().contains("APC")) midiout = output.createOutput();
 		}

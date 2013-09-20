@@ -391,11 +391,7 @@ public class PianoKeyPattern extends SCPattern {
   
   PianoKeyPattern(GLucose glucose) {
     super(glucose);
-    
-    for (MidiInputDevice input : RWMidi.getInputDevices()) {
-      input.createInput(this);
-    }
-    
+        
     addParameter(attack);
     addParameter(release);
     addParameter(level);

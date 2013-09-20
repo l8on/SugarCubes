@@ -48,7 +48,7 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
-final List<MidiListener> midiListeners = new ArrayList<MidiListener>();
+MidiListener midiQwerty;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -61,6 +61,7 @@ LXPattern restoreToPattern = null;
 UIContext[] overlays;
 UIPatternDeck uiPatternA;
 UICrossfader uiCrossfader;
+UIMidi uiMidi;
 UIMapping uiMapping;
 UIDebugText uiDebugText;
 
@@ -119,32 +120,37 @@ void setup() {
   }
   mappingTool = new MappingTool(glucose, pandaMappings);
   logTime("Built PandaDriver");
-  
-  // Build overlay UI
-  debugUI = new DebugUI(pandaMappings);
-  overlays = new UIContext[] {
-    uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 344),
-    uiCrossfader = new UICrossfader(4, 352, 140, 212),
-    new UIOutput(4, 568, 140, 106),
-    
-    new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 344),
-    new UIEffects(width-144, 352, 140, 144),
-    new UITempo(width-144, 498, 140, 50),
-    new UISpeed(width-144, 552, 140, 50),
-    
-    uiDebugText = new UIDebugText(4, height-64, width-8, 44),
-    uiMapping = new UIMapping(mappingTool, 4, 4, 140, 344),
-  };
-  uiMapping.setVisible(false);
-  logTime("Built overlay UI");
-    
+
   // MIDI devices
-  midiListeners.add(new MidiListener().setEnabled(true));
-  for (MidiInputDevice d : RWMidi.getInputDevices()) {
-    midiListeners.add(new MidiListener(d));
+  List<MidiListener> midiListeners = new ArrayList<MidiListener>();
+  midiListeners.add(midiQwerty = new MidiListener());
+  for (MidiInputDevice device : RWMidi.getInputDevices()) {
+    boolean enableDevice = device.getName().contains("APC");
+    midiListeners.add(new MidiListener(device).setEnabled(enableDevice));
   }
   SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
+
+  // Build overlay UI
+  debugUI = new DebugUI(pandaMappings);
+  overlays = new UIContext[] {
+    uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 324),
+    new UIBlendMode(4, 332, 140, 86),
+    new UIEffects(4, 422, 140, 144),
+    new UITempo(4, 570, 140, 50),
+    new UISpeed(4, 624, 140, 50),
+        
+    new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
+    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 136),
+    new UIOutput(width-144, 472, 140, 106),
+    
+    uiCrossfader = new UICrossfader(width/2-90, height-90, 180, 86),
+    
+    uiDebugText = new UIDebugText(148, height-138, width-304, 44),
+    uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324),
+  };
+  uiMapping.setVisible(false);
+  logTime("Built overlay UI");
     
   // Setup camera
   midX = TRAILER_WIDTH/2.;
@@ -164,7 +170,7 @@ void setup() {
   println("Hit the 'p' key to toggle Panda Board output");
 }
 
-public class MidiListener {
+public class MidiListener extends AbstractScrollItem {
   private boolean enabled = false;
   private final String name;
   
@@ -173,37 +179,98 @@ public class MidiListener {
     name = d.getName();
   }
   
-  MidiListener() {
-    registerKeyEvent(this);
-    name = "Keyboard";
+  class NoteMeta {
+    int channel;
+    int number;
+    NoteMeta(int channel, int number) {
+      this.channel = channel;
+      this.number = number;
+    }
   }
   
-  public String getName() {
+  final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();
+  
+  MidiListener() {
+    name = "QWERTY Keyboard";
+    mapNote('1', 0, 53);
+    mapNote('2', 1, 53);
+    mapNote('3', 2, 53);
+    mapNote('4', 3, 53);
+    mapNote('5', 4, 53);
+    mapNote('6', 5, 53);
+    mapNote('q', 0, 54);
+    mapNote('w', 1, 54);
+    mapNote('e', 2, 54);
+    mapNote('r', 3, 54);
+    mapNote('t', 4, 54);
+    mapNote('y', 5, 54);
+    mapNote('a', 0, 55);
+    mapNote('s', 1, 55);
+    mapNote('d', 2, 55);
+    mapNote('f', 3, 55);
+    mapNote('g', 4, 55);
+    mapNote('h', 5, 55);
+    mapNote('z', 0, 56);
+    mapNote('x', 1, 56);
+    mapNote('c', 2, 56);
+    mapNote('v', 3, 56);
+    mapNote('b', 4, 56);
+    mapNote('n', 5, 56);
+    registerKeyEvent(this);
+  }
+  
+  void mapNote(char ch, int channel, int number) {
+    keyToNote.put(ch, new NoteMeta(channel, number));
+  }
+  
+  public String getLabel() {
     return name;
   }
   
   public void keyEvent(KeyEvent e) {
-    if (e.getID() == KeyEvent.KEY_PRESSED) {
-      switch (e.getKeyChar()) {
-        case 'q':
-          noteOnReceived(new Note(60, 127));
+    char c = Character.toLowerCase(e.getKeyChar());
+    NoteMeta nm = keyToNote.get(c);
+    if (nm != null) {
+      switch (e.getID()) {
+        case KeyEvent.KEY_PRESSED:
+          noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number, 127));
           break;
-      }
-    } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-      switch (e.getKeyChar()) {
-        case 'q':
-          noteOffReceived(new Note(60, 0));
+        case KeyEvent.KEY_RELEASED:
+          noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number, 0));
           break;
       }
     }
+  }
+  
+  public boolean isEnabled() {
+    return enabled;
+  }
+  
+  public boolean isSelected() {
+    return enabled;
+  }
+  
+  public void onMousePressed() {
+    setEnabled(!enabled);
   }
   
   public MidiListener setEnabled(boolean enabled) {
     if (enabled != this.enabled) {
       this.enabled = enabled;
-      // notify midi UI to update
+      uiMidi.redraw();
     }
     return this;
+  }
+  
+  private SCPattern getFocusedPattern() {
+    return (SCPattern) uiMidi.getFocusedDeck().getActivePattern();
+  }
+  
+  void programChangeReceived(ProgramChange pc) {
+    if (!enabled) {
+      return;
+    }
+    println("PC: " + pc.toString());
   }
   
   void controllerChangeReceived(rwmidi.Controller cc) {
@@ -211,6 +278,7 @@ public class MidiListener {
       return;
     }
     println("CC: " + cc.toString());
+    getFocusedPattern().controllerChangeReceived(cc);
   }
 
   void noteOnReceived(Note note) {
@@ -218,6 +286,8 @@ public class MidiListener {
       return;
     }
     println("Note On: " + note.toString());
+    getFocusedPattern().noteOnReceived(note);
+    
   }
 
   void noteOffReceived(Note note) {
@@ -225,6 +295,7 @@ public class MidiListener {
       return;
     }
     println("Note Off: " + note.toString());
+    getFocusedPattern().noteOffReceived(note);
   }
 
 }
@@ -253,7 +324,7 @@ void draw() {
     0, -1, 0
   );
 
-  translate(0, 10, 0);
+  translate(0, 40, 0);
 
   noStroke();
   fill(#141414);
@@ -462,22 +533,26 @@ void keyPressed() {
       frameRate(++targetFramerate);
       break;
     case 'd':
-      debugMode = !debugMode;
-      println("Debug output: " + (debugMode ? "ON" : "OFF"));
+      if (!midiQwerty.isEnabled()) {
+        debugMode = !debugMode;
+        println("Debug output: " + (debugMode ? "ON" : "OFF"));
+      }
       break;
     case 'm':
-      mappingMode = !mappingMode;
-      uiPatternA.setVisible(!mappingMode);
-      uiMapping.setVisible(mappingMode);
-      if (mappingMode) {
-        restoreToPattern = lx.getPattern();
-        lx.setPatterns(new LXPattern[] { mappingTool });
-      } else {
-        lx.setPatterns(patterns);
-        LXTransition pop = restoreToPattern.getTransition();
-        restoreToPattern.setTransition(null);
-        lx.goPattern(restoreToPattern);
-        restoreToPattern.setTransition(pop);
+      if (!midiQwerty.isEnabled()) {
+        mappingMode = !mappingMode;
+        uiPatternA.setVisible(!mappingMode);
+        uiMapping.setVisible(mappingMode);
+        if (mappingMode) {
+          restoreToPattern = lx.getPattern();
+          lx.setPatterns(new LXPattern[] { mappingTool });
+        } else {
+          lx.setPatterns(patterns);
+          LXTransition pop = restoreToPattern.getTransition();
+          restoreToPattern.setTransition(null);
+          lx.goPattern(restoreToPattern);
+          restoreToPattern.setTransition(pop);
+        }
       }
       break;
     case 'p':

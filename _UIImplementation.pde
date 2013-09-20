@@ -24,7 +24,7 @@ class UIPatternDeck extends UIWindow {
     for (LXPattern p : deck.getPatterns()) {
       items.add(new PatternScrollItem(p));
     }    
-    final UIScrollList patternList = new UIScrollList(1, yp, w-2, 160).setItems(items);
+    final UIScrollList patternList = new UIScrollList(1, yp, w-2, 140).setItems(items);
     patternList.addToContainer(this);
     yp += patternList.h + 10;
     
@@ -86,6 +86,51 @@ class UIPatternDeck extends UIWindow {
   }
 }
 
+class UIBlendMode extends UIWindow {
+  public UIBlendMode(float x, float y, float w, float h) {
+    super("BLEND MODE", x, y, w, h);
+    List<ScrollItem> items = new ArrayList<ScrollItem>();
+    for (LXTransition t : glucose.getTransitions()) {
+      items.add(new TransitionScrollItem(t));
+    }
+    final UIScrollList tList;
+    (tList = new UIScrollList(1, titleHeight, w-2, 60)).setItems(items).addToContainer(this);
+
+    lx.engine.getDeck(1).addListener(new Engine.AbstractListener() {
+      public void blendTransitionDidChange(Engine.Deck deck, LXTransition transition) {
+        tList.redraw();
+      }
+    });
+  }
+
+  class TransitionScrollItem extends AbstractScrollItem {
+    private final LXTransition transition;
+    private String label;
+    
+    TransitionScrollItem(LXTransition transition) {
+      this.transition = transition;
+      label = className(transition, "Transition");
+    }
+    
+    public String getLabel() {
+      return label;
+    }
+    
+    public boolean isSelected() {
+      return transition == glucose.getSelectedTransition();
+    }
+    
+    public boolean isPending() {
+      return false;
+    }
+    
+    public void onMousePressed() {
+      glucose.setSelectedTransition(transition);
+    }
+  }
+
+}
+
 class UICrossfader extends UIWindow {
   
   private final UIToggleSet displayMode;
@@ -93,50 +138,12 @@ class UICrossfader extends UIWindow {
   public UICrossfader(float x, float y, float w, float h) {
     super("CROSSFADER", x, y, w, h);
 
-    List<ScrollItem> items = new ArrayList<ScrollItem>();
-    for (LXTransition t : glucose.getTransitions()) {
-      items.add(new TransitionScrollItem(t));
-    }
-    final UIScrollList tList;
-    (tList = new UIScrollList(1, titleHeight, w-2, 120)).setItems(items).addToContainer(this);
-    new UIParameterSlider(4, titleHeight + 126, w-10, 24).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
-    (displayMode = new UIToggleSet(4, 182, w-10, 20)).setOptions(new String[] { "A", "COMP", "B" }).setValue("COMP").addToContainer(this);
-    
-    lx.engine.getDeck(1).addListener(new Engine.AbstractListener() {
-      public void blendTransitionDidChange(Engine.Deck deck, LXTransition transition) {
-        tList.redraw();
-      }
-    });
+    new UIParameterSlider(4, titleHeight, w-9, 32).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
+    (displayMode = new UIToggleSet(4, titleHeight + 36, w-9, 20)).setOptions(new String[] { "A", "COMP", "B" }).setValue("COMP").addToContainer(this);
   }
   
   public String getDisplayMode() {
     return displayMode.getValue();
-  }
-}
-
-class TransitionScrollItem extends AbstractScrollItem {
-  private final LXTransition transition;
-  private String label;
-  
-  TransitionScrollItem(LXTransition transition) {
-    this.transition = transition;
-    label = className(transition, "Transition");
-  }
-  
-  public String getLabel() {
-    return label;
-  }
-  
-  public boolean isSelected() {
-    return transition == glucose.getSelectedTransition();
-  }
-  
-  public boolean isPending() {
-    return false;
-  }
-  
-  public void onMousePressed() {
-    glucose.setSelectedTransition(transition);
   }
 }
 
@@ -336,9 +343,8 @@ class UIMapping extends UIWindow {
     }).setRange(1, glucose.model.cubes.size()).addToContainer(this);
     yp += 24;
     
-    new UILabel(4, yp+8, w-10, 20).setLabel("COLORS").addToContainer(this);
-    yp += 24;
-    
+    yp += 10;
+        
     new UIScrollList(1, yp, w-2, 60).setItems(Arrays.asList(new ScrollItem[] {
       new ColorScrollItem(ColorScrollItem.COLOR_RED),
       new ColorScrollItem(ColorScrollItem.COLOR_GREEN),
@@ -411,7 +417,7 @@ class UIMapping extends UIWindow {
       return false;
     }
     
-    public void select() {
+    public void onMousePressed() {
       switch (colorChannel) {
         case COLOR_RED: mappingTool.channelModeRed = !mappingTool.channelModeRed; break;
         case COLOR_GREEN: mappingTool.channelModeGreen = !mappingTool.channelModeGreen; break;
@@ -451,6 +457,7 @@ class UIDebugText extends UIContext {
       pg.fill(#444444);
       pg.rect(0, 0, w, h);
       pg.textFont(defaultItemFont);
+      pg.textSize(10);
       pg.textAlign(LEFT, TOP);
       pg.fill(#cccccc);
       pg.text(line1, 4, 4);
@@ -468,6 +475,26 @@ class UISpeed extends UIWindow {
         lx.setSpeed(parameter.getValuef() * 2);
       }
     })).addToContainer(this);
+  }
+}
+
+class UIMidi extends UIWindow {
+  
+  final private UIToggleSet deckMode;
+  
+  UIMidi(List<MidiListener> midiListeners, float x, float y, float w, float h) {
+    super("MIDI", x, y, w, h);
+    // Processing compiler doesn't seem to get that list of class objects also conform to interface
+    List<ScrollItem> scrollItems = new ArrayList<ScrollItem>();
+    for (MidiListener ml : midiListeners) {
+      scrollItems.add(ml);
+    }
+    new UIScrollList(1, titleHeight, w-2, 80).setItems(scrollItems).addToContainer(this);
+    (deckMode = new UIToggleSet(4, 110, w-9, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
+  }
+  
+  public Engine.Deck getFocusedDeck() {
+    return lx.engine.getDeck(deckMode.getValue() == "A" ? 0 : 1);
   }
 }
 

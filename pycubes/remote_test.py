@@ -7,7 +7,7 @@ client.connect(("127.0.0.1", 5560))
 
 bytes_per_payload = 4*250
 pixels_per_packet = bytes_per_payload / 4
-number_of_points = 16 * 16 * 60
+number_of_points = 16 * 16 * 30
 packets_per_frame = int(math.ceil(number_of_points / pixels_per_packet))
 
 print "Bytes per payload: " + str(bytes_per_payload)

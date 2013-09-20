@@ -460,7 +460,7 @@ class RemoteDriver extends Thread {
   }
 
   public color[] getNextReadyFrame() {
-    color[] colors = glucose.getColors();
+    // color[] colors = glucose.getColors();
     int lowest_frame_cnt = frame_number;
     int temp_frame_next = -1;
     // println("Drawing next ready frame");
@@ -471,17 +471,20 @@ class RemoteDriver extends Thread {
       }
     if (temp_frame_next >= 0) {
       // println("Sending frame with frame_index = " + temp_frame_next);
-      System.arraycopy(frame_buffers.get(temp_frame_next), 0, colors, 0, colors_length);
+      // System.arraycopy(frame_buffers.get(temp_frame_next), 0, colors, 0, colors_length);
       buffer_status[temp_frame_next] = FRAMEBUFFER_EMPTY;
       last_frame_sent = temp_frame_next;
+      return frame_buffers.get(temp_frame_next);
     } else {
       if (last_frame_sent > -1) {
         // Resend last frame
         // println("Sending Nothing");
+        return null_buffer;
       } else {
         // Send null frame
         // println("Sending null buffer" + null_buffer[4300]);
-        System.arraycopy(null_buffer, 0, colors, 0, colors_length);
+        // System.arraycopy(null_buffer, 0, colors, 0, colors_length);
+        return null_buffer;
       }
     }
     // println("Buffer Status: " + buffer_status[0] + "   " +
@@ -495,7 +498,7 @@ class RemoteDriver extends Thread {
     //                             frame_count[3] + "     " +
     //                             frame_count[4] + "     ");
     // println("Tmp_frame: " + temp_frame_next + "   " + last_frame_sent + "   ");
-    return colors;
+    // return colors;
   }
 };
 
@@ -518,11 +521,18 @@ class Remote extends SCPattern {
   public int total_ms = 1;
   public int total_frames = 0;
   public int total_inside = 0;
+  public int debug_sent = 0;
   void run(int deltaMs) {
     /* psudo codes
 
 
     */
+    if (debug_sent == 0) {
+      debug_sent = 1;
+      for (Point p : model.points) { 
+        println(p.index);
+      }
+    }
     frame_debug++;
     frame_cnt++;
     ms_since_frame += deltaMs;

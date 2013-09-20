@@ -314,15 +314,39 @@ public class UILabel extends UIObject {
   }
 }
 
+public class UICheckbox extends UIButton {
+  
+  private boolean firstDraw = true;
+  
+  public UICheckbox(float x, float y, float w, float h) {
+    super(x, y, w, h);
+    setMomentary(false);
+  }
+  
+  public void onDraw(PGraphics pg) {
+    pg.stroke(borderColor);
+    pg.fill(active ? activeColor : inactiveColor);
+    pg.rect(0, 0, h, h);
+    if (firstDraw) {
+      pg.fill(labelColor);
+      pg.textFont(defaultItemFont);
+      pg.textAlign(LEFT, CENTER);
+      pg.text(label, h + 4, h/2);
+      firstDraw = false;
+    }
+  }
+      
+}
+
 public class UIButton extends UIObject {
 
-  private boolean active = false;
-  private boolean isMomentary = false;
-  private color borderColor = #666666;
-  private color inactiveColor = #222222;
-  private color activeColor = #669966;
-  private color labelColor = #999999;
-  private String label = "";
+  protected boolean active = false;
+  protected boolean isMomentary = false;
+  protected color borderColor = #666666;
+  protected color inactiveColor = #222222;
+  protected color activeColor = #669966;
+  protected color labelColor = #999999;
+  protected String label = "";
    
   public UIButton(float x, float y, float w, float h) {
     super(x, y, w, h);
@@ -357,6 +381,10 @@ public class UIButton extends UIObject {
     if (isMomentary) {
       setActive(false);
     }
+  }
+  
+  public boolean isActive() {
+    return active;
   }
   
   public UIButton setActive(boolean active) {

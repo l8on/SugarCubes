@@ -480,7 +480,8 @@ class UISpeed extends UIWindow {
 
 class UIMidi extends UIWindow {
   
-  final private UIToggleSet deckMode;
+  private final UIToggleSet deckMode;
+  private final UIButton logMode;
   
   UIMidi(List<MidiListener> midiListeners, float x, float y, float w, float h) {
     super("MIDI", x, y, w, h);
@@ -490,7 +491,12 @@ class UIMidi extends UIWindow {
       scrollItems.add(ml);
     }
     new UIScrollList(1, titleHeight, w-2, 80).setItems(scrollItems).addToContainer(this);
-    (deckMode = new UIToggleSet(4, 110, w-9, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
+    (deckMode = new UIToggleSet(4, 110, 90, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
+    (logMode = new UIButton(98, 110, w-103, 20)).setLabel("LOG").addToContainer(this);
+  }
+  
+  public boolean logMidi() {
+    return logMode.isActive();
   }
   
   public Engine.Deck getFocusedDeck() {

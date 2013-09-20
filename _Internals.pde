@@ -141,8 +141,8 @@ void setup() {
     new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
-    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 136),
-    new UIOutput(width-144, 472, 140, 106),
+    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 160),
+    new UIOutput(width-144, 498, 140, 106),
     
     uiCrossfader = new UICrossfader(width/2-90, height-90, 180, 86),
     
@@ -270,14 +270,18 @@ public class MidiListener extends AbstractScrollItem {
     if (!enabled) {
       return;
     }
-    println("PC: " + pc.toString());
+    if (uiMidi.logMidi()) {
+      println(getLabel() + " :: Program Change :: " + pc.getNumber());
+    }
   }
   
   void controllerChangeReceived(rwmidi.Controller cc) {
     if (!enabled) {
       return;
     }
-    println("CC: " + cc.toString());
+    if (uiMidi.logMidi()) {
+      println(getLabel() + " :: Controller :: " + cc.getCC() + ":" + cc.getValue());
+    }
     getFocusedPattern().controllerChangeReceived(cc);
   }
 
@@ -285,16 +289,19 @@ public class MidiListener extends AbstractScrollItem {
     if (!enabled) {
       return;
     }
-    println("Note On: " + note.toString());
+    if (uiMidi.logMidi()) {
+      println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
+    }
     getFocusedPattern().noteOnReceived(note);
-    
   }
 
   void noteOffReceived(Note note) {
     if (!enabled) {
       return;
     }
-    println("Note Off: " + note.toString());
+    if (uiMidi.logMidi()) {
+      println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
+    }
     getFocusedPattern().noteOffReceived(note);
   }
 

@@ -48,7 +48,8 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
-MidiListener midiQwerty;
+MidiListener midiQwertyKeys;
+MidiListener midiQwertyAPC;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -123,7 +124,8 @@ void setup() {
 
   // MIDI devices
   List<MidiListener> midiListeners = new ArrayList<MidiListener>();
-  midiListeners.add(midiQwerty = new MidiListener());
+  midiListeners.add(midiQwertyKeys = new MidiListener(MidiListener.KEYS));
+  midiListeners.add(midiQwertyAPC = new MidiListener(MidiListener.APC));
   for (MidiInputDevice device : RWMidi.getInputDevices()) {
     boolean enableDevice = device.getName().contains("APC");
     midiListeners.add(new MidiListener(device).setEnabled(enableDevice));
@@ -141,8 +143,8 @@ void setup() {
     new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
-    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 160),
-    new UIOutput(width-144, 498, 140, 106),
+    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 158),
+    new UIOutput(width-144, 494, 140, 106),
     
     uiCrossfader = new UICrossfader(width/2-90, height-90, 180, 86),
     
@@ -171,10 +173,16 @@ void setup() {
 }
 
 public class MidiListener extends AbstractScrollItem {
+  
+  public static final int MIDI = 0;
+  public static final int KEYS = 1;
+  public static final int APC = 2;
+  
   private boolean enabled = false;
   private final String name;
   
   MidiListener(MidiInputDevice d) {
+    mode = MIDI;
     d.createInput(this);
     name = d.getName();
   }
@@ -190,8 +198,25 @@ public class MidiListener extends AbstractScrollItem {
   
   final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();
   
-  MidiListener() {
-    name = "QWERTY Keyboard";
+  private final int mode;
+  private int octaveShift = 0;
+  
+  MidiListener(int mode) {
+    this.mode = mode;
+    switch (mode) {
+      case APC:
+        name = "QWERTY (APC Mode)";
+        mapAPC();
+        break;
+      default:
+      case KEYS:
+        name = "QWERTY (Key Mode)";
+        mapKeys();
+        break;
+    }
+  }
+  
+  private void mapAPC() {
     mapNote('1', 0, 53);
     mapNote('2', 1, 53);
     mapNote('3', 2, 53);
@@ -219,6 +244,26 @@ public class MidiListener extends AbstractScrollItem {
     registerKeyEvent(this);
   }
   
+  private void mapKeys() {
+    int note = 48;
+    mapNote('a', 1, note++);
+    mapNote('w', 1, note++);
+    mapNote('s', 1, note++);
+    mapNote('e', 1, note++);
+    mapNote('d', 1, note++);
+    mapNote('f', 1, note++);
+    mapNote('t', 1, note++);
+    mapNote('g', 1, note++);
+    mapNote('y', 1, note++);
+    mapNote('h', 1, note++);
+    mapNote('u', 1, note++);
+    mapNote('j', 1, note++);
+    mapNote('k', 1, note++);
+    mapNote('o', 1, note++);
+    mapNote('l', 1, note++);
+    registerKeyEvent(this);
+  }
+  
   void mapNote(char ch, int channel, int number) {
     keyToNote.put(ch, new NoteMeta(channel, number));
   }
@@ -228,15 +273,28 @@ public class MidiListener extends AbstractScrollItem {
   }
   
   public void keyEvent(KeyEvent e) {
+    if (!enabled) {
+      return;
+    }
     char c = Character.toLowerCase(e.getKeyChar());
     NoteMeta nm = keyToNote.get(c);
     if (nm != null) {
       switch (e.getID()) {
         case KeyEvent.KEY_PRESSED:
-          noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number, 127));
+          noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number + octaveShift*12, 127));
           break;
         case KeyEvent.KEY_RELEASED:
-          noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number, 0));
+          noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number + octaveShift*12, 0));
+          break;
+      }
+    }
+    if ((mode == KEYS) && (e.getID() == KeyEvent.KEY_PRESSED)) {
+      switch (c) {
+        case 'z':
+          octaveShift = constrain(octaveShift-1, -4, 4);
+          break;
+        case 'x':
+          octaveShift = constrain(octaveShift+1, -4, 4);
           break;
       }
     }
@@ -540,13 +598,13 @@ void keyPressed() {
       frameRate(++targetFramerate);
       break;
     case 'd':
-      if (!midiQwerty.isEnabled()) {
+      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
         debugMode = !debugMode;
         println("Debug output: " + (debugMode ? "ON" : "OFF"));
       }
       break;
     case 'm':
-      if (!midiQwerty.isEnabled()) {
+      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
         mappingMode = !mappingMode;
         uiPatternA.setVisible(!mappingMode);
         uiMapping.setVisible(mappingMode);
@@ -568,7 +626,9 @@ void keyPressed() {
       }
       break;
     case 'u':
-      uiOn = !uiOn;
+      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
+        uiOn = !uiOn;
+      }
       break;
   }
 }

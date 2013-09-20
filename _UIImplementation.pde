@@ -490,9 +490,9 @@ class UIMidi extends UIWindow {
     for (MidiListener ml : midiListeners) {
       scrollItems.add(ml);
     }
-    new UIScrollList(1, titleHeight, w-2, 80).setItems(scrollItems).addToContainer(this);
-    (deckMode = new UIToggleSet(4, 110, 90, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
-    (logMode = new UIButton(98, 110, w-103, 20)).setLabel("LOG").addToContainer(this);
+    new UIScrollList(1, titleHeight, w-2, 100).setItems(scrollItems).addToContainer(this);
+    (deckMode = new UIToggleSet(4, 130, 90, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
+    (logMode = new UIButton(98, 130, w-103, 20)).setLabel("LOG").addToContainer(this);
   }
   
   public boolean logMidi() {

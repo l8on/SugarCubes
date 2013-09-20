@@ -778,7 +778,7 @@ public class UIScrollList extends UIObject {
   }
   
   public void setScrollOffset(int offset) {
-    scrollOffset = constrain(offset, 0, items.size() - numVisibleItems);
+    scrollOffset = constrain(offset, 0, max(0, items.size() - numVisibleItems));
     scrollYStart = round(scrollOffset * h / items.size());
     scrollYHeight = round(numVisibleItems * h / items.size());
     redraw();

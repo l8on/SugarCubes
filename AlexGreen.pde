@@ -72,7 +72,7 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
  color spheryvalue (float px, float py, float pz , float f1xc, float f1yc, float f1zc) 
  {
 //switch(sShpape.cur() ) {}  
-   return color(constrain(huespread.getValuef()*5*px, 0, 100) , dist(px, py, pz, f1xc, f1yc, f1zc) , 
+   return color(constrain(huespread.getValuef()*5*px, 0, 360) , dist(px, py, pz, f1xc, f1yc, f1zc) , 
     max(0, 100 - 100*widthparameter.getValuef()*abs(dist(px, py, pz, f1xcenter, ybounce.getValuef(), f1zcenter)
       - vibration.getValuef() ) ) ); 
  }
@@ -136,41 +136,51 @@ final Sphery[] spherys;
 
 
   }
-  boolean spheremode = true;
+  int spheremode = 0;
   
-   void keyPressed() {
-     spheremode =!spheremode;
-     }
-	
+   // void keyPressed() {
+   //   spheremode++;
+   //     }
+
 	color CalcPoint(xyz Px) 
   { 
-     
-
-       if (spheremode)
-              {
+       // if (spheremode == 0 )
+              //{
              color c = 0;
              c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
              c = blendColor(c, spherys[0].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
              c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
              return c;
-             }
-        else
-      {
+             //}
+      //   else if (spheremode == 1)
+      // {
 
-        color c = 0;
-        c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/4, 3*model.xMax/4, 3*model.yMax/4, 3*model.zMax/4),ADD);
-        return c; 
-      }
-            //c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/4, 3*model.xMax/4, 3*model.yMax/4, 3*model.zMax/4),ADD);
- //      return c;    
- //             }
-           
+      //   color c = 0;
+      //   c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/4, 3*model.xMax/4, 3*model.yMax/4, 3*model.zMax/4),ADD);
+      //   return c; 
+      // }
+      // return color(0,0,0);
+      //  // else if(spheremode ==2)
+       // { color c = 0;
+       //   return color(CalcCone( (xyz by = new xyz(0,spherys[2].ybounce.getValuef(),0) ), Px, mid) );
 
-      
-    //  }
+       // }
+
+  
           } 
         
   }
 
+
+// class HSVtest extends DPat {
+
+
+
+
+
+
+
+
+// }
 
 

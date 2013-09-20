@@ -352,6 +352,8 @@ void keyPressed() {
     mappingTool.keyPressed();
   }
   switch (key) {
+    // case 's': if (lx.getPattern == SineSphere){SineSphere.keyPressed()};
+   // break;
     case 'w':
        doDual = !doDual;
        break;

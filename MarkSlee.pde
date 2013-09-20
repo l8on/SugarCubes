@@ -811,3 +811,44 @@ class ColorFuckerEffect extends SCEffect {
     }
   }
 }
+
+class BlurEffect extends SCEffect {
+  
+  final LXParameter amount = new BasicParameter("AMT", 0);
+  final int[] frame;
+  final LinearEnvelope env = new LinearEnvelope(0, 1, 100);
+  
+  BlurEffect(GLucose glucose) {
+    super(glucose);
+    addParameter(amount);
+    addModulator(env);
+    frame = new int[lx.total];
+    for (int i = 0; i < frame.length; ++i) {
+      frame[i] = #000000;
+    }
+  }
+  
+  public void onEnable() {
+    env.setRangeFromHereTo(1, 400).start();
+    for (int i = 0; i < frame.length; ++i) {
+      frame[i] = #000000;
+    }
+  }
+  
+  public void onDisable() {
+    env.setRangeFromHereTo(0, 1000).start();
+  }
+  
+  public void doApply(int[] colors) {
+    float amt = env.getValuef() * amount.getValuef();
+    if (amt > 0) {    
+      amt = (1 - amt);
+      amt = 1 - (amt*amt*amt);
+      for (int i = 0; i < colors.length; ++i) {
+        // frame[i] = colors[i] = blendColor(colors[i], lerpColor(#000000, frame[i], amt, RGB), SCREEN);
+        frame[i] = colors[i] = lerpColor(colors[i], blendColor(colors[i], frame[i], SCREEN), amt, RGB);
+      }
+    }
+      
+  }  
+}

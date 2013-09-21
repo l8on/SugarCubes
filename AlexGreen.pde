@@ -79,4 +79,40 @@ final Sphery[] spherys;
     }
  }
 
+ class HueTestHSB extends SCPattern{
+  BasicParameter HueT = new BasicParameter("Hue", .5);
+  BasicParameter SatT = new BasicParameter("Sat", .5);
+  BasicParameter BriT = new BasicParameter("Bright", .5);
+
+HueTestHSB(GLucose glucose) {
+  super(glucose);
+  addParameter(HueT);
+  addParameter(SatT);
+  addParameter(BriT);
+}
+  void run(double deltaMs){
+
+  for (Point p : model.points) {
+    color c = 0;
+    c = blendColor(c, color(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
+    colors[p.index]= c;
+  }
+   int now= millis();
+   if (now % 1000 <= 20)
+   {
+   println("Hue: " + 360*HueT.getValuef() + "Sat: " + 100*SatT.getValuef() + "Bright:  " + 100*BriT.getValuef());
+   }
+  }
+
+ }
+ //class sphereeq extends DPat {
+
+
+
+
+
+
+
+ // }
+
 

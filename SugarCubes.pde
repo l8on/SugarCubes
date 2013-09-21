@@ -26,6 +26,7 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
+
     // Slee
     new Swarm(glucose),
     new SpaceTime(glucose),
@@ -84,15 +85,18 @@ LXPattern[] patterns(GLucose glucose) {
   //  new AbstractPainting(glucose),
     new Spirality(glucose),
 
-    // Basic test patterns for reference, not art    
-    new TestCubePattern(glucose),
-    new TestTowerPattern(glucose),
-    new TestProjectionPattern(glucose),
-    new TestStripPattern(glucose),
-    new TestBassMapping(glucose),
-    new TestFloorMapping(glucose),
-    new TestSpeakerMapping(glucose),    
-    // new TestHuePattern(glucose),
+    // Basic test patterns for reference, not art   
+
+    //Alex: this one allows you to easily see what different values in HSB space look like on the Sim and the Sculpture
+    new HueTestHSB(glucose), 
+    //new TestCubePattern(glucose),
+    //new TestTowerPattern(glucose),
+    //new TestProjectionPattern(glucose),
+    //new TestStripPattern(glucose),
+    //new TestBassMapping(glucose),
+    //new TestFloorMapping(glucose),
+    //new TestSpeakerMapping(glucose),    
+    new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),
     // new TestZPattern(glucose),

@@ -319,7 +319,7 @@ public class MidiListener extends AbstractScrollItem {
   public MidiListener setEnabled(boolean enabled) {
     if (enabled != this.enabled) {
       this.enabled = enabled;
-      uiMidi.redraw();
+      if (uiMidi != null) uiMidi.redraw();
     }
     return this;
   }

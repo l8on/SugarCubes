@@ -7,8 +7,8 @@ String	DanTextLine1 = "", DanTextLine2 = "";
 boolean btwn  (int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  (double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
 
-static MidiOutput  midiout2;
-int nNumKeys = 61; int nNumSli= 9; int nKnobs = 8;
+// static MidiOutput  midiout2;
+// int nNumKeys = 61; int nNumSli= 9; int nKnobs = 8;
 
 
 public class Pick {
@@ -192,7 +192,7 @@ public class DPat extends SCPattern
 	    // for (MidiInputDevice  input  : RWMidi.getInputDevices ()) { if (input.toString().contains("APC")) input .createInput (this);}
 	    for (MidiOutputDevice output : RWMidi.getOutputDevices()) {
 			if (midiout == null && output.toString().contains("APC")) midiout = output.createOutput();
-			if (midiout2 == null && output.toString().contains("Oxygen 61")) midiout2 = output.createOutput();
+			//if (midiout2 == null && output.toString().contains("Oxygen 61")) midiout2 = output.createOutput();
 		}
 
 	}

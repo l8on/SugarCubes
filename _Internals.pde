@@ -144,6 +144,7 @@ void setup() {
     new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
+
     uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 158),
     new UIOutput(width-144, 494, 140, 106),
     
@@ -152,6 +153,7 @@ void setup() {
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324),
   };
+  //uiMidi.redraw();
   uiMapping.setVisible(false);
   logTime("Built overlay UI");
 
@@ -319,7 +321,10 @@ public class MidiListener extends AbstractScrollItem {
   public MidiListener setEnabled(boolean enabled) {
     if (enabled != this.enabled) {
       this.enabled = enabled;
-      uiMidi.redraw();
+      if(uiMidi != null)
+      {
+        uiMidi.redraw();
+      }
     }
     return this;
   }

@@ -48,8 +48,6 @@ LXPattern[] patterns(GLucose glucose) {
     // Alex G
     new SineSphere(glucose),
 
-    // Shaheen
-    new HelixPattern(glucose).setEligible(false),
     
     // Toby
     new GlitchPlasma(glucose),
@@ -65,11 +63,11 @@ LXPattern[] patterns(GLucose glucose) {
 
     // Tim
     new TimPlanes(glucose),
-    new TimPinwheels(glucose),
+   // new TimPinwheels(glucose),
     new TimRaindrops(glucose),
     new TimCubes(glucose),
     // new TimTrace(glucose),
-    new TimSpheres(glucose),
+    //new TimSpheres(glucose),
 
     // Ben
     // new Sandbox(glucose),
@@ -77,15 +75,13 @@ LXPattern[] patterns(GLucose glucose) {
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
     
-    //JR
-    new Gimbal(glucose),
-    
+  
     // Sam
-    new JazzRainbow(glucose),
+  
     
     // Arjun
     new TelevisionStatic(glucose),
-    new AbstractPainting(glucose),
+  //  new AbstractPainting(glucose),
     new Spirality(glucose),
 
     // Basic test patterns for reference, not art    

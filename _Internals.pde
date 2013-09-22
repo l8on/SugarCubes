@@ -48,8 +48,8 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
-MidiListener midiQwertyKeys;
-MidiListener midiQwertyAPC;
+SCMidiInput midiQwertyKeys;
+SCMidiInput midiQwertyAPC;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -124,12 +124,12 @@ void setup() {
   logTime("Built PandaDriver");
 
   // MIDI devices
-  List<MidiListener> midiListeners = new ArrayList<MidiListener>();
-  midiListeners.add(midiQwertyKeys = new MidiListener(MidiListener.KEYS));
-  midiListeners.add(midiQwertyAPC = new MidiListener(MidiListener.APC));
+  List<SCMidiInput> midiControllers = new ArrayList<SCMidiInput>();
+  midiControllers.add(midiQwertyKeys = new SCMidiInput(SCMidiInput.KEYS));
+  midiControllers.add(midiQwertyAPC = new SCMidiInput(SCMidiInput.APC));
   for (MidiInputDevice device : RWMidi.getInputDevices()) {
     boolean enableDevice = device.getName().contains("APC");
-    midiListeners.add(new MidiListener(device).setEnabled(enableDevice));
+    midiControllers.add(new SCMidiInput(device).setEnabled(enableDevice));
   }
   SCMidiDevices.initializeStandardDevices(glucose);
   logTime("Setup MIDI devices");
@@ -144,7 +144,7 @@ void setup() {
     new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
-    uiMidi = new UIMidi(midiListeners, width-144, 332, 140, 158),
+    uiMidi = new UIMidi(midiControllers, width-144, 332, 140, 158),
     new UIOutput(width-144, 494, 140, 106),
     
     uiCrossfader = new UICrossfader(width/2-90, height-90, 180, 86),
@@ -176,7 +176,11 @@ void setup() {
   println("Hit the 'p' key to toggle Panda Board output");
 }
 
-public class MidiListener extends AbstractScrollItem {
+public interface SCMidiInputListener {
+  public void onEnabled(SCMidiInput controller, boolean enabled);
+}
+
+public class SCMidiInput extends AbstractScrollItem {
   
   public static final int MIDI = 0;
   public static final int KEYS = 1;
@@ -184,13 +188,9 @@ public class MidiListener extends AbstractScrollItem {
   
   private boolean enabled = false;
   private final String name;
-  
-  MidiListener(MidiInputDevice d) {
-    mode = MIDI;
-    d.createInput(this);
-    name = d.getName();
-  }
-  
+  private final int mode;
+  private int octaveShift = 0;
+    
   class NoteMeta {
     int channel;
     int number;
@@ -201,11 +201,26 @@ public class MidiListener extends AbstractScrollItem {
   }
   
   final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();
+    
+  final List<SCMidiInputListener> listeners = new ArrayList<SCMidiInputListener>();
   
-  private final int mode;
-  private int octaveShift = 0;
+  public SCMidiInput addListener(SCMidiInputListener l) {
+    listeners.add(l);
+    return this;
+  }
+
+  public SCMidiInput removeListener(SCMidiInputListener l) {
+    listeners.remove(l);
+    return this;
+  }
   
-  MidiListener(int mode) {
+  SCMidiInput(MidiInputDevice d) {
+    mode = MIDI;
+    d.createInput(this);
+    name = d.getName();
+  }
+  
+  SCMidiInput(int mode) {
     this.mode = mode;
     switch (mode) {
       case APC:
@@ -316,23 +331,30 @@ public class MidiListener extends AbstractScrollItem {
     setEnabled(!enabled);
   }
   
-  public MidiListener setEnabled(boolean enabled) {
+  public SCMidiInput setEnabled(boolean enabled) {
     if (enabled != this.enabled) {
       this.enabled = enabled;
-      if (uiMidi != null) uiMidi.redraw();
+      for (SCMidiInputListener l : listeners) {
+        l.onEnabled(this, enabled);
+      }
     }
     return this;
   }
   
   private SCPattern getFocusedPattern() {
-    return (SCPattern) uiMidi.getFocusedDeck().getActivePattern();
+    Engine.Deck focusedDeck = (uiMidi != null) ? uiMidi.getFocusedDeck() : lx.engine.getDefaultDeck();
+    return (SCPattern) focusedDeck.getActivePattern();
+  }
+  
+  private boolean logMidi() {
+    return (uiMidi != null) && uiMidi.logMidi();
   }
   
   void programChangeReceived(ProgramChange pc) {
     if (!enabled) {
       return;
     }
-    if (uiMidi.logMidi()) {
+    if (logMidi()) {
       println(getLabel() + " :: Program Change :: " + pc.getNumber());
     }
   }
@@ -341,7 +363,7 @@ public class MidiListener extends AbstractScrollItem {
     if (!enabled) {
       return;
     }
-    if (uiMidi.logMidi()) {
+    if (logMidi()) {
       println(getLabel() + " :: Controller :: " + cc.getCC() + ":" + cc.getValue());
     }
     getFocusedPattern().controllerChangeReceived(cc);
@@ -351,7 +373,7 @@ public class MidiListener extends AbstractScrollItem {
     if (!enabled) {
       return;
     }
-    if (uiMidi.logMidi()) {
+    if (logMidi()) {
       println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
     getFocusedPattern().noteOnReceived(note);
@@ -361,7 +383,7 @@ public class MidiListener extends AbstractScrollItem {
     if (!enabled) {
       return;
     }
-    if (uiMidi.logMidi()) {
+    if (logMidi()) {
       println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
     getFocusedPattern().noteOffReceived(note);

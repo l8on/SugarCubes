@@ -483,16 +483,27 @@ class UIMidi extends UIWindow {
   private final UIToggleSet deckMode;
   private final UIButton logMode;
   
-  UIMidi(List<MidiListener> midiListeners, float x, float y, float w, float h) {
+  UIMidi(List<SCMidiInput> midiControllers, float x, float y, float w, float h) {
     super("MIDI", x, y, w, h);
     // Processing compiler doesn't seem to get that list of class objects also conform to interface
     List<ScrollItem> scrollItems = new ArrayList<ScrollItem>();
-    for (MidiListener ml : midiListeners) {
-      scrollItems.add(ml);
+    for (SCMidiInput mc : midiControllers) {
+      scrollItems.add(mc);
     }
-    new UIScrollList(1, titleHeight, w-2, 100).setItems(scrollItems).addToContainer(this);
+    final UIScrollList scrollList;
+    (scrollList = new UIScrollList(1, titleHeight, w-2, 100)).setItems(scrollItems).addToContainer(this);
     (deckMode = new UIToggleSet(4, 130, 90, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
     (logMode = new UIButton(98, 130, w-103, 20)).setLabel("LOG").addToContainer(this);
+    
+    SCMidiInputListener listener = new SCMidiInputListener() {
+      public void onEnabled(SCMidiInput controller, boolean enabled) {
+        scrollList.redraw();
+      }
+    };
+    for (SCMidiInput mc : midiControllers) {
+      mc.addListener(listener);
+    }
+
   }
   
   public boolean logMidi() {

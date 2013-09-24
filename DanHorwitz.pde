@@ -14,7 +14,7 @@ public class Pong extends DPat {
 		addModulator(y  = new SinLFO(cRad, ydMax - cRad, 0)).trigger();	y.modulateDurationBy(dy);
 		addModulator(z  = new SinLFO(cRad, zdMax - cRad, 0)).trigger();	z.modulateDurationBy(dz);
 	    pSize	= addParam	("Size"			, 0.4	);
-	    pChoose = addPick	("Animiation"	, 0	, 3	);
+	    pChoose = addPick	("Animiation"	, 0	, 3, new String[] {"Pong", "Ball", "Cone"}	);
 	}
 
 	void  	StartRun(double deltaMs) 	{ cRad = xdMax*pSize.Val()/6; }
@@ -51,9 +51,10 @@ public class Noise extends DPat
 
 	Noise(GLucose glucose) {
 		super(glucose);
-		pRotZ	= addParam("RotZ"	, .5 );	pSpeed		= addParam("Fast", .55);
-		pDensity= addParam("Dens" 	, .5);
-		pSymm 	= addPick("Symmetry", 0, 4);	pChoose 	= addPick("Animation", 1, 6);
+		pRotZ	= addParam("RotZ"	 , .5 );	pSpeed		= addParam("Fast", .55);
+		pDensity= addParam("Dens" 	 , .5);
+		pSymm 	= addPick("Symmetry" , 0, 4, new String[] {"None", "X", "Y", "Radial"}	);
+		pChoose = addPick("Animation", 1, 6, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark"}	);
 	}
 
 	void StartRun(double deltaMs) {
@@ -122,15 +123,16 @@ public class Play extends DPat
 
 	Play(GLucose glucose) {
 		super(glucose);
-	    pAmp  		= addParam("Amp" , .2);
 		pRotX 		= addParam("RotX", .5);
 		pRotY 		= addParam("RotY", .5);
 		pRotZ 		= addParam("RotZ", .5);
-	    pRad		= addParam("Rad" , .1  		);
-		pTimePattern= addPick ("TimePattern", 0 , 5		);
-		pTempoMult 	= addPick ("TimeMult"	, 0 , 6		);
-		pShape	 	= addPick ("Shape"		, 0 , 16	);
-		pForm	 	= addPick ("Form"		, 0 , 3		);
+	    pAmp  		= addParam("Amp" , .2);
+	    pRad		= addParam("Rad" 	, .1  		);
+		pTempoMult 	= addPick ("TMult"	, 0 , 6		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
+		pTimePattern= addPick ("TPat"	, 0 , 5		, new String[] {"Bounce", "?", "Roll", "Quant", "Accel"	}	);
+		pShape	 	= addPick ("Shape"	, 0 , 10	, new String[] {"Line", "Tap", "V", "RandV", "Pyramid",
+																	"Wings", "W2", "Sphere", "Cone", "Noise" } 	);
+		pForm	 	= addPick ("Form"	, 0 , 3		, new String[] {"Bar", "Volume", "Fade"					}	);
 	}
 
 	float 	t,a;
@@ -147,7 +149,7 @@ public class Play extends DPat
 		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
 
 		if (t<LastMeasure) { CurRandTempo = int(random(4)); } LastMeasure = t;
-		
+
 		switch (pTempoMult.Cur()) {
 			case 0: 	t = t;								break;
 			case 1: 	t = (t*2. )%1.;						break;
@@ -167,8 +169,9 @@ public class Play extends DPat
 			case 4: 	t = t*t*t;							break;
 		}
 
-		cMid 		= cPrev.interpolate(t,cCur);
-		cMidNorm 	= cMid.setNorm();
+		
+		cMid 				= cPrev.interpolate(t,cCur);
+		cMidNorm 			= cMid.setNorm();
 	}
 
 	color CalcPoint(xyz Px) {

@@ -7,14 +7,15 @@ boolean btwn  (int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  (double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
 
 public class Pick {
-	Pick	(String label, int _Def, int _Max)	{ NumPicks=_Max; Default = _Def; tag=label; 	}
+	Pick	(String label, int _Def, int _Max, 	String d[])	{ NumPicks=_Max; Default = _Def; tag=label; Desc = d; }
 	int		Cur() 	 							{ return (CurRow-StartRow)*NumApcCols + CurCol; 	}
 	int 	NumPicks, Default, CurRow, CurCol, StartRow, EndRow;
-	String	tag;
+	String  Desc[]	;	
+	String	tag		;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class _DhP extends BasicParameter {
-	double  dflt;	
+	double  dflt;
 	_DhP	(String label, double value) 		{ super(label,value); dflt=value;		}
 	void 	Set			(double value) 			{ super.updateValue(value);				}
 	void 	reset		() 						{ super.updateValue(dflt);				}
@@ -55,7 +56,6 @@ public class xyz {	float x,y,z;
 		if (t.y != 0) { z = z*tcos.y - x*tsin.y; x = z*tsin.y + x*tcos.y; }
 		if (t.z != 0) { x = x*tcos.z - y*tsin.z; y = x*tsin.z + y*tcos.z; }
 					  { x += o.x; y += o.y; z += o.z; }
-
 	}
 
 	xyz		setRand	()						{ return new xyz ( random(xdMax), random(ydMax), random(zdMax)); 		}
@@ -79,7 +79,9 @@ public class DGlobals {
 
 	int 	mapRow   (int a) 					{ return btwn(a,53,57) ? a-53 : a;			}
 	int 	unmapRow (int a) 					{ return btwn(a,0 , 4) ? a+53 : a;			}
+
 	void 	SetLight (int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn(col, unmapRow(row), clr); }
+	void 	SetKnob	 (int cc , int chan,int val){ if (APCOut != null) APCOut.sendController(cc , chan		  , val); }
 
 	float	_Trails		()						{ return Sliders[0]; }
 	float	_Dim		()						{ return Sliders[1]; }
@@ -109,11 +111,12 @@ public class DGlobals {
 		Text1  += " ZSym:  " + (_ZSym ? "ON" : "OFF") + "    ";
 		Text1  += " RSym:  " + (_RSym ? "ON" : "OFF") + "    ";
 		for (int i=0; i<CurPat.picks.size(); i++) {
-			Pick P = (Pick)CurPat.picks.get(i); Text1 += P.tag + ": " + P.Cur() + "    ";
+			Pick P = (Pick)CurPat.picks.get(i); Text1 += P.tag + ": " + P.Desc[P.Cur()] + "    ";
 		}
 
 		Text2  = "SLIDERS: ";
-		for (int i=0; i<8; i++) if (SliderText[i] != "") { Text2 += SliderText[i] + ": " + Sliders[i] + "     "; }
+		for (int i=0; i<8; i++) if (SliderText[i] != "") {
+			Text2 += SliderText[i] + ": " + int(100*Sliders[i]) + "     "; }
 
 		uiDebugText.setText(Text1, Text2);
 	}
@@ -138,6 +141,8 @@ public class DGlobals {
 
 	void 	UpdateLights() {
 		for (int i=0; i<NumApcRows	; i++) for (int j=0; j<NumApcCols; j++) SetLight(i, j, 0);
+		for (int i=48;i< 56		; i++) SetKnob(0, i, 0);
+		for (int i=16;i< 20		; i++) SetKnob(0, i, 0);
 		for (int i=0; i<CurPat.picks.size()	; i++) {
 			Pick P = (Pick)CurPat.picks.get(i); SetLight(P.CurRow, P.CurCol, 3);
 		}
@@ -145,6 +150,11 @@ public class DGlobals {
 		SetLight(83, 0, _YSym ? 3 : 0);
 		SetLight(84, 0, _ZSym ? 3 : 0);
 		SetLight(85, 0, _RSym ? 3 : 0);
+		
+		for (int i=0; i<CurPat.paramlist.size(); i++) {
+			_DhP Param = (_DhP)CurPat.paramlist.get(i);
+			SetKnob	( 0, i<=55 ? 48+i : 16 + i - 8, int(Param.Val()*127) );
+		}
 	}
 	
 	double Tap1 = 0;
@@ -180,7 +190,7 @@ public class DGlobals {
 				if (!btwn((row-P.StartRow)*NumApcCols + col,0,P.NumPicks-1)	) continue;
 				P.CurRow=row; P.CurCol=col; return;
 			}
-			println(row + " " + col); 			
+			//println(row + " " + col); 
 		}
 	}
 }
@@ -192,13 +202,12 @@ public class DPat extends SCPattern
 	int			nMaxRow  	= 0;
 	float		zSpinHue 	= 0;
 	int 		nPoint	, nPoints;
-	xyz			xyzHalf 	 = new xyz(.5,.5,.5),
-				xyzdMax,
-				xyzMid;
+	xyz			xyzHalf 	= new xyz(.5,.5,.5),
+				xyzdMax		= new xyz(),
+				xyzMid		= new xyz();
 	
 	float		NoiseMove	= random(10000);
-	_DhP		pSharp;
-
+	_DhP		pSharp, pRotX, pRotY, pRotZ;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return int(100*constrain(a,0,1));			}
 	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ return degrees( acos ( v1.minus(c).dot(v2.minus(c)) /
@@ -215,8 +224,8 @@ public class DPat extends SCPattern
 		paramlist.add(P); return P;
 	}
 		
-	Pick addPick(String name, int def, int nmax) {
-		Pick P 		= new Pick(name, def, nmax); 
+	Pick addPick(String name, int def, int nmax, String[] desc) {
+		Pick P 		= new Pick(name, def, nmax, desc); 
 		P.StartRow	= nMaxRow;
 		P.EndRow	= P.StartRow + int((nmax-1) / NumApcCols);
 		nMaxRow		= P.EndRow + 1;
@@ -229,7 +238,7 @@ public class DPat extends SCPattern
 	DPat(GLucose glucose) {
 		super(glucose);
 		DG.Init();
-		pSharp		=  addParam("Shrp", 0);
+		pSharp		=  addParam("Shrp"	,  0);
 		nPoints 	=  model.points.size();
 		xdMax 		=  model.xMax;
 		ydMax 		=  model.yMax;
@@ -246,7 +255,7 @@ public class DPat extends SCPattern
 		xyz P 			= new xyz();
 		float modhue  	= DG._ModHue  ()==0 ? 0 : DG._ModHue  ()*360;
 		float fSharp 	= 1/(1.01-pSharp.Val());
-		
+
 		DG.SetText();
 		nPoint 	= 0;
 		for (Point p : model.points) 	{ nPoint++;

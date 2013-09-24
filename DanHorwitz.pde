@@ -113,7 +113,10 @@ public class Play extends DPat
 	int		nBeats	=  	0;
 	_DhP 	pAmp, pRad;
 	_DhP 	pRotX, pRotY, pRotZ;
-	xyz		Theta = new xyz();
+	xyz		Theta 	= new xyz();
+	xyz		TSin	= new xyz();
+	xyz		TCos	= new xyz();
+	
 	Pick	pTimePattern, pTempoMult, pShape, pForm;
 	int		RandCube;
 
@@ -139,9 +142,9 @@ public class Play extends DPat
 		t = lx.tempo.rampf();
 		a = pAmp.Val();
 
-		Theta.x = pRotX.ZeroOrOne() ? 0 :(pRotX.Val()-.5)*10;
-		Theta.y = pRotY.ZeroOrOne() ? 0 :(pRotY.Val()-.5)*10;
-		Theta.z = pRotZ.ZeroOrOne() ? 0 :(pRotZ.Val()-.5)*10;
+		Theta	.set(pRotX.Val()*PI*2, pRotY.Val()*PI*2, pRotZ.Val()*PI*2);
+		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
+		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
 
 		if (t<LastMeasure) { CurRandTempo = int(random(4)); } LastMeasure = t;
 		
@@ -169,38 +172,36 @@ public class Play extends DPat
 	}
 
 	color CalcPoint(xyz Px) {
-		xyz V 		= new xyz();
-		xyz P 		= Px.setNorm();
-		if (Theta.x>0)	P = P.RotateZ(xyzHalf, Theta.x);
-		if (Theta.y>0)	P = P.RotateZ(xyzHalf, Theta.y);
-		if (Theta.z>0)	P = P.RotateZ(xyzHalf, Theta.z);
+		xyz V 		= 	new xyz();
+		xyz P 		= 	Px.setNorm();
+						P.RotateXYZ(xyzHalf, Theta, TSin, TCos);
 
 		float mp	= min(P.x, P.z);
 		float yt 	= map(t,0,1,.5-a/2,.5+a/2);
 
 		switch (pShape.Cur()) {
-			case 0:		V = new xyz(P.x, yt								, P.z); 					break;	// bouncing line
-			case 1:		V = new xyz(P.x, map(cos(PI*t * P.x),-1,1,0,1)  , P.z); 					break;	// top tap
-			case 2:		V = new xyz(P.x, a*map(P.x<.5?P.x:1-P.x,0,.5 ,0,t-.5)+.5, P.z);				break;	// V shape
-			case 3:		V = new xyz(P.x, P.x < cMidNorm.x ? map(P.x,0,cMidNorm.x, .5,yt) :
-															map(P.x,cMidNorm.x,1, yt,.5), P.z);	  	break;	//  Random V shape
+			case 0:		V.set(P.x, yt							  , P.z); 							break;	// bouncing line
+			case 1:		V.set(P.x, map(cos(PI*t * P.x),-1,1,0,1)  , P.z); 							break;	// top tap
+			case 2:		V.set(P.x, a*map(P.x<.5?P.x:1-P.x,0,.5 ,0,t-.5)+.5, P.z);					break;	// V shape
+			case 3:		V.set(P.x, P.x < cMidNorm.x ? map(P.x,0,cMidNorm.x, .5,yt) :
+													  map(P.x,cMidNorm.x,1, yt,.5), P.z);	  		break;	//  Random V shape
 
-			case 4:		V = new xyz(P.x, .5*(P.x < cMidNorm.x ? map(P.x,0,cMidNorm.x, .5,yt) :
-															 map(P.x,cMidNorm.x,1, yt,.5)) +
-										 .5*(P.z < cMidNorm.z ? map(P.z,0,cMidNorm.z, .5,yt) :
-															 map(P.z,cMidNorm.z,1, yt,.5)), P.z); 	break;	//  Random Pyramid shape
+			case 4:		V.set(P.x,	.5*(P.x < cMidNorm.x ? 	map(P.x,0,cMidNorm.x, .5,yt) :
+															map(P.x,cMidNorm.x,1, yt,.5)) +
+									.5*(P.z < cMidNorm.z ? 	map(P.z,0,cMidNorm.z, .5,yt) :
+															map(P.z,cMidNorm.z,1, yt,.5)), P.z); 	break;	//  Random Pyramid shape
 															
-			case 5:		V = new xyz(P.x, a*map((P.x-.5)*(P.x-.5),0,.25,0,t-.5)+.5, P.z);			break;	// wings
-			case 6:		V = new xyz(P.x, a*map((mp -.5)*(mp -.5),0,.25,0,t-.5)+.5, P.z);			break;	// wings
+			case 5:		V.set(P.x, a*map((P.x-.5)*(P.x-.5),0,.25,0,t-.5)+.5, P.z);					break;	// wings
+			case 6:		V.set(P.x, a*map((mp -.5)*(mp -.5),0,.25,0,t-.5)+.5, P.z);					break;	// wings
 
-			case 7:		V = new xyz(cMid.x,cMid.y,cMid.z);
+			case 7:		V.set(cMid.x,cMid.y,cMid.z);
 						return color(0,0,c1c(1 - (V.distance(Px) > (pRad.getValuef()+.1)*150?1:0)) );		// sphere
 
-			case 8:		V = new xyz(cMid.x,cMid.y,cMid.z);
+			case 8:		V.set(cMid.x,cMid.y,cMid.z);
 						return color(0,0,c1c(1 - CalcCone(Px,V,xyzMid) * 0.02 > .5?1:0));  					// cone
 
 			case 9:		return color(100 + noise(P.x,P.y,P.z + (NoiseMove+50000)/1000.)*200,
-									85,c1c(P.y < noise(P.x + NoiseMove/2000.,P.z)*(1+a)-a/2.-.1 ? 1 : 0));		//
+							85,c1c(P.y < noise(P.x + NoiseMove/2000.,P.z)*(1+a)-a/2.-.1 ? 1 : 0));			//
 		}
 
 

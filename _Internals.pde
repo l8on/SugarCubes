@@ -217,7 +217,7 @@ public class SCMidiInput extends AbstractScrollItem {
   SCMidiInput(MidiInputDevice d) {
     mode = MIDI;
     d.createInput(this);
-    name = d.getName();
+    name = d.getName().replace("Unknown vendor","");
   }
   
   SCMidiInput(int mode) {

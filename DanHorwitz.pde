@@ -2,7 +2,8 @@
 public class Pong extends DPat {
 	SinLFO x,y,z,dx,dy,dz; 
 	float cRad;	DParam pSize;
-	Pick  pChoose;
+	Pick 	pChoose;
+	xyz 	v = new xyz(), vMir =  new xyz();
 
 	Pong(GLucose glucose) {
 		super(glucose);
@@ -19,14 +20,16 @@ public class Pong extends DPat {
 
 	void  	StartRun(double deltaMs) 	{ cRad = xdMax*pSize.Val()/6; }
 	color	CalcPoint(xyz p) 	  	{
-		xyz v = new xyz(x.getValuef(), y.getValuef(), z.getValuef());
+		v.set(x.getValuef(), y.getValuef(), z.getValuef());
 		switch(pChoose.Cur()) {
-		case 0: return color(0,0,c1c(1 - min(v.distance(p), v.distance(xyzdMax.minus(p)))*.5/cRad));			// balls
-		case 1: return color(0,0,c1c(1 - v.distance(p)*.5/cRad));												// ball
-		case 2: return color(0,0,c1c(1 - CalcCone(p,v,new xyz(xdMax/2,0,zdMax/2)) * max(.02,.45-pSize.Val())));  // spot
+		case 0: vMir.set(xyzdMax); vMir.subtract(p);
+				return color(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
+		case 1: return color(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
+		case 2: vMir.set(xdMax/2,0,zdMax/2);
+				return color(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
 		}
 		return color(0,0,0);
-	}		
+	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class NDat {
@@ -80,19 +83,19 @@ public class Noise extends DPat
 			
 			switch(CurAnim) {
 			//                          hue sat xz  yz  zz  den mph angle
-			case 0: N[0].set(0  ,0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.Set(1 ); break; 	// drip
-			case 1: N[0].set(0  ,0  ,100,100,200,45 ,3  ,180); pSharp.Set(0 ); break;	// clouds
-			case 2: N[0].set(0  ,0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.Set(.5); break;	// rain
+			case 0: N[0].set(0  ,0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.set(1 ); break; 	// drip
+			case 1: N[0].set(0  ,0  ,100,100,200,45 ,3  ,180); pSharp.set(0 ); break;	// clouds
+			case 2: N[0].set(0  ,0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.set(.5); break;	// rain
 			case 3: N[0].set(40 ,1  ,100,100,200,10 ,1  ,180); 
-					N[1].set(0  ,1  ,100,100,200,10 ,5  ,180); pSharp.Set(0 ); break;	// fire 1
+					N[1].set(0  ,1  ,100,100,200,10 ,5  ,180); pSharp.set(0 ); break;	// fire 1
 			case 4: N[0].set(0  ,1  ,40 ,40 ,40 ,15 ,2.5,180);
 					N[1].set(20 ,1  ,40 ,40 ,40 ,15 ,4  ,0  );
 					N[2].set(40 ,1  ,40 ,40 ,40 ,15 ,2  ,90 );
-					N[3].set(60 ,1  ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.Set(.5); break; // machine
+					N[3].set(60 ,1  ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.set(.5); break; // machine
 			case 5: N[0].set(0  ,1  ,400,100,2  ,15 ,3  ,90 );
 					N[1].set(20 ,1  ,400,100,2  ,15 ,2.5,0  );
 					N[2].set(40 ,1  ,100,100,2  ,15 ,2  ,180);
-					N[3].set(60 ,1  ,100,100,2  ,15 ,1.5,270); pSharp.Set(.5); break; // spark
+					N[3].set(60 ,1  ,100,100,2  ,15 ,1.5,270); pSharp.set(.5); break; // spark
 			}
 
 			DG.UpdateLights();
@@ -133,10 +136,17 @@ public class Play extends DPat
 	int		nBeats	=  	0;
 	DParam 	pAmp, pRad;
 	DParam	pRotX, pRotY, pRotZ;
-	xyz		Theta 	= new xyz();
-	xyz		TSin	= new xyz();
-	xyz		TCos	= new xyz();
-	
+
+	float 	t,amp;
+	xyz		cPrev 	= new xyz(), cRand	= new xyz(),
+			cMid 	= new xyz(), V 		= new xyz(),
+			Theta 	= new xyz(), TSin	= new xyz(),
+			TCos	= new xyz(), cMidNorm = new xyz(),
+			Pn		= new xyz();
+	float	LastBeat=3, LastMeasure=3;
+	int		CurRandTempo = 1, CurRandTPat = 1;
+
+
 	Pick	pTimePattern, pTempoMult, pShape, pForm;
 	int		RandCube;
 
@@ -149,19 +159,14 @@ public class Play extends DPat
 	    pRad		= addParam("Rad" 	, .1  		);
 		pTempoMult 	= addPick ("TMult"	, 5 , 6		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
 		pTimePattern= addPick ("TPat"	, 5 , 6		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Rand"	}	);
-		pShape	 	= addPick ("Shape"	, 0 , 10	, new String[] {"Line", "Tap", "V", "RandV", "Pyramid",
+		pShape	 	= addPick ("Shape"	, 4 , 10	, new String[] {"Line", "Tap", "V", "RandV", "Pyramid",
 																	"Wings", "W2", "Sphere", "Cone", "Noise" } 	);
 		pForm	 	= addPick ("Form"	, 0 , 3		, new String[] {"Bar", "Volume", "Fade"					}	);
 	}
 
-	float 	t,a;
-	xyz		cPrev = new xyz(), cCur = new xyz(), cMid = new xyz(), cMidNorm;
-	float	LastBeat=3, LastMeasure=3;
-	int		CurRandTempo = 1, CurRandTPat = 1;
-
 	void StartRun(double deltaMs) {
-		t = lx.tempo.rampf();
-		a = pAmp.Val();
+		t 	= lx.tempo.rampf();
+		amp = pAmp.Val();
 
 		Theta	.set(pRotX.Val()*PI*2, pRotY.Val()*PI*2, pRotZ.Val()*PI*2);
 		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
@@ -183,7 +188,7 @@ public class Play extends DPat
 			case 4: 	t = (t*16.)%1.;						break;
 		}
 
-		if (t<LastBeat) { cPrev = cCur; cCur = cCur.setRand(); } LastBeat = t;
+		if (t<LastBeat) { cPrev.set(cRand); cRand.setRand(); } LastBeat = t;
 
 		switch (nTPat) {
 			case 0: 	t = sin(PI*t);						break;
@@ -192,54 +197,54 @@ public class Play extends DPat
 			case 3: 	t = constrain(int(t*8)/7.,0,1);		break;
 			case 4: 	t = t*t*t;							break;
 		}
-
 		
-		cMid 				= cPrev.interpolate(t,cCur);
-		cMidNorm 			= cMid.setNorm();
+		cMid.set		(cPrev);	cMid.interpolate	(t,cRand);
+		cMidNorm.set	(cMid);		cMidNorm.setNorm();
 	}
 
 	color CalcPoint(xyz Px) {
-		xyz V 		= 			new xyz();
-		xyz P 		= 			Px.setNorm();
-		if (Theta.x != 0)		P.RotateX(xyzHalf, TSin.x, TCos.x);
-		if (Theta.y != 0)		P.RotateY(xyzHalf, TSin.y, TCos.y);
-		if (Theta.z != 0)		P.RotateZ(xyzHalf, TSin.z, TCos.z);
+		Px.zoomX(1.3);
+		
+		Pn.set(Px); Pn.setNorm();
+		if (Theta.x != 0)		Pn.RotateX(xyzHalf, TSin.x, TCos.x);
+		if (Theta.y != 0)		Pn.RotateY(xyzHalf, TSin.y, TCos.y);
+		if (Theta.z != 0)		Pn.RotateZ(xyzHalf, TSin.z, TCos.z);
 
-		float mp	= min(P.x, P.z);
-		float yt 	= map(t,0,1,.5-a/2,.5+a/2);
+		float mp	= min(Pn.x, Pn.z);
+		float yt 	= map(t,0,1,.5-amp/2,.5+amp/2);
 
 		switch (pShape.Cur()) {
-			case 0:		V.set(P.x, yt							  , P.z); 							break;	// bouncing line
-			case 1:		V.set(P.x, map(cos(PI*t * P.x),-1,1,0,1)  , P.z); 							break;	// top tap
-			case 2:		V.set(P.x, a*map(P.x<.5?P.x:1-P.x,0,.5 ,0,t-.5)+.5, P.z);					break;	// V shape
-			case 3:		V.set(P.x, P.x < cMidNorm.x ? map(P.x,0,cMidNorm.x, .5,yt) :
-													  map(P.x,cMidNorm.x,1, yt,.5), P.z);	  		break;	//  Random V shape
+			case 0:	V.set(Pn.x, yt							 	, Pn.z); 							break;	// bouncing line
+			case 1:	V.set(Pn.x, map(cos(PI*t * Pn.x),-1,1,0,1)  , Pn.z); 							break;	// top tap
+			case 2:	V.set(Pn.x, amp*map(Pn.x<.5?Pn.x:1-Pn.x,0,.5 ,0,t-.5)+.5, Pn.z);				break;	// V shape
+			case 3:	V.set(Pn.x, Pn.x < cMidNorm.x ? map(Pn.x,0,cMidNorm.x, .5,yt) :
+													map(Pn.x,cMidNorm.x,1, yt,.5), Pn.z);	  		break;	//  Random V shape
 
-			case 4:		V.set(P.x,	.5*(P.x < cMidNorm.x ? 	map(P.x,0,cMidNorm.x, .5,yt) :
-															map(P.x,cMidNorm.x,1, yt,.5)) +
-									.5*(P.z < cMidNorm.z ? 	map(P.z,0,cMidNorm.z, .5,yt) :
-															map(P.z,cMidNorm.z,1, yt,.5)), P.z); 	break;	//  Random Pyramid shape
-															
-			case 5:		V.set(P.x, a*map((P.x-.5)*(P.x-.5),0,.25,0,t-.5)+.5, P.z);					break;	// wings
-			case 6:		V.set(P.x, a*map((mp -.5)*(mp -.5),0,.25,0,t-.5)+.5, P.z);					break;	// wings
+			case 4:	V.set(Pn.x,	.5*(Pn.x < cMidNorm.x ? 	map(Pn.x,0,cMidNorm.x, .5,yt) :
+															map(Pn.x,cMidNorm.x,1, yt,.5)) +
+								.5*(Pn.z < cMidNorm.z ? 	map(Pn.z,0,cMidNorm.z, .5,yt) :
+															map(Pn.z,cMidNorm.z,1, yt,.5)), Pn.z); 	break;	//  Random Pyramid shape
+														
+			case 5:	V.set(Pn.x, amp*map((Pn.x-.5)*(Pn.x-.5),0,.25,0,t-.5)+.5, Pn.z);				break;	// wings
+			case 6:	V.set(Pn.x, amp*map((mp -.5)*(mp -.5),0,.25,0,t-.5)+.5, Pn.z);					break;	// wings
 
-			case 7:		V.set(cMid.x,cMid.y,cMid.z);
-						return color(0,0,c1c(1 - (V.distance(Px) > (pRad.getValuef()+.1)*150?1:0)) );		// sphere
-
-			case 8:		V.set(cMid.x,cMid.y,cMid.z);
-						return color(0,0,c1c(1 - CalcCone(Px,V,xyzMid) * 0.02 > .5?1:0));  					// cone
-
-			case 9:		return color(100 + noise(P.x,P.y,P.z + (NoiseMove+50000)/1000.)*200,
-							85,c1c(P.y < noise(P.x + NoiseMove/2000.,P.z)*(1+a)-a/2.-.1 ? 1 : 0));			//
+			case 7:	V.set(cMid); return color(0,0,c1c(1 - (V.distance(Px) > (pRad.getValuef()+.1)*150?1:0)) );	// sphere
+			case 8:	V.set(cMid); return color(0,0,c1c(1 - CalcCone(Px,V,xyzMid) * 0.02 > .5?1:0));  			// cone
+			case 9:	
+				
+				
+			case 10:	return color(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
+							85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));			// noise
+			default:	return color(0,0,0);
 		}
 
 
 		switch (pForm.Cur()) {
-			case 0:		return color(0,0,c1c(1 - V.distance(P)/pRad.getValuef() > .5?1:0));
-			case 1:		return color(0,0,c1c(P.y < V.y ?1:0));
-			case 2:		return color(0,0,c1c(1 - V.distance(P)/pRad.getValuef()));
+			case 0:		return color(0,0,c1c(1 - V.distance(Pn)/pRad.getValuef() > .5?1:0));
+			case 1:		return color(0,0,c1c(Pn.y < V.y ?1:0));
+			case 2:		return color(0,0,c1c(1 - V.distance(Pn)/pRad.getValuef()));
 
-			default:	return color(0,0,c1c(P.y < V.y ?1:0));
+			default:	return color(0,0,c1c(Pn.y < V.y ?1:0));
 		}
 	}
 }

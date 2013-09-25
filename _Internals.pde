@@ -412,7 +412,7 @@ void keyPressed() {
       frameRate(++targetFramerate);
       break; 
     case 'b':
-      boom.trigger();
+      EFF_boom.trigger();
       break;    
     case 'd':
       if (!midiEngine.isQwertyEnabled()) {

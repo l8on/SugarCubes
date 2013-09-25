@@ -7,12 +7,7 @@ boolean btwn  (int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  (double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
 
 public class Pick {
-	int		Cur() 	 								{ return (CurRow-StartRow)*NumApcCols + CurCol;					}
-	String	CurDesc() 								{ return Desc[Cur()]; }
-	void	reset() 								{ CurCol = Default % NumApcCols; CurRow	= StartRow + Default / NumApcCols; }
-
-	int 	NumPicks, Default	,
-			CurRow	, CurCol	,
+	int 	NumPicks, Default	,	CurRow	, CurCol	,
 			StartRow, EndRow	;
 	String  tag		, Desc[]	;
 	
@@ -22,6 +17,16 @@ public class Pick {
 		tag			= label; 	Desc 	= d;
 		reset();
 	}
+
+	int		Cur() 	 		{ return (CurRow-StartRow)*NumApcCols + CurCol;					}
+	String	CurDesc() 		{ return Desc[Cur()]; }
+	void	reset() 		{ CurCol = Default % NumApcCols; CurRow	= StartRow + Default / NumApcCols; }
+
+	boolean set(int r, int c)	{
+		if (!btwn(r,StartRow,EndRow) || !btwn(c,0,NumApcCols-1) ||
+			!btwn((r-StartRow)*NumApcCols + c,0,NumPicks-1)) 	return false;
+		CurRow=r; CurCol=c; 									return true;
+	}
 }
 
 public class DBool {
@@ -29,6 +34,7 @@ public class DBool {
 	String	tag;
 	int		row, col;
 	void 	reset() { b = def; }
+	boolean set	(int r, int c, boolean val) { if (r != row || c != col) return false; b = val; return true; }
 	DBool(String _tag, boolean _def, int _row, int _col) {
 		def = _def; b = _def; tag = _tag; row = _row; col = _col;
 	}
@@ -37,7 +43,7 @@ public class DBool {
 public class DParam extends BasicParameter {
 	double  dflt;
 	DParam	(String label, double value) 		{ super(label,value); dflt=value;		}
-	void 	Set			(double value) 			{ super.setValue(value);				}
+	void 	set			(double value) 			{ super.setValue(value);				}
 	void 	reset		() 						{ super.setValue(dflt);					}
 	float 	Val			() 						{ return getValuef();					}
 }
@@ -47,12 +53,17 @@ public class xyz {	float x,y,z;
 			xyz(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
 			xyz(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
 	void	set(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
+	void	set(xyz p					  ) {x=p.x	; y=p.y ; z=p.z ;}
 	void	set(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
+
+	void	zoomX	(float zx) 				{x = x*zx - xdMax*(zx-1)/2;				}
+	void	zoomY	(float zy) 				{y = y*zy - ydMax*(zy-1)/2;				}
+
 	float	distance(xyz b)					{return dist(x,y,z,b.x,b.y,b.z); 	 	}
 	float	dot     (xyz b)					{return x*b.x + y*b.y + z*b.z; 		 	}
-	xyz		minus   (xyz b)					{return new xyz(x-b.x,y-b.y,z-b.z);  	}
 	void	add		(xyz b)					{x += b.x; y += b.y; z += b.z;			}
 	void	add		(float b)				{x += b  ; y += b  ; z += b  ;			}
+	void	subtract(xyz b)					{x -= b.x; y -= b.y; z -= b.z;			}
 
 	void	RotateZ	  (xyz o, float nSin, float nCos) {
 		float nX = nCos*(x-o.x) - nSin*(y-o.y) + o.x;
@@ -72,11 +83,12 @@ public class xyz {	float x,y,z;
 		z = nZ; x = nX;
 	}
 
-	xyz		setRand	()						{ return new xyz ( random(xdMax), random(ydMax), random(zdMax)); 		}
-	xyz		setNorm	() 						{ return new xyz ( x / xdMax, y / ydMax, z / zdMax); 					}
+	void	setRand	()						{ x = random(xdMax); y = random(ydMax); z = random(zdMax); 	}
+	void	setNorm	() 						{ x /= xdMax; y /= ydMax; z /= zdMax; 						}
 	
 	float	interp (float a, float b, float c) { return (1-a)*b + a*c; }
-	xyz		interpolate(float i, xyz d)		{ return new xyz ( interp(i,x,d.x), interp(i,y,d.y), interp(i,z,d.z)); }
+
+	void	interpolate(float i, xyz d)		{ x = interp(i,x,d.x); y = interp(i,y,d.y); z = interp(i,z,d.z); }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DGlobals {
@@ -87,32 +99,30 @@ public class DGlobals {
 
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
 	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Wiggle", "Trails", "??", "??", "??"};
+	
+	void 		SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn		(col, row, clr); 	}
+	void 		SetNoteOff 	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff		(col, row, clr); 	}
+	void 		SetKnob	 	(int cc , int c  , int v  ){ if (APCOut != null) APCOut.sendController	(cc , c, v); 		}
 
-	int 	mapRow   (int a) 					{ return btwn(a,53,57) ? a-53 : a;			}
-	int 	unmapRow (int a) 					{ return btwn(a,0 , 4) ? a+53 : a;			}
+	DBool		GetBool (int i) 					{ return (DBool)CurPat.bools .get(i); }
+	Pick 		GetPick (int i) 					{ return (Pick) CurPat.picks .get(i); }
+	DParam 		GetParam(int i) 					{ return (DParam) CurPat.params.get(i); }
 
-	void 	SetLight (int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn(col, unmapRow(row), clr); }
-	void 	SetKnob	 (int cc , int c  , int v  ){ if (APCOut != null) APCOut.sendController(cc , c, v); }
+	float		_Dim		()						{ return Sliders[0]; }
+	float		_SpinHue	()						{ return Sliders[1]; }
+	float		_Spark		()						{ return Sliders[2]; }
+	float		_Wiggle		()						{ return Sliders[3]; }
+	float		_Trails		()						{ return Sliders[4]; }
 
-	DBool	GetBool (int i) 					{ return (DBool)CurPat.bools .get(i); }
-	Pick 	GetPick (int i) 					{ return (Pick) CurPat.picks .get(i); }
-	DParam 	GetParam(int i) 					{ return (DParam) CurPat.params.get(i); }
-
-	float	_Dim		()						{ return Sliders[0]; }
-	float	_SpinHue	()						{ return Sliders[1]; }
-	float	_Spark		()						{ return Sliders[2]; }
-	float	_Wiggle		()						{ return Sliders[3]; }
-	float	_Trails		()						{ return Sliders[4]; }
-
-	void	Init		() {
+	void		Init		() {
 		if (bInit) return; bInit=true;
 	    for (MidiOutputDevice o: RWMidi.getOutputDevices()) { if (o.toString().contains("APC")) { APCOut = o.createOutput(); break;}}
 		for (MidiInputDevice  i: RWMidi.getInputDevices ()) { if (i.toString().contains("APC")) { i.createInput (this); 	 break;}}
 	}
 	
-	boolean	isFocused  () 		{ return CurPat != null && CurPat == midiEngine.getFocusedDeck().getActivePattern(); }
-	void	Deactivate (DPat p) { if (p != CurPat) return; uiDebugText.setText(""); CurPat = null;					 }
-	void	Activate   (DPat p) {
+	boolean		isFocused  () 		{ return CurPat != null && CurPat == midiEngine.getFocusedDeck().getActivePattern(); }
+	void		Deactivate (DPat p) { if (p != CurPat) return; uiDebugText.setText(""); CurPat = null;					 }
+	void		Activate   (DPat p) {
 		CurPat = p;
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
 		for (int i=0; i<p.params.size(); i++) GetParam(i).reset();
@@ -121,7 +131,7 @@ public class DGlobals {
 		UpdateLights();
 	}
 
-	void SetText() {
+	void 	SetText() {
 		if (!isFocused()) return;
 		String Text1="", Text2="";
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).b) Text1 += " " + GetBool(i).tag       + "   ";
@@ -131,56 +141,33 @@ public class DGlobals {
 	}
 
 	void 	UpdateLights() {
-		if (!isFocused()) return;
-		for (int i=0; i<NumApcRows	; i++) for (int j=0; j<NumApcCols; j++) SetLight(i, j, 0);
-		for (int i=48;i< 56		; i++) SetKnob(0, i, 0);
-		for (int i=16;i< 20		; i++) SetKnob(0, i, 0);
+		if (!isFocused() || APCOut == null) return;
+		for (int i=53;i< 58; i++) for (int j=0; j<NumApcCols; j++) SetNoteOn(i, j, 0);
+		for (int i=48;i< 56; i++) SetKnob(0, i, 0);
+		for (int i=16;i< 20; i++) SetKnob(0, i, 0);
 
-		for (int i=0; i<CurPat.picks.size()	; i++) SetLight	(GetPick(i).CurRow, GetPick(i).CurCol, 3);
-		for (int i=0; i<CurPat.bools.size()	; i++) SetLight	(GetBool(i).row, GetBool(i).col, GetBool(i).b ? 3 : 0);
-		for (int i=0; i<CurPat.params.size(); i++) SetKnob	( 0, i<=55 ? 48+i : 16 + i - 8, int(GetParam(i).Val()*127) );
+		for (int i=0; i<CurPat.params.size(); i++) SetKnob		( 0, i<8 ? 48+i : 16 + i - 8, int(GetParam(i).Val()*127) );
+		for (int i=0; i<CurPat.picks .size(); i++) SetNoteOn	(GetPick(i).CurRow, GetPick(i).CurCol, 3);
+		for (int i=0; i<CurPat.bools .size(); i++) if (GetBool(i).b) 	SetNoteOn	(GetBool(i).row, GetBool(i).col, 1);
+													else				SetNoteOff	(GetBool(i).row, GetBool(i).col, 0);
 	}
-	
+
 	void 	controllerChangeReceived(rwmidi.Controller cc) {
 		if (cc.getCC() == 7 && btwn(cc.getChannel(),0,7)) { Sliders[cc.getChannel()] = 1.*cc.getValue()/127.; }
 	}
 
-	double Tap1 = 0;
-	double getNow() { return millis() + 1000*second() + 60*1000*minute() + 3600*1000*hour(); }
-
-	void noteOffReceived(Note note) {
-		if (!isFocused()) return;
-		int row = mapRow(note.getPitch()), col = note.getChannel();
-
-		if (row == 50 && col == 0 && btwn(getNow() - Tap1,5000,300*1000)) {	// hackish tapping mechanism
-			double bpm = 32.*60000./(getNow()-Tap1);
-			while (bpm < 20) bpm*=2;
-			while (bpm > 40) bpm/=2;
-			lx.tempo.setBpm(bpm); lx.tempo.trigger(); Tap1=0; println("Tap Set - " + bpm + " bpm");
-		}
-
+	void noteOffReceived(Note note) { if (!isFocused()) return;
+		int row = note.getPitch(), col = note.getChannel();
+		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, false)) return;
 		UpdateLights();
 	}
 
-	void noteOnReceived (Note note) {
-		if (!isFocused()) return;
-		int row = mapRow(note.getPitch()), col = note.getChannel();
-		
-		if (row == 50 && col == 0) 	{ lx.tempo.trigger(); Tap1 = getNow(); return; }
-		
-		for (int i=0; i<CurPat.picks.size(); i++) { Pick P = GetPick(i);
-			if (!btwn(row,P.StartRow,P.EndRow)							) continue;
-			if (!btwn(col,0,NumApcCols-1) 								) continue;
-			if (!btwn((row-P.StartRow)*NumApcCols + col,0,P.NumPicks-1)	) continue;
-			P.CurRow=row; P.CurCol=col; return;
-		}
-		
-		for (int i=0; i<CurPat.bools.size(); i++) { DBool B = GetBool(i);
-			if (row == GetBool(i).row && col == B.col) 	{ B.b = !B.b; return; }
-		}
+	void noteOnReceived (Note note) { if (!isFocused()) return;
+		int row = note.getPitch(), col = note.getChannel();
+		for (int i=0; i<CurPat.picks.size(); i++) if (GetPick(i).set(row, col)) 	  return;
+		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, true)) return;
+		println("row: " + row + "  col:   " + col);
 	}
-	
-	
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DPat extends SCPattern
@@ -188,7 +175,7 @@ public class DPat extends SCPattern
 	ArrayList 	picks	 	= new ArrayList();
 	ArrayList 	params 		= new ArrayList();
 	ArrayList 	bools		= new ArrayList();
-	int			nMaxRow  	= 0;
+	int			nMaxRow  	= 53;
 	float		zSpinHue 	= 0;
 	float		LastQuant	= -1, LastJog = -1;
 	int 		nPoint	, nPoints;
@@ -202,8 +189,9 @@ public class DPat extends SCPattern
 	DBool		pXsym, pYsym, pZsym, pJog;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return int(100*constrain(a,0,1));			}
-	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ return degrees( acos ( v1.minus(c).dot(v2.minus(c)) /
-															(sqrt(v1.minus(c).dot(v1.minus(c))) * sqrt(v2.minus(c).dot(v2.minus(c))) ) ));	}
+	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{	v1.subtract(c); v2.subtract(c);
+														return degrees( acos ( v1.dot(v2) /
+															(sqrt(v1.dot(v1)) * sqrt(v2.dot(v2)) ) ));	}
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return color(0,0,0); 			}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
@@ -224,7 +212,7 @@ public class DPat extends SCPattern
 		picks.add(P);
 		return P;
 	}
-	
+
 	DPat(GLucose glucose) {
 		super(glucose);
 		DG.Init();
@@ -239,10 +227,10 @@ public class DPat extends SCPattern
 		xyzdMax 	=  new xyz(xdMax,ydMax,zdMax);
 		xyzMid		=  new xyz(xdMax/2, ydMax/2, zdMax/2);
 		
-		bools.add(pXsym 	= new DBool("X-SYM", false, 82, 0));
-		bools.add(pYsym 	= new DBool("Y-SYM", false, 83, 0));
-		bools.add(pZsym 	= new DBool("Z-SYM", false, 84, 0));
-		bools.add(pJog		= new DBool("JOGGER",false, 85, 0));
+		bools.add(pXsym 	= new DBool("X-SYM", false, 49, 0));
+		bools.add(pYsym 	= new DBool("Y-SYM", false, 49, 1));
+		bools.add(pZsym 	= new DBool("Z-SYM", false, 49, 2));
+		bools.add(pJog		= new DBool("JOGGER",false, 49, 3));
 	}
 
 	void run(double deltaMs)
@@ -251,7 +239,7 @@ public class DPat extends SCPattern
 		NoiseMove   	+= deltaMs;
 		StartRun		(deltaMs);
 		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05;
-		xyz P 			= new xyz();
+		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
 		float fSharp 	= 1/(1.0001-pSharp.Val());
 		float fQuant	= pQuantize.Val();
 		float fSaturate	= pSaturate.Val();
@@ -280,12 +268,12 @@ public class DPat extends SCPattern
 			if (DG._Spark () > 0) 	P.y += DG._Spark () * (noise(P.x,P.y+NoiseMove/30  ,P.z)*ydMax - ydMax/2.);
 			if (DG._Wiggle() > 0) 	P.y += DG._Wiggle() * (noise(P.x/(xdMax*.3)-NoiseMove/1500.) - .5) * (ydMax/2.);
 
-			color 			cOld = colors[p.index];
-			color 			cNew = CalcPoint(P);
+			color cOld = colors[p.index]; pSave.set(P);
+			color cNew = CalcPoint(P);
 
- 			if (pXsym.b)	cNew = blendColor(cNew, CalcPoint(new xyz(xdMax-P.x,P.y,P.z)), ADD);
-			if (pYsym.b) 	cNew = blendColor(cNew, CalcPoint(new xyz(P.x,ydMax-P.y,P.z)), ADD);
-			if (pZsym.b) 	cNew = blendColor(cNew, CalcPoint(new xyz(P.x,P.y,zdMax-P.z)), ADD);
+ 			if (pXsym.b)	{ P.set(pSave); tP.set(xdMax-P.x,P.y,P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
+			if (pYsym.b) 	{ P.set(pSave); tP.set(P.x,ydMax-P.y,P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
+			if (pZsym.b) 	{ P.set(pSave); tP.set(P.x,P.y,zdMax-P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
 
 			float 								b = brightness(cNew)/100.;
 

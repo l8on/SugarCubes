@@ -349,8 +349,20 @@ public class APC40MidiInput extends SCMidiInput {
     }
   }
 
+  
+
+	private double Tap1 = 0;
+	private double  getNow() { return millis() + 1000*second() + 60*1000*minute() + 3600*1000*hour(); }
+	private boolean dbtwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
+
   protected void handleNoteOn(Note note) {
-    switch (note.getPitch()) {
+	int nPitch = note.getPitch(), nChan = note.getChannel();
+    switch (nPitch) {
+		
+	case 82:	EFF_boom	.trigger(); 				break;	// BOOM!
+	case 83:	EFF_flash	.trigger(); 				break;	// Flash
+		
+	case 90:	lx.tempo.trigger(); Tap1 = getNow(); 	break;	// dan's dirty tapping mechanism
     case 94: // right bank
       midiEngine.setFocusedDeck(1);
       break;
@@ -403,7 +415,17 @@ public class APC40MidiInput extends SCMidiInput {
   }
 
   protected void handleNoteOff(Note note) {
-    switch (note.getPitch()) {
+	int nPitch = note.getPitch(), nChan = note.getChannel();
+    switch (nPitch) {
+	case 90:
+		if (dbtwn(getNow() - Tap1,5000,300*1000)) {	// hackish tapping mechanism
+			double bpm = 32.*60000./(getNow()-Tap1);
+			while (bpm < 20) bpm*=2;
+			while (bpm > 40) bpm/=2;
+			lx.tempo.setBpm(bpm); lx.tempo.trigger(); Tap1=0; println("Tap Set - " + bpm + " bpm");
+		}
+		break;
+
     case 93: // rec
       if (releaseEffect != null) {
         if (releaseEffect.isMomentary()) {

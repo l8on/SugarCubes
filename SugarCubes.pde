@@ -26,7 +26,7 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
-    // Slee
+   // Slee
     new Flitters(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
@@ -41,7 +41,7 @@ LXPattern[] patterns(GLucose glucose) {
     new CubeEQ(glucose).setEligible(false),
     new PianoKeyPattern(glucose).setEligible(false),
 
-    // DanH
+     // DanH
     new Noise(glucose),
     new Play(glucose),
     new Pong(glucose),
@@ -122,12 +122,13 @@ LXTransition[] transitions(GLucose glucose) {
 }
 
 // Handles to globally triggerable effects 
-BoomEffect boom;
+BoomEffect 	EFF_boom;
+FlashEffect EFF_flash;
 
 LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
-    new FlashEffect(lx),
-    boom = new BoomEffect(glucose),
+    EFF_flash	= new FlashEffect(lx),
+    EFF_boom 	= new BoomEffect(glucose),
     new BlurEffect(glucose),
     new DesaturationEffect(lx),
     new ColorFuckerEffect(glucose),

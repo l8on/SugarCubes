@@ -1,6 +1,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 float 		xdMax,ydMax,zdMax;
 int			NumApcRows = 5, NumApcCols = 8;
+DGlobals 	DG = new DGlobals();
 
 boolean btwn  (int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  (double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
@@ -19,7 +20,6 @@ public class _DhP extends BasicParameter {
 	void 	Set			(double value) 			{ super.setValue(value);				}
 	void 	reset		() 						{ super.setValue(dflt);					}
 	float 	Val			() 						{ return getValuef();					}
-	boolean ZeroOrOne	()						{ return Val()==0 || Val() == 1;		}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class xyz {	float x,y,z;
@@ -63,22 +63,10 @@ public class xyz {	float x,y,z;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DGlobals {
-	
-	DGlobals() {
-		midiEngine.addListener(new MidiEngineListener() {
-			public void onFocusedDeck(int deckIndex) {
-				if (isFocused()) {
-					UpdateLights();
-					SetText();
-				}
-			}
-		});
-	}
-	
 	boolean		bInit			= false;
 	MidiOutput 	APCOut			= null;
 	MidiInput	APCIn			= null,		OxygenIn		= null;
-	DPat		CurPat			= null,		NextPat			= null;
+	DPat		CurPat			= null;//	NextPat			= null;
 	boolean 	_XSym			= false,	_YSym			= false,
 				_ZSym			= false,	_RSym			= false;
 	String		Text1 			= "",		Text2 			= "";
@@ -101,21 +89,15 @@ public class DGlobals {
 	float	_Spark		()						{ return Sliders[6]; }
 	float	_Wiggle		()						{ return Sliders[7]; }
 
-	boolean	isFocused	() {
-		return CurPat == midiEngine.getFocusedDeck().getActivePattern();
-	}
-
 	void	Init		() {
 		if (bInit) return; bInit=true;
-	    for (MidiOutputDevice output : RWMidi.getOutputDevices()) {
-			if (APCOut == null && output.toString().contains("APC")) APCOut = output.createOutput();
-		}
+	    for (MidiOutputDevice output : RWMidi.getOutputDevices()) { if (APCOut == null && output.toString().contains("APC")) APCOut = output.createOutput(); }
+		for (MidiInputDevice  input  : RWMidi.getInputDevices ()) { if (input.toString().contains("APC")) input.createInput (this); }
 	}
 
 	void SetText()
 	{
 		if (!isFocused()) return;
-		
 		Text1 = ""; Text2 = "";
 		Text1  += " XSym:  " + (_XSym ? "ON" : "OFF") + "    ";
 		Text1  += " YSym:  " + (_YSym ? "ON" : "OFF") + "    ";
@@ -132,26 +114,16 @@ public class DGlobals {
 		uiDebugText.setText(Text1, Text2);
 	}
 
-	public boolean 	controllerChangeReceived(rwmidi.Controller cc) {
-		if (cc.getCC() == 7 && btwn(cc.getChannel(),0,7)) {
-			Sliders[cc.getChannel()] = 1.*cc.getValue()/127.;
-			return true;
-		}
-		//else { println(cc.getCC() + " " + cc.getChannel() + " " + cc.getValue()); }
-		return false;
-	}
-
-	void	Deactivate (DPat p) { if (p == CurPat) { uiDebugText.setText(""); CurPat = NextPat; } NextPat = null; }
+	boolean	isFocused  () 		{ return CurPat != null && CurPat == midiEngine.getFocusedDeck().getActivePattern(); 				}	
+	void	Deactivate (DPat p) { if (p != CurPat) return; uiDebugText.setText(""); CurPat = null;				}
 	void	Activate   (DPat p) {
-		NextPat = CurPat; CurPat = p;
+		CurPat = p;
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
 		for (int i=0; i<p.paramlist.size(); i++) ((_DhP)p.paramlist.get(i)).reset();
 		UpdateLights();
 	}
 
 	void 	UpdateLights() {
-		if (!isFocused()) return;
-		
 		for (int i=0; i<NumApcRows	; i++) for (int j=0; j<NumApcCols; j++) SetLight(i, j, 0);
 		for (int i=48;i< 56		; i++) SetKnob(0, i, 0);
 		for (int i=16;i< 20		; i++) SetKnob(0, i, 0);
@@ -171,49 +143,48 @@ public class DGlobals {
 	
 	double Tap1 = 0;
 	double getNow() { return millis() + 1000*second() + 60*1000*minute() + 3600*1000*hour(); }
-	public boolean noteOffReceived(Note note) {
-		if (CurPat == null) return false;
-		int row = mapRow(note.getPitch()), col = note.getChannel();
-		boolean consumed = false;
+
+	void 	controllerChangeReceived(rwmidi.Controller cc) {
+		if (cc.getCC() == 7 && btwn(cc.getChannel(),0,7)) { Sliders[cc.getChannel()] = 1.*cc.getValue()/127.; }
+	}
+
+	void noteOffReceived(Note note) {
+		if (!isFocused()) return;
+		int row = DG.mapRow(note.getPitch()), col = note.getChannel();
 
 		if (row == 50 && col == 0 && btwn(getNow() - Tap1,5000,300*1000)) {	// hackish tapping mechanism
 			double bpm = 32.*60000./(getNow()-Tap1);
 			while (bpm < 20) bpm*=2;
 			while (bpm > 40) bpm/=2;
 			lx.tempo.setBpm(bpm); lx.tempo.trigger(); Tap1=0; println("Tap Set - " + bpm + " bpm");
-			consumed = true;
 		}
 
 		UpdateLights();
-		return consumed;
 	}
 
-	public boolean noteOnReceived (Note note) {
-		if (CurPat == null) return false;
+	void noteOnReceived (Note note) {
+		if (!isFocused()) return;
 		int row = mapRow(note.getPitch()), col = note.getChannel();
 		
-			 if (row == 50 && col == 0) 	{ lx.tempo.trigger(); Tap1 = getNow(); return true;	}
-		else if (row == 82 && col == 0) 	{ _XSym = !_XSym	; return true; }
-		else if (row == 83 && col == 0) 	{ _YSym = !_YSym	; return true; }
-		else if (row == 84 && col == 0) 	{ _ZSym = !_ZSym	; return true; }
-		else if (row == 85 && col == 0) 	{ _RSym = !_RSym	; return true; }
+			 if (row == 50 && col == 0) 	{ lx.tempo.trigger(); Tap1 = getNow(); 	}
+		else if (row == 82 && col == 0) 	_XSym = !_XSym	;
+		else if (row == 83 && col == 0) 	_YSym = !_YSym	;
+		else if (row == 84 && col == 0) 	_ZSym = !_ZSym	;
+		else if (row == 85 && col == 0) 	_RSym = !_RSym	;
 		else {
 			for (int i=0; i<CurPat.picks.size(); i++) { Pick P = (Pick)CurPat.picks.get(i);
 				if (!btwn(row,P.StartRow,P.EndRow)							) continue;
 				if (!btwn(col,0,NumApcCols-1) 								) continue;
 				if (!btwn((row-P.StartRow)*NumApcCols + col,0,P.NumPicks-1)	) continue;
-				P.CurRow=row; P.CurCol=col; return true;
+				P.CurRow=row; P.CurCol=col; return;
 			}
 			//println(row + " " + col); 
 		}
-		return false;
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DPat extends SCPattern
 {
-	DGlobals 	DG = new DGlobals();
-	
 	ArrayList 	picks	 	= new ArrayList();
 	ArrayList 	paramlist 	= new ArrayList();
 	int			nMaxRow  	= 0;
@@ -231,9 +202,11 @@ public class DPat extends SCPattern
 															(sqrt(v1.minus(c).dot(v1.minus(c))) * sqrt(v2.minus(c).dot(v2.minus(c))) ) ));	}
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return color(0,0,0); 			}
-	boolean		IsActive()							{ return this == DG.CurPat;		}
-	void 		onInactive() 						{ DG.Deactivate(this); 	}
-	void 		onActive  () 						{ DG.Activate(this); 	}
+	boolean		IsActive()							{ return this == DG.CurPat;												}
+	boolean		IsFocused()							{ return this == midiEngine.getFocusedDeck().getActivePattern();		}
+	void 		onInactive() 						{ UpdateState(); }
+	void 		onActive  () 						{ UpdateState(); }
+	void 		UpdateState() 						{ if (IsFocused() != IsActive()) { if (IsFocused()) DG.Activate(this); else DG.Deactivate(this); } }
 
 	_DhP addParam(String label, double value) {
 		_DhP P = new _DhP(label, value);		
@@ -263,35 +236,20 @@ public class DPat extends SCPattern
 		xyzdMax 	=  new xyz(xdMax,ydMax,zdMax);
 		xyzMid		=  new xyz(xdMax/2, ydMax/2, zdMax/2);
 	}
-	
-	public boolean noteOnReceived(Note note) {
-		return DG.noteOnReceived(note);
-	}
-	
-	public boolean noteOffReceived(Note note) {
-		return DG.noteOffReceived(note);
-	}
-	
-	public boolean controllerChangeReceived(rwmidi.Controller cc) {
-		return DG.controllerChangeReceived(cc);
-	}
 
 	void run(double deltaMs)
 	{
+		UpdateState();
 		NoiseMove   	+= deltaMs;
 		StartRun		(deltaMs);
 		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05;
 		xyz P 			= new xyz();
 		float modhue  	= DG._ModHue  ()==0 ? 0 : DG._ModHue  ()*360;
 		float fSharp 	= 1/(1.01-pSharp.Val());
-
 		DG.SetText();
 		nPoint 	= 0;
 		for (Point p : model.points) 	{ nPoint++;
-			if (!IsActive()) { colors[p.index] = color(0,0,0); continue; }
-
 			P.set(p);
-
 			if (DG._Spark () > 0) P.y += DG._Spark () * (noise(P.x,P.y+NoiseMove/30  ,P.z)*ydMax - ydMax/2.);
 			if (DG._Wiggle() > 0) P.y += DG._Wiggle() * (noise(P.x/(xdMax*.3)-NoiseMove/1500.) - .5) * (ydMax/2.);
 

@@ -22,7 +22,7 @@
  * If you're an artist, create a new tab in the Processing environment with
  * your name. Implement your classes there, and add them to the list below.
  */ 
- 
+
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
@@ -121,10 +121,13 @@ LXTransition[] transitions(GLucose glucose) {
   };
 }
 
+// Handles to globally triggerable effects 
+BoomEffect boom;
+
 LXEffect[] effects(GLucose glucose) {
   return new LXEffect[] {
     new FlashEffect(lx),
-    new BoomEffect(glucose),
+    boom = new BoomEffect(glucose),
     new BlurEffect(glucose),
     new DesaturationEffect(lx),
     new ColorFuckerEffect(glucose),

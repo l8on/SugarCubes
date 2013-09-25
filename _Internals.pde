@@ -410,7 +410,10 @@ void keyPressed() {
     case '=':
     case '+':
       frameRate(++targetFramerate);
-      break;      
+      break; 
+    case 'b':
+      boom.trigger();
+      break;    
     case 'd':
       if (!midiEngine.isQwertyEnabled()) {
         debugMode = !debugMode;

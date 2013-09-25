@@ -102,6 +102,10 @@ void setup() {
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
   
+  // MIDI devices
+  midiEngine = new MidiEngine();
+  logTime("Setup MIDI devices");
+
   // Set the patterns
   Engine engine = lx.engine;
   engine.setPatterns(patterns = _patterns(glucose));
@@ -121,10 +125,6 @@ void setup() {
   }
   mappingTool = new MappingTool(glucose, pandaMappings);
   logTime("Built PandaDriver");
-
-  // MIDI devices
-  midiEngine = new MidiEngine();
-  logTime("Setup MIDI devices");
 
   // Build overlay UI
   debugUI = new DebugUI(pandaMappings);

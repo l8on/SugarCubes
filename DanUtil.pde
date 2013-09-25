@@ -17,8 +17,8 @@ public class Pick {
 public class _DhP extends BasicParameter {
 	double  dflt;
 	_DhP	(String label, double value) 		{ super(label,value); dflt=value;		}
-	void 	Set			(double value) 			{ super.updateValue(value);				}
-	void 	reset		() 						{ super.updateValue(dflt);				}
+	void 	Set			(double value) 			{ super.setValue(value);				}
+	void 	reset		() 						{ super.setValue(dflt);					}
 	float 	Val			() 						{ return getValuef();					}
 	boolean ZeroOrOne	()						{ return Val()==0 || Val() == 1;		}
 }

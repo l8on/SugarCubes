@@ -29,33 +29,31 @@ public class xyz {	float x,y,z;
 			xyz(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
 	void	set(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
 	void	set(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
-	float	distance(xyz b)					{return dist(x,y,z,b.x,b.y,b.z); 	 }
-	float	dot     (xyz b)					{return x*b.x + y*b.y + z*b.z; 		 }
-	xyz		minus   (xyz b)					{return new xyz(x-b.x,y-b.y,z-b.z);  }
-	xyz		plus    (xyz b)					{return new xyz(x+b.x,y+b.y,z+b.z);  }
-	xyz		plus	(float b)				{return new xyz(x+b  ,y+b  ,z+b  );  }
-	xyz		over	(xyz b)					{return new xyz(x/b.x,y/b.y,z/b.z);  }
-	xyz		times	(float b)				{return new xyz(x*b  ,y*b  ,z*b  );  }
+	float	distance(xyz b)					{return dist(x,y,z,b.x,b.y,b.z); 	 	}
+	float	dot     (xyz b)					{return x*b.x + y*b.y + z*b.z; 		 	}
+	xyz		minus   (xyz b)					{return new xyz(x-b.x,y-b.y,z-b.z);  	}
+	xyz		plus    (xyz b)					{return new xyz(x+b.x,y+b.y,z+b.z);  	}
+	xyz		plus	(float b)				{return new xyz(x+b  ,y+b  ,z+b  );  	}
+	xyz		over	(xyz b)					{return new xyz(x/b.x,y/b.y,z/b.z);  	}
+	xyz		times	(float b)				{return new xyz(x*b  ,y*b  ,z*b  );  	}
+	boolean isZero	()						{return x==0 && y==0 && z==0;			}
 
-	xyz		RotateX	(xyz o, float a) 		{ return new xyz (	x,
-																cos(a)*(y-o.y) - sin(a)*(z-o.z) + o.y,
-																sin(a)*(y-o.y) + cos(a)*(z-o.z) + o.z);		}
-	
-	xyz		RotateY	(xyz o, float a) 		{ return new xyz (	cos(a)*(x-o.x) - sin(a)*(z-o.z) + o.x,
-																y,
-																sin(a)*(x-o.x) + cos(a)*(z-o.z) + o.z);		}
-	
-	xyz		RotateZ	(xyz o, float a) 		{ return new xyz (	cos(a)*(x-o.x) - sin(a)*(y-o.y) + o.x,
-																sin(a)*(x-o.x) + cos(a)*(y-o.y) + o.y,
-																z	);										}
-	
+	void	RotateZ	  (xyz o, float nSin, float nCos) {
+		float nX = nCos*(x-o.x) - nSin*(y-o.y) + o.x;
+		float nY = nSin*(x-o.x) + nCos*(y-o.y) + o.y;
+		x = nX; y = nY;
+	}
 
-	void	RotateXYZ (xyz o, xyz t, xyz tsin, xyz tcos) {
-					  {	x -= o.x; y -= o.y; z -= o.z; }
- 		if (t.x != 0) { y = y*tcos.x - z*tsin.x; z = y*tsin.x + z*tcos.x; }
-		if (t.y != 0) { z = z*tcos.y - x*tsin.y; x = z*tsin.y + x*tcos.y; }
-		if (t.z != 0) { x = x*tcos.z - y*tsin.z; y = x*tsin.z + y*tcos.z; }
-					  { x += o.x; y += o.y; z += o.z; }
+	void	RotateX	  (xyz o, float nSin, float nCos) {
+		float nY = nCos*(y-o.y) - nSin*(z-o.z) + o.y;
+		float nZ = nSin*(y-o.y) + nCos*(z-o.z) + o.z;
+		y = nY; z = nZ;
+	}
+
+	void	RotateY	  (xyz o, float nSin, float nCos) {
+		float nZ = nCos*(z-o.z) - nSin*(x-o.x) + o.z;
+		float nX = nSin*(z-o.z) + nCos*(x-o.x) + o.x;
+		z = nZ; x = nX;
 	}
 
 	xyz		setRand	()						{ return new xyz ( random(xdMax), random(ydMax), random(zdMax)); 		}
@@ -101,7 +99,7 @@ public class DGlobals {
 		for (MidiInputDevice  input  : RWMidi.getInputDevices ()) {
 			if (input.toString().contains("APC")) input.createInput (this);
 		}
-	}	
+	}
 
 	void SetText()
 	{
@@ -130,7 +128,7 @@ public class DGlobals {
 
 		//else { println(cc.getCC() + " " + cc.getChannel() + " " + cc.getValue()); }
 	}
-	
+
 	void	Deactivate (DPat p) { if (p == CurPat) { uiDebugText.setText(""); CurPat = NextPat; } NextPat = null; }
 	void	Activate   (DPat p) {
 		NextPat = CurPat; CurPat = p;

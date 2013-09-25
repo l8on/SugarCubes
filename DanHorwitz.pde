@@ -30,9 +30,14 @@ public class Pong extends DPat {
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class NDat {
-	float xz, yz, zz, hue, sat, speed, angle, den;
-	float xoff,yoff,zoff;
-	NDat (float _hue, float _sat, float _xz, float _yz, float _zz, float _den, float _speed, float _angle) {
+	float 	xz, yz, zz, hue, sat, speed, angle, den;
+	float	xoff,yoff,zoff;
+	float	sinAngle, cosAngle;
+	boolean isActive;
+	NDat 		  () { isActive=false; }
+	boolean	Active() { return isActive; }
+	void	set 	(float _hue, float _sat, float _xz, float _yz, float _zz, float _den, float _speed, float _angle) {
+		isActive = true;
 		hue=_hue; sat=_sat; xz=_xz; yz=_yz; zz =_zz; den=_den; speed=_speed; angle=_angle;
 		xoff = random(100e3); yoff = random(100e3); zoff = random(100e3);
 	}
@@ -40,14 +45,14 @@ public class NDat {
 
 public class Noise extends DPat
 {
-	int 		CurAnim = -1, numAnims = 6;
-	float 		zTime 	= random(10000), zTheta=0;
-	float		rtime	= 0, ttime	= 0, transAdd=0;
+	int			CurAnim, iSymm;
 	int 		XSym=1,YSym=2,RadSym=3;
-	int			iSymm;
-	ArrayList 	noises 	= new ArrayList();
+	float 		zTime 	= random(10000), zTheta=0, zSin, zCos;
+	float		rtime	= 0, ttime	= 0, transAdd=0;
 	_DhP 		pSpeed , pDensity, pRotZ;
 	Pick 		pChoose, pSymm;
+	int			_ND = 4;
+	NDat		N[] = new NDat[_ND];
 
 	Noise(GLucose glucose) {
 		super(glucose);
@@ -55,6 +60,7 @@ public class Noise extends DPat
 		pDensity= addParam("Dens" 	 , .5);
 		pSymm 	= addPick("Symmetry" , 0, 4, new String[] {"None", "X", "Y", "Radial"}	);
 		pChoose = addPick("Animation", 1, 6, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark"}	);
+		for (int i=0; i<_ND; i++) N[i] = new NDat();
 	}
 
 	void StartRun(double deltaMs) {
@@ -63,42 +69,55 @@ public class Noise extends DPat
 		rtime	+= deltaMs;
 		iSymm	 = pSymm.Cur();
 		transAdd = 1*(1 - constrain(rtime - ttime,0,1000)/1000);
+		zSin	= sin(zTheta);
+		zCos	= cos(zTheta);
 
 		if (pChoose.Cur() != CurAnim) {
-			noises.clear(); CurAnim = pChoose.Cur(); ttime = rtime;
+			CurAnim = pChoose.Cur(); ttime = rtime;
+			pRotZ		.reset();	zTheta 		= 0;
+			pDensity	.reset();	pSpeed		.reset();	
+			for (int i=0; i<_ND; i++) { N[i].isActive = false; }
+			
 			switch(CurAnim) {
 			//                          hue sat xz  yz  zz  den mph angle
-			case 0: noises.add(new NDat(0  ,0  ,75 ,75 ,150,45 ,3  ,0  )); pSharp.Set(1 ); break; 	// drip
-			case 1: noises.add(new NDat(0  ,0  ,100,100,200,45 ,3  ,180)); pSharp.Set(0 ); break;	// clouds
-			case 2: noises.add(new NDat(0  ,0  ,2  ,400,2  ,20 ,3  ,0  )); pSharp.Set(.5); break;	// rain
-			case 3: noises.add(new NDat(40 ,1  ,100,100,200,10 ,1  ,180)); 
-					noises.add(new NDat(0  ,1  ,100,100,200,10 ,5  ,180)); pSharp.Set(0 ); break;	// fire 1
-			case 4: noises.add(new NDat(0  ,1  ,40 ,40 ,40 ,15 ,2.5,180));
-					noises.add(new NDat(20 ,1  ,40 ,40 ,40 ,15 ,4  ,0  ));
-					noises.add(new NDat(40 ,1  ,40 ,40 ,40 ,15 ,2  ,90 ));
-					noises.add(new NDat(60 ,1  ,40 ,40 ,40 ,15 ,3  ,-90)); pSharp.Set(.5); break; 	// machine
-			case 5: noises.add(new NDat(0  ,1  ,400,100,2  ,15 ,3  ,90 ));
-					noises.add(new NDat(20 ,1  ,400,100,2  ,15 ,2.5,0  ));
-					noises.add(new NDat(40 ,1  ,100,100,2  ,15 ,2  ,180));
-					noises.add(new NDat(60 ,1  ,100,100,2  ,15 ,1.5,270)); pSharp.Set(.5); break; 	// spark
+			case 0: N[0].set(0  ,0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.Set(1 ); break; 	// drip
+			case 1: N[0].set(0  ,0  ,100,100,200,45 ,3  ,180); pSharp.Set(0 ); break;	// clouds
+			case 2: N[0].set(0  ,0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.Set(.5); break;	// rain
+			case 3: N[0].set(40 ,1  ,100,100,200,10 ,1  ,180); 
+					N[1].set(0  ,1  ,100,100,200,10 ,5  ,180); pSharp.Set(0 ); break;	// fire 1
+			case 4: N[0].set(0  ,1  ,40 ,40 ,40 ,15 ,2.5,180);
+					N[1].set(20 ,1  ,40 ,40 ,40 ,15 ,4  ,0  );
+					N[2].set(40 ,1  ,40 ,40 ,40 ,15 ,2  ,90 );
+					N[3].set(60 ,1  ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.Set(.5); break; // machine
+			case 5: N[0].set(0  ,1  ,400,100,2  ,15 ,3  ,90 );
+					N[1].set(20 ,1  ,400,100,2  ,15 ,2.5,0  );
+					N[2].set(40 ,1  ,100,100,2  ,15 ,2  ,180);
+					N[3].set(60 ,1  ,100,100,2  ,15 ,1.5,270); pSharp.Set(.5); break; // spark
 			}
-		}
 
+			DG.UpdateLights();
+		}
+		
+		for (int i=0; i<_ND; i++) if (N[i].Active()) {
+			N[i].sinAngle = sin(radians(N[i].angle));
+			N[i].cosAngle = cos(radians(N[i].angle));
+		}
 	}
 
 	color CalcPoint(xyz P) {
 		color c = 0;
-		xyz v 	= P.RotateZ(xyzMid,zTheta);
-		if (iSymm == XSym && v.x > xdMax/2) v.x = xdMax-v.x;
-		if (iSymm == YSym && v.y > ydMax/2) v.y = ydMax-v.y;
+		P.RotateZ(xyzMid, zSin, zCos);
+		
+		if (iSymm == XSym && P.x > xdMax/2) P.x = xdMax-P.x;
+		if (iSymm == YSym && P.y > ydMax/2) P.y = ydMax-P.y;
 
-		for (int i=0;i<noises.size(); i++) {
-			NDat  n     = (NDat) noises.get(i);
-			float zx    = zTime * n.speed * sin(radians(n.angle)),
-				  zy    = zTime * n.speed * cos(radians(n.angle));
+		for (int i=0;i<_ND; i++) if (N[i].Active()) {
+			NDat  n     = N[i];
+			float zx    = zTime * n.speed * n.sinAngle,
+				  zy    = zTime * n.speed * n.cosAngle;
 			
-			float b     = (iSymm==RadSym ? noise(zTime*n.speed+n.xoff-Dist(v,xyzMid)/n.xz)
-										 : noise(v.x/n.xz+zx+n.xoff,v.y/n.yz+zy+n.yoff,v.z/n.zz+n.zoff))
+			float b     = (iSymm==RadSym ? noise(zTime*n.speed+n.xoff-Dist(P,xyzMid)/n.xz)
+										 : noise(P.x/n.xz+zx+n.xoff,P.y/n.yz+zy+n.yoff,P.z/n.zz+n.zoff))
 							*1.8;
 
 			b += 	n.den/100 -.4 + pDensity.Val() -1;
@@ -129,7 +148,7 @@ public class Play extends DPat
 	    pAmp  		= addParam("Amp" , .2);
 	    pRad		= addParam("Rad" 	, .1  		);
 		pTempoMult 	= addPick ("TMult"	, 0 , 6		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 0 , 5		, new String[] {"Bounce", "?", "Roll", "Quant", "Accel"	}	);
+		pTimePattern= addPick ("TPat"	, 0 , 5		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel"	}	);
 		pShape	 	= addPick ("Shape"	, 0 , 10	, new String[] {"Line", "Tap", "V", "RandV", "Pyramid",
 																	"Wings", "W2", "Sphere", "Cone", "Noise" } 	);
 		pForm	 	= addPick ("Form"	, 0 , 3		, new String[] {"Bar", "Volume", "Fade"					}	);
@@ -175,9 +194,11 @@ public class Play extends DPat
 	}
 
 	color CalcPoint(xyz Px) {
-		xyz V 		= 	new xyz();
-		xyz P 		= 	Px.setNorm();
-						P.RotateXYZ(xyzHalf, Theta, TSin, TCos);
+		xyz V 		= 			new xyz();
+		xyz P 		= 			Px.setNorm();
+		if (Theta.x != 0)		P.RotateX(xyzHalf, TSin.x, TCos.x);
+		if (Theta.y != 0)		P.RotateY(xyzHalf, TSin.y, TCos.y);
+		if (Theta.z != 0)		P.RotateZ(xyzHalf, TSin.z, TCos.z);
 
 		float mp	= min(P.x, P.z);
 		float yt 	= map(t,0,1,.5-a/2,.5+a/2);

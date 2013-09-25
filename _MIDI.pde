@@ -50,7 +50,8 @@ class MidiEngine {
       } else if (device.getName().contains("SLIDER/KNOB KORG")) {
         midiControllers.add(new KorgNanoKontrolMidiInput(device).setEnabled(true));
       } else {
-        midiControllers.add(new SCMidiInput(device));
+        boolean enabled = device.getName().contains("KEYBOARD KORG");
+        midiControllers.add(new SCMidiInput(device).setEnabled(enabled));
       }
     }
   }

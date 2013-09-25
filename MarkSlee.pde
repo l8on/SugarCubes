@@ -1,3 +1,82 @@
+class Flitters extends SCPattern {
+  
+  static final int NUM_FLITTERS = 6;
+  
+  class Flitter {
+       
+    Accelerator yPos;
+    TriangleLFO xPos = new TriangleLFO(0, model.xMax, random(8000, 19000));
+    
+    Flitter(int i) {
+      addModulator(xPos).setBasis(random(0, TWO_PI)).start();
+      addModulator(yPos = new Accelerator(0, 0, 0));
+    }
+    
+    void bounce(float midiVel) {
+      float v = 100 + 8*midiVel;
+      yPos.setSpeed(v, getAccel(v, 60 / lx.tempo.bpmf())).start();
+    }
+    
+    float getAccel(float v, float oneBeat) {
+      return -2*v / oneBeat;
+    }
+    
+    void run(double deltaMs) {
+      float flrLevel = flr.getValuef() * model.xMax/2.;
+      if (yPos.getValuef() < flrLevel) {
+        if (yPos.getVelocity() < -50) {
+          yPos.setValue(2*flrLevel-yPos.getValuef());
+          float v = -yPos.getVelocityf() * bounce.getValuef();
+          yPos.setSpeed(v, getAccel(v, 60 / lx.tempo.bpmf()));
+        } else {
+          yPos.setValue(flrLevel).stop();
+        }
+      }
+      float falloff = 130.f / (12 + blobSize.getValuef() * 36);
+      for (Point p : model.points) {
+        float d = dist(p.x, p.y, xPos.getValuef(), yPos.getValuef());
+        float b = constrain(130 - falloff*d, 0, 100);
+        if (b > 0) {
+          colors[p.index] = blendColor(colors[p.index], color(
+            (lx.getBaseHuef() + p.y*.5 + abs(model.cx - p.x) * .5) % 360,
+            max(0, 100 - .45*(p.y - flrLevel)),
+            b
+          ), ADD);
+        }
+      }
+    }
+  }
+  
+  final Flitter[] flitters = new Flitter[NUM_FLITTERS];
+  
+  final BasicParameter bounce = new BasicParameter("BNC", .8);
+  final BasicParameter flr = new BasicParameter("FLR", 0);
+  final BasicParameter blobSize = new BasicParameter("SIZE", 0.5);
+  
+  Flitters(GLucose glucose) {
+    super(glucose);
+    for (int i = 0; i < flitters.length; ++i) {
+      flitters[i] = new Flitter(i);
+    }
+    addParameter(bounce);
+    addParameter(flr);
+    addParameter(blobSize);
+  }
+  
+  public void run(double deltaMs) {
+    setColors(#000000);
+    for (Flitter f : flitters) {
+      f.run(deltaMs);
+    }
+  }
+  
+  public boolean noteOnReceived(Note note) {
+    int pitch = (note.getPitch() + note.getChannel()) % NUM_FLITTERS;
+    flitters[pitch].bounce(note.getVelocity());
+    return true;
+  }
+}
+
 class SpaceTime extends SCPattern {
 
   SinLFO pos = new SinLFO(0, 1, 3000);

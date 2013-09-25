@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 public class Pong extends DPat {
 	SinLFO x,y,z,dx,dy,dz; 
-	float cRad;	_DhP pSize;
+	float cRad;	DParam pSize;
 	Pick  pChoose;
 
 	Pong(GLucose glucose) {
@@ -49,7 +49,7 @@ public class Noise extends DPat
 	int 		XSym=1,YSym=2,RadSym=3;
 	float 		zTime 	= random(10000), zTheta=0, zSin, zCos;
 	float		rtime	= 0, ttime	= 0, transAdd=0;
-	_DhP 		pSpeed , pDensity, pRotZ;
+	DParam 		pSpeed , pDensity, pRotZ;
 	Pick 		pChoose, pSymm;
 	int			_ND = 4;
 	NDat		N[] = new NDat[_ND];
@@ -131,8 +131,8 @@ public class Noise extends DPat
 public class Play extends DPat
 {
 	int		nBeats	=  	0;
-	_DhP 	pAmp, pRad;
-	_DhP 	pRotX, pRotY, pRotZ;
+	DParam 	pAmp, pRad;
+	DParam	pRotX, pRotY, pRotZ;
 	xyz		Theta 	= new xyz();
 	xyz		TSin	= new xyz();
 	xyz		TCos	= new xyz();
@@ -147,8 +147,8 @@ public class Play extends DPat
 		pRotZ 		= addParam("RotZ", .5);
 	    pAmp  		= addParam("Amp" , .2);
 	    pRad		= addParam("Rad" 	, .1  		);
-		pTempoMult 	= addPick ("TMult"	, 0 , 6		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 0 , 5		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel"	}	);
+		pTempoMult 	= addPick ("TMult"	, 5 , 6		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
+		pTimePattern= addPick ("TPat"	, 5 , 6		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Rand"	}	);
 		pShape	 	= addPick ("Shape"	, 0 , 10	, new String[] {"Line", "Tap", "V", "RandV", "Pyramid",
 																	"Wings", "W2", "Sphere", "Cone", "Noise" } 	);
 		pForm	 	= addPick ("Form"	, 0 , 3		, new String[] {"Bar", "Volume", "Fade"					}	);
@@ -157,7 +157,7 @@ public class Play extends DPat
 	float 	t,a;
 	xyz		cPrev = new xyz(), cCur = new xyz(), cMid = new xyz(), cMidNorm;
 	float	LastBeat=3, LastMeasure=3;
-	int		CurRandTempo = 1;
+	int		CurRandTempo = 1, CurRandTPat = 1;
 
 	void StartRun(double deltaMs) {
 		t = lx.tempo.rampf();
@@ -167,20 +167,25 @@ public class Play extends DPat
 		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
 		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
 
-		if (t<LastMeasure) { CurRandTempo = int(random(4)); } LastMeasure = t;
+		if (t<LastMeasure) {
+			if (random(2) < 1) CurRandTempo = int(random(4));
+			if (random(2) < 1) CurRandTPat  = int(random(5));
+		} LastMeasure = t;
+			
+		int nTempo = pTempoMult	 .Cur(); if (nTempo == 5) nTempo = CurRandTempo;
+		int nTPat  = pTimePattern.Cur(); if (nTPat  == 5) nTPat  = CurRandTPat ;
 
-		switch (pTempoMult.Cur()) {
+		switch (nTempo) {
 			case 0: 	t = t;								break;
 			case 1: 	t = (t*2. )%1.;						break;
 			case 2: 	t = (t*4. )%1.;						break;
 			case 3: 	t = (t*8. )%1.;						break;
 			case 4: 	t = (t*16.)%1.;						break;
-			case 5:		t = (t*pow(2,CurRandTempo))%1.;		break;
 		}
 
 		if (t<LastBeat) { cPrev = cCur; cCur = cCur.setRand(); } LastBeat = t;
 
-		switch (pTimePattern.Cur()) {
+		switch (nTPat) {
 			case 0: 	t = sin(PI*t);						break;
 			case 1: 	t = norm(sin(2*PI*(t+PI/2)),-1,1);	break;
 			case 2: 	t = t; 								break;

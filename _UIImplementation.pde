@@ -483,16 +483,21 @@ class UIMidi extends UIWindow {
   private final UIToggleSet deckMode;
   private final UIButton logMode;
   
-  UIMidi(List<SCMidiInput> midiControllers, float x, float y, float w, float h) {
+  UIMidi(final MidiEngine midiEngine, float x, float y, float w, float h) {
     super("MIDI", x, y, w, h);
+
     // Processing compiler doesn't seem to get that list of class objects also conform to interface
     List<ScrollItem> scrollItems = new ArrayList<ScrollItem>();
-    for (SCMidiInput mc : midiControllers) {
+    for (SCMidiInput mc : midiEngine.getControllers()) {
       scrollItems.add(mc);
     }
     final UIScrollList scrollList;
     (scrollList = new UIScrollList(1, titleHeight, w-2, 100)).setItems(scrollItems).addToContainer(this);
-    (deckMode = new UIToggleSet(4, 130, 90, 20)).setOptions(new String[] { "A", "B" }).addToContainer(this);
+    (deckMode = new UIToggleSet(4, 130, 90, 20) {
+      protected void onToggle(String value) {
+        midiEngine.setFocusedDeck(value == "A" ? 0 : 1);
+      }
+    }).setOptions(new String[] { "A", "B" }).addToContainer(this);
     (logMode = new UIButton(98, 130, w-103, 20)).setLabel("LOG").addToContainer(this);
     
     SCMidiInputListener listener = new SCMidiInputListener() {
@@ -500,9 +505,15 @@ class UIMidi extends UIWindow {
         scrollList.redraw();
       }
     };
-    for (SCMidiInput mc : midiControllers) {
+    for (SCMidiInput mc : midiEngine.getControllers()) {
       mc.addListener(listener);
     }
+    
+    midiEngine.addListener(new MidiEngineListener() {
+      public void onFocusedDeck(int deckIndex) {
+        deckMode.setValue(deckIndex == 0 ? "A" : "B");
+      }
+    });
 
   }
   

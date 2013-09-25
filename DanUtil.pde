@@ -121,7 +121,6 @@ public class DGlobals {
 
 	void 	controllerChangeReceived(rwmidi.Controller cc) {
 		if (cc.getCC() == 7 && btwn(cc.getChannel(),0,7)) { Sliders[cc.getChannel()] = 1.*cc.getValue()/127.; }
-
 		else if (cc.getCC() == 15 && cc.getChannel() == 0) {
 			lx.engine.getDeck(1).getCrossfader().setValue( 1.*cc.getValue()/127.);
 		}
@@ -157,7 +156,6 @@ public class DGlobals {
 	
 	double Tap1 = 0;
 	double getNow() { return millis() + 1000*second() + 60*1000*minute() + 3600*1000*hour(); }
-
 	void noteOffReceived(Note note) {
 		if (CurPat == null) return;
 		int row = DG.mapRow(note.getPitch()), col = note.getChannel();

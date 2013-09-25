@@ -48,8 +48,7 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
-SCMidiInput midiQwertyKeys;
-SCMidiInput midiQwertyAPC;
+MidiEngine midiEngine;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -124,14 +123,7 @@ void setup() {
   logTime("Built PandaDriver");
 
   // MIDI devices
-  List<SCMidiInput> midiControllers = new ArrayList<SCMidiInput>();
-  midiControllers.add(midiQwertyKeys = new SCMidiInput(SCMidiInput.KEYS));
-  midiControllers.add(midiQwertyAPC = new SCMidiInput(SCMidiInput.APC));
-  for (MidiInputDevice device : RWMidi.getInputDevices()) {
-    boolean enableDevice = device.getName().contains("APC");
-    midiControllers.add(new SCMidiInput(device).setEnabled(enableDevice));
-  }
-  SCMidiDevices.initializeStandardDevices(glucose);
+  midiEngine = new MidiEngine();
   logTime("Setup MIDI devices");
 
   // Build overlay UI
@@ -144,7 +136,7 @@ void setup() {
     new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
-    uiMidi = new UIMidi(midiControllers, width-144, 332, 140, 158),
+    uiMidi = new UIMidi(midiEngine, width-144, 332, 140, 158),
     new UIOutput(width-144, 494, 140, 106),
     
     uiCrossfader = new UICrossfader(width/2-90, height-90, 180, 86),
@@ -167,6 +159,8 @@ void setup() {
   eyeY = midY + 70;
   eyeX = midX + eyeR*sin(eyeA);
   eyeZ = midZ + eyeR*cos(eyeA);
+  
+  // Add mouse scrolling event support
   addMouseWheelListener(new java.awt.event.MouseWheelListener() { 
     public void mouseWheelMoved(java.awt.event.MouseWheelEvent mwe) { 
       mouseWheel(mwe.getWheelRotation());
@@ -174,221 +168,6 @@ void setup() {
   
   println("Total setup: " + (millis() - startMillis) + "ms");
   println("Hit the 'p' key to toggle Panda Board output");
-}
-
-public interface SCMidiInputListener {
-  public void onEnabled(SCMidiInput controller, boolean enabled);
-}
-
-public class SCMidiInput extends AbstractScrollItem {
-  
-  public static final int MIDI = 0;
-  public static final int KEYS = 1;
-  public static final int APC = 2;
-  
-  private boolean enabled = false;
-  private final String name;
-  private final int mode;
-  private int octaveShift = 0;
-    
-  class NoteMeta {
-    int channel;
-    int number;
-    NoteMeta(int channel, int number) {
-      this.channel = channel;
-      this.number = number;
-    }
-  }
-  
-  final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();
-    
-  final List<SCMidiInputListener> listeners = new ArrayList<SCMidiInputListener>();
-  
-  public SCMidiInput addListener(SCMidiInputListener l) {
-    listeners.add(l);
-    return this;
-  }
-
-  public SCMidiInput removeListener(SCMidiInputListener l) {
-    listeners.remove(l);
-    return this;
-  }
-  
-  SCMidiInput(MidiInputDevice d) {
-    mode = MIDI;
-    d.createInput(this);
-    name = d.getName().replace("Unknown vendor","");
-  }
-  
-  SCMidiInput(int mode) {
-    this.mode = mode;
-    switch (mode) {
-      case APC:
-        name = "QWERTY (APC Mode)";
-        mapAPC();
-        break;
-      default:
-      case KEYS:
-        name = "QWERTY (Key Mode)";
-        mapKeys();
-        break;
-    }
-  }
-  
-  private void mapAPC() {
-    mapNote('1', 0, 53);
-    mapNote('2', 1, 53);
-    mapNote('3', 2, 53);
-    mapNote('4', 3, 53);
-    mapNote('5', 4, 53);
-    mapNote('6', 5, 53);
-    mapNote('q', 0, 54);
-    mapNote('w', 1, 54);
-    mapNote('e', 2, 54);
-    mapNote('r', 3, 54);
-    mapNote('t', 4, 54);
-    mapNote('y', 5, 54);
-    mapNote('a', 0, 55);
-    mapNote('s', 1, 55);
-    mapNote('d', 2, 55);
-    mapNote('f', 3, 55);
-    mapNote('g', 4, 55);
-    mapNote('h', 5, 55);
-    mapNote('z', 0, 56);
-    mapNote('x', 1, 56);
-    mapNote('c', 2, 56);
-    mapNote('v', 3, 56);
-    mapNote('b', 4, 56);
-    mapNote('n', 5, 56);
-    registerKeyEvent(this);
-  }
-  
-  private void mapKeys() {
-    int note = 48;
-    mapNote('a', 1, note++);
-    mapNote('w', 1, note++);
-    mapNote('s', 1, note++);
-    mapNote('e', 1, note++);
-    mapNote('d', 1, note++);
-    mapNote('f', 1, note++);
-    mapNote('t', 1, note++);
-    mapNote('g', 1, note++);
-    mapNote('y', 1, note++);
-    mapNote('h', 1, note++);
-    mapNote('u', 1, note++);
-    mapNote('j', 1, note++);
-    mapNote('k', 1, note++);
-    mapNote('o', 1, note++);
-    mapNote('l', 1, note++);
-    registerKeyEvent(this);
-  }
-  
-  void mapNote(char ch, int channel, int number) {
-    keyToNote.put(ch, new NoteMeta(channel, number));
-  }
-  
-  public String getLabel() {
-    return name;
-  }
-  
-  public void keyEvent(KeyEvent e) {
-    if (!enabled) {
-      return;
-    }
-    char c = Character.toLowerCase(e.getKeyChar());
-    NoteMeta nm = keyToNote.get(c);
-    if (nm != null) {
-      switch (e.getID()) {
-        case KeyEvent.KEY_PRESSED:
-          noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number + octaveShift*12, 127));
-          break;
-        case KeyEvent.KEY_RELEASED:
-          noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number + octaveShift*12, 0));
-          break;
-      }
-    }
-    if ((mode == KEYS) && (e.getID() == KeyEvent.KEY_PRESSED)) {
-      switch (c) {
-        case 'z':
-          octaveShift = constrain(octaveShift-1, -4, 4);
-          break;
-        case 'x':
-          octaveShift = constrain(octaveShift+1, -4, 4);
-          break;
-      }
-    }
-  }
-  
-  public boolean isEnabled() {
-    return enabled;
-  }
-  
-  public boolean isSelected() {
-    return enabled;
-  }
-  
-  public void onMousePressed() {
-    setEnabled(!enabled);
-  }
-  
-  public SCMidiInput setEnabled(boolean enabled) {
-    if (enabled != this.enabled) {
-      this.enabled = enabled;
-      for (SCMidiInputListener l : listeners) {
-        l.onEnabled(this, enabled);
-      }
-    }
-    return this;
-  }
-  
-  private SCPattern getFocusedPattern() {
-    Engine.Deck focusedDeck = (uiMidi != null) ? uiMidi.getFocusedDeck() : lx.engine.getDefaultDeck();
-    return (SCPattern) focusedDeck.getActivePattern();
-  }
-  
-  private boolean logMidi() {
-    return (uiMidi != null) && uiMidi.logMidi();
-  }
-  
-  void programChangeReceived(ProgramChange pc) {
-    if (!enabled) {
-      return;
-    }
-    if (logMidi()) {
-      println(getLabel() + " :: Program Change :: " + pc.getNumber());
-    }
-  }
-  
-  void controllerChangeReceived(rwmidi.Controller cc) {
-    if (!enabled) {
-      return;
-    }
-    if (logMidi()) {
-      println(getLabel() + " :: Controller :: " + cc.getCC() + ":" + cc.getValue());
-    }
-    getFocusedPattern().controllerChangeReceived(cc);
-  }
-
-  void noteOnReceived(Note note) {
-    if (!enabled) {
-      return;
-    }
-    if (logMidi()) {
-      println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
-    }
-    getFocusedPattern().noteOnReceived(note);
-  }
-
-  void noteOffReceived(Note note) {
-    if (!enabled) {
-      return;
-    }
-    if (logMidi()) {
-      println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
-    }
-    getFocusedPattern().noteOffReceived(note);
-  }
-
 }
 
 /**
@@ -633,13 +412,13 @@ void keyPressed() {
       frameRate(++targetFramerate);
       break;      
     case 'd':
-      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
+      if (!midiEngine.isQwertyEnabled()) {
         debugMode = !debugMode;
         println("Debug output: " + (debugMode ? "ON" : "OFF"));
       }
       break;
     case 'm':
-      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
+      if (!midiEngine.isQwertyEnabled()) {
         mappingMode = !mappingMode;
         uiPatternA.setVisible(!mappingMode);
         uiMapping.setVisible(mappingMode);
@@ -661,7 +440,7 @@ void keyPressed() {
       }
       break;
     case 'u':
-      if (!midiQwertyAPC.isEnabled() && !midiQwertyKeys.isEnabled()) {
+      if (!midiEngine.isQwertyEnabled()) {
         uiOn = !uiOn;
       }
       break;

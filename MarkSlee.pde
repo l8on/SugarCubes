@@ -421,13 +421,15 @@ public class PianoKeyPattern extends SCPattern {
     return base[index % base.length];
   }
     
-  public void noteOnReceived(Note note) {
+  public boolean noteOnReceived(Note note) {
     LinearEnvelope env = getEnvelope(note.getPitch());
     env.setEndVal(min(1, env.getValuef() + (note.getVelocity() / 127.)), getAttackTime()).start();
+    return true;
   }
   
-  public void noteOffReceived(Note note) {
+  public boolean noteOffReceived(Note note) {
     getEnvelope(note.getPitch()).setEndVal(0, getReleaseTime()).start();
+    return true;
   }
   
   public void run(double deltaMs) {

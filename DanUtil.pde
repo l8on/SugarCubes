@@ -1,10 +1,27 @@
 //----------------------------------------------------------------------------------------------------------------------------------
-float 		xdMax,ydMax,zdMax;
+xyz			mMax, mCtr, mHalf;
 int			NumApcRows = 5, NumApcCols = 8;
 DGlobals 	DG = new DGlobals();
 
-boolean btwn  (int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
-boolean btwn  (double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
+boolean btwn  	(int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
+boolean btwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
+float	interp 	(float a, float b, float c) { return (1-a)*b + a*c; }
+float	randctr	(float a) { return random(a) - a*.5; }
+float	min		(float a, float b, float c, float d) { return min(min(a,b),min(c,d)); }
+
+float 	distToSeg	(float x, float y, float x1, float y1, float x2, float y2) {
+	float A 			= x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
+	float dot 			= A * C + B * D, len_sq	= C * C + D * D;
+	float xx, yy,param 	= dot / len_sq;
+	
+	if (param < 0 || (x1 == x2 && y1 == y2)) { 	xx = x1; yy = y1; }
+	else if (param > 1) {						xx = x2; yy = y2; }
+	else {										xx = x1 + param * C;
+												yy = y1 + param * D; }
+	float dx = x - xx, dy = y - yy;
+	return sqrt(dx * dx + dy * dy);
+}
+
 
 public class Pick {
 	int 	NumPicks, Default	,	CurRow	, CurCol	,
@@ -51,19 +68,22 @@ public class DParam extends BasicParameter {
 public class xyz {	float x,y,z;
 			xyz() {x=y=z=0;}
 			xyz(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
+			xyz(xyz p					  ) {set(p);				 }
 			xyz(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
 	void	set(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
 	void	set(xyz p					  ) {x=p.x	; y=p.y ; z=p.z ;}
 	void	set(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
 
-	void	zoomX	(float zx) 				{x = x*zx - xdMax*(zx-1)/2;				}
-	void	zoomY	(float zy) 				{y = y*zy - ydMax*(zy-1)/2;				}
+	void	zoomX	(float zx) 				{x = x*zx - mMax.x*(zx-1)/2;				}
+	void	zoomY	(float zy) 				{y = y*zy - mMax.y*(zy-1)/2;				}
 
 	float	distance(xyz b)					{return dist(x,y,z,b.x,b.y,b.z); 	 	}
+	float	distance(float _x, float _y)	{return dist(x,y,_x,_y); 	 			}
 	float	dot     (xyz b)					{return x*b.x + y*b.y + z*b.z; 		 	}
 	void	add		(xyz b)					{x += b.x; y += b.y; z += b.z;			}
 	void	add		(float b)				{x += b  ; y += b  ; z += b  ;			}
 	void	subtract(xyz b)					{x -= b.x; y -= b.y; z -= b.z;			}
+	void	scale	(float b)				{x *= b  ; y *= b  ; z *= b  ;			}
 
 	void	RotateZ	  (xyz o, float nSin, float nCos) {
 		float nX = nCos*(x-o.x) - nSin*(y-o.y) + o.x;
@@ -83,11 +103,8 @@ public class xyz {	float x,y,z;
 		z = nZ; x = nX;
 	}
 
-	void	setRand	()						{ x = random(xdMax); y = random(ydMax); z = random(zdMax); 	}
-	void	setNorm	() 						{ x /= xdMax; y /= ydMax; z /= zdMax; 						}
-	
-	float	interp (float a, float b, float c) { return (1-a)*b + a*c; }
-
+	void	setRand	()						{ x = random(mMax.x); y = random(mMax.y); z = random(mMax.z); 	}
+	void	setNorm	() 						{ x /= mMax.x; y /= mMax.y; z /= mMax.z; 						}
 	void	interpolate(float i, xyz d)		{ x = interp(i,x,d.x); y = interp(i,y,d.y); z = interp(i,z,d.z); }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -166,7 +183,7 @@ public class DGlobals {
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<CurPat.picks.size(); i++) if (GetPick(i).set(row, col)) 	  return;
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, true)) return;
-		println("row: " + row + "  col:   " + col);
+		//println("row: " + row + "  col:   " + col);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -179,19 +196,16 @@ public class DPat extends SCPattern
 	float		zSpinHue 	= 0;
 	float		LastQuant	= -1, LastJog = -1;
 	int 		nPoint	, nPoints;
-	xyz			xyzHalf 	= new xyz(.5,.5,.5),
-				xyzdMax		= new xyz(),
-				xyzMid		= new xyz(),
-				xyzJog		= new xyz(0,0,0);
+	xyz			xyzJog = new xyz(), vT1 = new xyz(), vT2 = new xyz();
+	xyz			modmin;
 	
 	float		NoiseMove	= random(10000);
 	DParam		pSharp, pQuantize, pSaturate;
-	DBool		pXsym, pYsym, pZsym, pJog;
+	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return int(100*constrain(a,0,1));			}
-	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{	v1.subtract(c); v2.subtract(c);
-														return degrees( acos ( v1.dot(v2) /
-															(sqrt(v1.dot(v1)) * sqrt(v2.dot(v2)) ) ));	}
+	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ vT1.set(v1); vT2.set(v2); vT1.subtract(c); vT2.subtract(c);
+														return degrees( acos ( vT1.dot(vT2) / (sqrt(vT1.dot(vT1)) * sqrt(vT2.dot(vT2)) ) ));	}
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return color(0,0,0); 			}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
@@ -199,6 +213,7 @@ public class DPat extends SCPattern
 	void 		onInactive() 						{ UpdateState(); }
 	void 		onActive  () 						{ UpdateState(); }
 	void 		UpdateState() 						{ if (IsFocused() != IsActive()) { if (IsFocused()) DG.Activate(this); else DG.Deactivate(this); } }
+	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD);						}
 
 	DParam		addParam(String label, double value) {
 		DParam P = new DParam(label, value);
@@ -215,22 +230,22 @@ public class DPat extends SCPattern
 
 	DPat(GLucose glucose) {
 		super(glucose);
+		pSharp		=	addParam("Shrp",  0 );
+		pQuantize	=	addParam("Qunt",  0 );
+		pSaturate	=	addParam("Sat" ,  .5);
+		nPoints 	=	model.points.size();
+		pXsym 		=	new DBool("X-SYM", false, 49, 0);	bools.add(pXsym	);
+		pYsym 		=	new DBool("Y-SYM", false, 49, 1);	bools.add(pYsym	);
+		pRsym 		=	new DBool("R-SYM", false, 49, 2);	bools.add(pRsym );
+		pXdup		=	new DBool("X-DUP", false, 49, 3);	bools.add(pXdup );
+		pJog		=	new DBool("JOGGER",false, 49, 4);	bools.add(pJog	);
+		modmin		=	new xyz(model.xMin, model.yMin, model.zMin);
+		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
+		mCtr		= 	new xyz(mMax); mCtr.scale(.5);
+		mHalf		= 	new xyz(.5,.5,.5);
+		//println (model.xMin + " " + model.yMin + " " +  model.zMin);
+		//println (model.xMax + " " + model.yMax + " " +  model.zMax);
 		DG.Init();
-		pSharp		=  addParam("Shrp",  0 );
-		pQuantize	=  addParam("Qunt",  0 );
-		pSaturate	=  addParam("Sat" ,  .5);
-		
-		nPoints 	=  model.points.size();
-		xdMax 		=  model.xMax;
-		ydMax 		=  model.yMax;
-		zdMax 		=  model.zMax;
-		xyzdMax 	=  new xyz(xdMax,ydMax,zdMax);
-		xyzMid		=  new xyz(xdMax/2, ydMax/2, zdMax/2);
-		
-		bools.add(pXsym 	= new DBool("X-SYM", false, 49, 0));
-		bools.add(pYsym 	= new DBool("Y-SYM", false, 49, 1));
-		bools.add(pZsym 	= new DBool("Z-SYM", false, 49, 2));
-		bools.add(pJog		= new DBool("JOGGER",false, 49, 3));
 	}
 
 	void run(double deltaMs)
@@ -252,31 +267,27 @@ public class DPat extends SCPattern
 			float f = LastQuant; LastQuant = tRamp; if (tRamp > f) return;
 		}
 	
-	
 		if (pJog.b) {
 			float tRamp	= (lx.tempo.rampf() % .25);
-			if (tRamp < LastJog) 
-				xyzJog.set(random(xdMax*.2)-.1,
-						   random(ydMax*.2)-.1,
-						   random(zdMax*.2)-.1);
+			if (tRamp < LastJog) xyzJog.set(randctr(mMax.x*.2), randctr(mMax.y*.2), randctr(mMax.z*.2));
 			LastJog = tRamp; 
 		}
 
 		for (Point p : model.points) 	{ nPoint++;
 			P.set(p);
+			P.subtract(modmin);
 			if (pJog.b)	P.add(xyzJog);
-			if (DG._Spark () > 0) 	P.y += DG._Spark () * (noise(P.x,P.y+NoiseMove/30  ,P.z)*ydMax - ydMax/2.);
-			if (DG._Wiggle() > 0) 	P.y += DG._Wiggle() * (noise(P.x/(xdMax*.3)-NoiseMove/1500.) - .5) * (ydMax/2.);
+			if (DG._Spark () > 0) 	P.y += DG._Spark () * (noise(P.x,P.y+NoiseMove/30  ,P.z)*mMax.y - mMax.y/2.);
+			if (DG._Wiggle() > 0) 	P.y += DG._Wiggle() * (noise(P.x/(mMax.x*.3)-NoiseMove/1500.) - .5) * (mMax.y/2.);
 
-			color cOld = colors[p.index]; pSave.set(P);
-			color cNew = CalcPoint(P);
-
- 			if (pXsym.b)	{ P.set(pSave); tP.set(xdMax-P.x,P.y,P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
-			if (pYsym.b) 	{ P.set(pSave); tP.set(P.x,ydMax-P.y,P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
-			if (pZsym.b) 	{ P.set(pSave); tP.set(P.x,P.y,zdMax-P.z); cNew = blendColor(cNew, CalcPoint(tP), ADD); }
+			color cNew, cOld = colors[p.index];
+							{ tP.set(P); 				  					cNew = CalcPoint(tP);							}
+ 			if (pXsym.b)	{ tP.set(mMax.x-P.x,P.y,P.z); 					cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
+			if (pYsym.b) 	{ tP.set(P.x,mMax.y-P.y,P.z); 					cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
+			if (pRsym.b) 	{ tP.set(mMax.x-P.x,mMax.y-P.y,mMax.z-P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
+			if (pXdup.b) 	{ tP.set((P.x+mMax.x*.5)%mMax.x,P.y,P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 
 			float 								b = brightness(cNew)/100.;
-
  			if (pSharp.Val()>0) 				b = b < .5 ? pow(b,fSharp) : 1-pow(1-b,fSharp);
 			if (DG._Trails()>0 && fQuant == 0) 	b = max(b, (float) (brightness(cOld)/100. - (1-DG._Trails()) * deltaMs/200.));
 
@@ -285,6 +296,9 @@ public class DPat extends SCPattern
 				saturation(cNew) + 100*(fSaturate*2-1),
 				100 *  b * DG._Dim()
 			);
+
+//			colors[p.index] = color(0,0, p.fx >= modmin.x && p.fy >= modmin.y && p.fz >= modmin.z &&
+//				p.fx <= modmin.x+mMax.x && p.fy <= modmin.y+mMax.y && p.fz <= modmin.z+mMax.z ? 100 : 0); 
 		}
 	}
 }

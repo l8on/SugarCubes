@@ -255,7 +255,9 @@ public Model buildModel() {
   };
 
   // The bass box!
-  BassBox bassBox = new BassBox(BBX, 0, BBZ);
+  BassBox bassBox = BassBox.unlitBassBox(BBX, 0, BBZ); // frame exists, no lights
+  // BassBox bassBox = BassBox.noBassBox(); // no bass box at all
+  // BassBox bassBox = new BassBox(BBX, 0, BBZ); // bass box with lights
  
   // The speakers!
   List<Speaker> speakers = Arrays.asList(new Speaker[] {

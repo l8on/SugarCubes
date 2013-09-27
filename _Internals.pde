@@ -217,10 +217,12 @@ void draw() {
   popMatrix();
   
   noStroke();
-//  drawBassBox(glucose.model.bassBox);
-//  for (Speaker s : glucose.model.speakers) {
-//    drawSpeaker(s);
-//  }
+  if (glucose.model.bassBox.exists) {
+    drawBassBox(glucose.model.bassBox, false);
+  }
+  for (Speaker speaker : glucose.model.speakers) {
+    drawSpeaker(speaker);
+  }
   for (Cube c : glucose.model.cubes) {
     drawCube(c);
   }
@@ -228,13 +230,9 @@ void draw() {
   noFill();
   strokeWeight(2);
   beginShape(POINTS);
-  // TODO(mcslee): restore when bassBox/speakers are right again
-  // for (Point p : glucose.model.points) {
-  for (Cube cube : glucose.model.cubes) {
-    for (Point p : cube.points) {
-      stroke(colors[p.index]);
-      vertex(p.fx, p.fy, p.fz);
-    }
+  for (Point p : glucose.model.points) {
+    stroke(colors[p.index]);
+    vertex(p.fx, p.fy, p.fz);
   }
   endShape();
   
@@ -264,15 +262,18 @@ void draw() {
   }
 }
 
-void drawBassBox(BassBox b) {
+void drawBassBox(BassBox b, boolean hasSub) {
+  
   float in = .15;
-
-  noStroke();
-  fill(#191919);
-  pushMatrix();
-  translate(b.x + BassBox.EDGE_WIDTH/2., b.y + BassBox.EDGE_HEIGHT/2, b.z + BassBox.EDGE_DEPTH/2.);
-  box(BassBox.EDGE_WIDTH-20*in, BassBox.EDGE_HEIGHT-20*in, BassBox.EDGE_DEPTH-20*in);
-  popMatrix();
+  
+  if (hasSub) {
+    noStroke();
+    fill(#191919);
+    pushMatrix();
+    translate(b.x + BassBox.EDGE_WIDTH/2., b.y + BassBox.EDGE_HEIGHT/2, b.z + BassBox.EDGE_DEPTH/2.);
+    box(BassBox.EDGE_WIDTH-20*in, BassBox.EDGE_HEIGHT-20*in, BassBox.EDGE_DEPTH-20*in);
+    popMatrix();
+  }
 
   noStroke();
   fill(#393939);

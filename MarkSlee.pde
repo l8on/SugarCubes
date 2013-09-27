@@ -1,15 +1,17 @@
-class Flitters extends SCPattern {
+class BouncyBalls extends SCPattern {
   
-  static final int NUM_FLITTERS = 6;
+  static final int NUM_BALLS = 6;
   
-  class Flitter {
+  class BouncyBall {
        
     Accelerator yPos;
     TriangleLFO xPos = new TriangleLFO(0, model.xMax, random(8000, 19000));
+    float zPos;
     
-    Flitter(int i) {
+    BouncyBall(int i) {
       addModulator(xPos).setBasis(random(0, TWO_PI)).start();
       addModulator(yPos = new Accelerator(0, 0, 0));
+      zPos = lerp(model.zMin, model.zMax, (i+2.) / (NUM_BALLS + 4.));
     }
     
     void bounce(float midiVel) {
@@ -33,8 +35,11 @@ class Flitters extends SCPattern {
         }
       }
       float falloff = 130.f / (12 + blobSize.getValuef() * 36);
+      float xv = xPos.getValuef();
+      float yv = yPos.getValuef();
+      
       for (Point p : model.points) {
-        float d = dist(p.x, p.y, xPos.getValuef(), yPos.getValuef());
+        float d = sqrt((p.x-xv)*(p.x-xv) + (p.y-yv)*(p.y-yv) + .1*(p.z-zPos)*(p.z-zPos));
         float b = constrain(130 - falloff*d, 0, 100);
         if (b > 0) {
           colors[p.index] = blendColor(colors[p.index], color(
@@ -47,16 +52,16 @@ class Flitters extends SCPattern {
     }
   }
   
-  final Flitter[] flitters = new Flitter[NUM_FLITTERS];
+  final BouncyBall[] balls = new BouncyBall[NUM_BALLS];
   
   final BasicParameter bounce = new BasicParameter("BNC", .8);
   final BasicParameter flr = new BasicParameter("FLR", 0);
   final BasicParameter blobSize = new BasicParameter("SIZE", 0.5);
   
-  Flitters(GLucose glucose) {
+  BouncyBalls(GLucose glucose) {
     super(glucose);
-    for (int i = 0; i < flitters.length; ++i) {
-      flitters[i] = new Flitter(i);
+    for (int i = 0; i < balls.length; ++i) {
+      balls[i] = new BouncyBall(i);
     }
     addParameter(bounce);
     addParameter(flr);
@@ -65,14 +70,14 @@ class Flitters extends SCPattern {
   
   public void run(double deltaMs) {
     setColors(#000000);
-    for (Flitter f : flitters) {
-      f.run(deltaMs);
+    for (BouncyBall b : balls) {
+      b.run(deltaMs);
     }
   }
   
   public boolean noteOnReceived(Note note) {
-    int pitch = (note.getPitch() + note.getChannel()) % NUM_FLITTERS;
-    flitters[pitch].bounce(note.getVelocity());
+    int pitch = (note.getPitch() + note.getChannel()) % NUM_BALLS;
+    balls[pitch].bounce(note.getVelocity());
     return true;
   }
 }

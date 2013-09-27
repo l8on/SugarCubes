@@ -1,3 +1,13 @@
+class BlankPattern extends SCPattern {
+  BlankPattern(GLucose glucose) {
+    super(glucose);
+  }
+  
+  public void run(double deltaMs) {
+    setColors(#000000);
+  }
+}
+
 abstract class TestPattern extends SCPattern {
   public TestPattern(GLucose glucose) {
     super(glucose);

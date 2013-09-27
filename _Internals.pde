@@ -72,13 +72,30 @@ float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
 /**
  * Engine construction and initialization.
  */
-LXPattern[] _patterns(GLucose glucose) {
+
+LXTransition _transition(GLucose glucose) {
+  return new DissolveTransition(glucose.lx).setDuration(1000);
+}
+
+LXPattern[] _leftPatterns(GLucose glucose) {
   LXPattern[] patterns = patterns(glucose);
   for (LXPattern p : patterns) {
-    p.setTransition(new DissolveTransition(glucose.lx).setDuration(1000));
+    p.setTransition(_transition(glucose));
   }
   return patterns;
 }
+
+LXPattern[] _rightPatterns(GLucose glucose) {
+  LXPattern[] patterns = _leftPatterns(glucose);
+  LXPattern[] rightPatterns = new LXPattern[patterns.length+1];
+  int i = 0;
+  rightPatterns[i++] = new BlankPattern(glucose).setTransition(_transition(glucose));
+  for (LXPattern p : patterns) {
+    rightPatterns[i++] = p;
+  }
+  return rightPatterns;
+}
+  
 
 void logTime(String evt) {
   int now = millis();
@@ -108,8 +125,8 @@ void setup() {
 
   // Set the patterns
   Engine engine = lx.engine;
-  engine.setPatterns(patterns = _patterns(glucose));
-  engine.addDeck(_patterns(glucose));
+  engine.setPatterns(patterns = _leftPatterns(glucose));
+  engine.addDeck(_rightPatterns(glucose));
   logTime("Built patterns");
   glucose.setTransitions(transitions(glucose));
   logTime("Built transitions");

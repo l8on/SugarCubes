@@ -26,8 +26,8 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
-   // Slee
-    new Flitters(glucose),
+    // Slee
+    new BouncyBalls(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),
     new ShiftingPlane(glucose),
@@ -41,7 +41,7 @@ LXPattern[] patterns(GLucose glucose) {
     new CubeEQ(glucose).setEligible(false),
     new PianoKeyPattern(glucose).setEligible(false),
 
-     // DanH
+    // DanH
     new Noise(glucose),
     new Play(glucose),
     new Pong(glucose),

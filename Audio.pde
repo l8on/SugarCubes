@@ -39,8 +39,8 @@ public static class GraphicEQ {
     }
   }
   
-  final float logTen = log(10);
-  public float log10(float val) {
+  static final float logTen = log(10);
+  public static float log10(float val) {
     return log(val) / logTen;
   }
   
@@ -70,13 +70,13 @@ public static class GraphicEQ {
       float value = constrain(positiveDecibels / decibelRange, 0, 1);
       
       if (value > bandVals[i].getValuef()) {
-        bandVals[i].setEndVal(value, attack.getValuef() * 20).trigger();
+        bandVals[i].setRangeFromHereTo(value, attack.getValuef() * 20).trigger();
       }
     }
     for (LinearEnvelope band : bandVals) {
       band.run(deltaMs);
       if (!band.isRunning() && band.getValuef() > 0) {
-        band.setEndVal(0, release.getValuef() * 1600).trigger();
+        band.setRangeFromHereTo(0, release.getValuef() * 1600).trigger();
       }
     }    
   }

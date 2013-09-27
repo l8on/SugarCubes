@@ -27,6 +27,7 @@ LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
     
     // Slee
+    new ViolinWave(glucose),
     new BouncyBalls(glucose),
     new Swarm(glucose),
     new SpaceTime(glucose),

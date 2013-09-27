@@ -61,7 +61,7 @@ public class Noise extends DPat
 		pRotZ	= addParam("RotZ"	 , .5 );	pSpeed		= addParam("Fast", .55);
 		pDensity= addParam("Dens" 	 , .5);
 		pSymm 	= addPick("Symmetry" , 0, 3, new String[] {"None", "X", "Y", "Radial"}	);
-		pChoose = addPick("Animation", 1, 5, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark"}	);
+		pChoose = addPick("Animation", 6, 7, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark","VWave", "Wave"}	);
 		for (int i=0; i<_ND; i++) N[i] = new NDat();
 	}
 
@@ -111,6 +111,14 @@ public class Noise extends DPat
 		color c = 0;
 		P.RotateZ(mCtr, zSin, zCos);
 		
+		if (CurAnim == 6 || CurAnim == 7) {
+			P.setNorm();
+			return color(0,0, 100 * (
+							constrain(1-50*(1-pDensity.Val())*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
+			(CurAnim == 7 ? constrain(1-50*(1-pDensity.Val())*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
+			);
+		}			
+			
 		if (iSymm == XSym && P.x > mMax.x/2) P.x = mMax.x-P.x;
 		if (iSymm == YSym && P.y > mMax.y/2) P.y = mMax.y-P.y;
 
@@ -149,11 +157,15 @@ public class Play extends DPat
 		void	set() 			{	prvA 	= dstA; 	dstA 	= random(2*PI); 	prvA = fixAngle(prvA, dstA);
 									prvR 	= dstR; 	dstR 	= random(mCtr.y);									}
 	}
+
 	int		nBeats	=  	0;
 	DParam 	pAmp, pRadius, pBounce;
 	DParam	pRotX, pRotY, pRotZ;
 
 	float 	t,amp,rad,bnc;
+	
+	ArrayList<rWave> waves = new ArrayList<rWave>(10);
+	
 	rAngle	a1 = new rAngle(), a2 = new rAngle(),
 			a3 = new rAngle(), a4 = new rAngle();
 	xyz		cPrev 	= new xyz(), cRand	= new xyz(),
@@ -177,17 +189,32 @@ public class Play extends DPat
 		pBounce		= addParam("Bnc"	, .2	);
 	    pAmp  		= addParam("Amp" 	, .2	);
 		pTempoMult 	= addPick ("TMult"	, 0 , 5		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);		pShape	 	= addPick ("Shape"	, 13, 15	, new String[] {"Line", "Tap", "V", "RandV",
+		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);		pShape	 	= addPick ("Shape"	, 2 , 15	, new String[] {"Line", "Tap", "V", "RandV",
 																	"Pyramid", "Wings", "W2", "Clock",
 																	"Triangle", "Quad", "Sphere", "Cone",
 																	"Noise", "Wave", "?", "?"} 						);
 		pForm	 	= addPick ("Form"	, 2 , 2		, new String[] {"Bar", "Volume", "Fade"}												);
 	}
 
+	public class rWave {
+		float v0, a0, x0, t,damp,a;
+		boolean bDone=false;
+		final float len=8;
+		rWave(float _x0, float _a0, float _v0, float _damp) { x0=_x0*len; a0=_a0; v0=_v0; t=0; damp = _damp; }
+		void move(double deltaMs) {
+			t += deltaMs*.001;
+			if (t>4) bDone=true;
+		}
+		float val(float _x) {
+			_x*=len;
+			float dist = t*v0 - abs(_x-x0);
+			if (dist<0) { a=1; return 0; }
+			a  = a0*exp(-dist*damp) * exp(-abs(_x-x0)/(.2*len)); // * max(0,1-t/dur)
+			return	-a*sin(dist);
+		}
+	}
 
-float zTime = random(1000);
 	void StartRun(double deltaMs) {
-		zTime += deltaMs*.001; zTime = zTime % 1000.;
 		t 	= lx.tempo.rampf();
 		amp = pAmp.Val();
 		rad	= pRadius.getValuef();
@@ -213,9 +240,20 @@ float zTime = random(1000);
 			case 4: 	t = (t*16.)%1.;						break;
 		}
 
+		int i=0; while (i< waves.size()) {
+			rWave w = waves.get(i);
+			w.move(deltaMs); if (w.bDone) waves.remove(i); else i++;
+		}
+
 		if (t<LastBeat) {
 			cPrev.set(cRand); cRand.setRand();
 			a1.set(); a2.set(); a3.set(); a4.set();
+			waves.add(new rWave(
+						random(1),		// location
+						bnc*10,			// bounciness
+						7,				// velocity
+						2*(1-amp)));	// dampiness
+			if (waves.size() > 5) waves.remove(0);
 		} LastBeat = t;
 
 		switch (nTPat) {
@@ -230,7 +268,6 @@ float zTime = random(1000);
 		
 		cMid.set		(cPrev);	cMid.interpolate	(t,cRand);
 		cMidNorm.set	(cMid);		cMidNorm.setNorm();
-
 		a1.move(); a2.move(); a3.move(); a4.move();
 	}
 
@@ -288,14 +325,10 @@ float zTime = random(1000);
 		case 12:	return color(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
 
-		case 13:	V.set(Pn.x, map(
-									sin( zTime*3.7  + Pn.x*2.0*PI)
-								+ 	sin( zTime*4.2  + Pn.x*1.7*PI)
-								+ 	sin( -zTime*4.7  + Pn.x*2.1*PI)
-								+ 	sin( -zTime*5.2  + Pn.x*1.5*PI)
-								,-2,2,.2,.8), Pn.z); break;
-						
-						
+		case 13:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);
+					V.set(Pn.x, .7+y, Pn.z);
+					break;
+
 		default:	return color(0,0,0);
 		}
 

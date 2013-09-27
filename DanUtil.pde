@@ -114,6 +114,7 @@ public class DGlobals {
 	MidiInput	APCIn			= null,		OxygenIn		= null;
 	DPat		CurPat			= null;
 
+	
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
 	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Xwave", "Ywave", "Trails", "??", "??", "??"};
 	
@@ -154,7 +155,7 @@ public class DGlobals {
 		String Text1="", Text2="";
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).b) Text1 += " " + GetBool(i).tag       + "   ";
 		for (int i=0; i<CurPat.picks.size(); i++) Text1 += GetPick(i).tag + ": " + GetPick(i).CurDesc() + "   ";
-		for (int i=0; i<5; i++) 				  Text2 += SliderText[i]  + ": " + round(100*Sliders[i])  + "   ";
+		for (int i=0; i<8; i++) 				  Text2 += SliderText[i]  + ": " + round(100*Sliders[i])  + "   ";
 		uiDebugText.setText(Text1, Text2);
 	}
 
@@ -190,7 +191,7 @@ public class DGlobals {
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DPat extends SCPattern
 {
-	ArrayList 	picks	 	= new ArrayList();
+	ArrayList 	picks	 	= new ArrayList(); // should be ArrayList<Pick> picks = new ArrayList<Pick>();
 	ArrayList 	params 		= new ArrayList();
 	ArrayList 	bools		= new ArrayList();
 	int			nMaxRow  	= 53;

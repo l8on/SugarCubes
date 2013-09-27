@@ -28,9 +28,9 @@ public class Pick {
 			StartRow, EndRow	;
 	String  tag		, Desc[]	;
 	
-	Pick	(String label, int _Def, int _Max, 	int nStart, String d[])	{
-		NumPicks 	= _Max; 	Default = _Def; 
-		StartRow 	= nStart;	EndRow	= StartRow + int((NumPicks-1) / NumApcCols);
+	Pick	(String label, int _Def, int _Num, 	int nStart, String d[])	{
+		NumPicks 	= _Num; 	Default = _Def; 
+		StartRow 	= nStart;	EndRow	= StartRow + floor((NumPicks-1) / NumApcCols);
 		tag			= label; 	Desc 	= d;
 		reset();
 	}
@@ -115,7 +115,7 @@ public class DGlobals {
 	DPat		CurPat			= null;
 
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
-	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Wiggle", "Trails", "??", "??", "??"};
+	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Xwave", "Ywave", "Trails", "??", "??", "??"};
 	
 	void 		SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn		(col, row, clr); 	}
 	void 		SetNoteOff 	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff		(col, row, clr); 	}
@@ -128,8 +128,9 @@ public class DGlobals {
 	float		_Dim		()						{ return Sliders[0]; }
 	float		_SpinHue	()						{ return Sliders[1]; }
 	float		_Spark		()						{ return Sliders[2]; }
-	float		_Wiggle		()						{ return Sliders[3]; }
-	float		_Trails		()						{ return Sliders[4]; }
+	float		_XWave		()						{ return Sliders[3]; }
+	float		_YWave		()						{ return Sliders[4]; }
+	float		_Trails		()						{ return Sliders[5]; }
 
 	void		Init		() {
 		if (bInit) return; bInit=true;
@@ -153,7 +154,7 @@ public class DGlobals {
 		String Text1="", Text2="";
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).b) Text1 += " " + GetBool(i).tag       + "   ";
 		for (int i=0; i<CurPat.picks.size(); i++) Text1 += GetPick(i).tag + ": " + GetPick(i).CurDesc() + "   ";
-		for (int i=0; i<5; i++) 				  Text2 += SliderText[i]  + ": " + int(100*Sliders[i])  + "   ";
+		for (int i=0; i<5; i++) 				  Text2 += SliderText[i]  + ": " + round(100*Sliders[i])  + "   ";
 		uiDebugText.setText(Text1, Text2);
 	}
 
@@ -163,7 +164,7 @@ public class DGlobals {
 		for (int i=48;i< 56; i++) SetKnob(0, i, 0);
 		for (int i=16;i< 20; i++) SetKnob(0, i, 0);
 
-		for (int i=0; i<CurPat.params.size(); i++) SetKnob		( 0, i<8 ? 48+i : 16 + i - 8, int(GetParam(i).Val()*127) );
+		for (int i=0; i<CurPat.params.size(); i++) SetKnob		( 0, i<8 ? 48+i : 16 + i - 8, round(GetParam(i).Val()*127) );
 		for (int i=0; i<CurPat.picks .size(); i++) SetNoteOn	(GetPick(i).CurRow, GetPick(i).CurCol, 3);
 		for (int i=0; i<CurPat.bools .size(); i++) if (GetBool(i).b) 	SetNoteOn	(GetBool(i).row, GetBool(i).col, 1);
 													else				SetNoteOff	(GetBool(i).row, GetBool(i).col, 0);
@@ -195,6 +196,7 @@ public class DPat extends SCPattern
 	int			nMaxRow  	= 53;
 	float		zSpinHue 	= 0;
 	float		LastQuant	= -1, LastJog = -1;
+	float[]		xWaveNz, yWaveNz;
 	int 		nPoint	, nPoints;
 	xyz			xyzJog = new xyz(), vT1 = new xyz(), vT2 = new xyz();
 	xyz			modmin;
@@ -203,15 +205,19 @@ public class DPat extends SCPattern
 	DParam		pSharp, pQuantize, pSaturate;
 	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
-	int			c1c		 (float a) 					{ return int(100*constrain(a,0,1));			}
+	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
+	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
+
 	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ vT1.set(v1); vT2.set(v2); vT1.subtract(c); vT2.subtract(c);
 														return degrees( acos ( vT1.dot(vT2) / (sqrt(vT1.dot(vT1)) * sqrt(vT2.dot(vT2)) ) ));	}
+
+	void  		StartPattern() 						{								}
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return color(0,0,0); 			}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
 	boolean		IsFocused()							{ return this == midiEngine.getFocusedDeck().getActivePattern();		}
 	void 		onInactive() 						{ UpdateState(); }
-	void 		onActive  () 						{ UpdateState(); }
+	void 		onActive  () 						{ UpdateState(); StartPattern(); }
 	void 		UpdateState() 						{ if (IsFocused() != IsActive()) { if (IsFocused()) DG.Activate(this); else DG.Deactivate(this); } }
 	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD);						}
 
@@ -220,9 +226,8 @@ public class DPat extends SCPattern
 		super.addParameter(P);
 		params.add(P); return P;
 	}
-
-	Pick addPick(String name, int def, int nmax, String[] desc) {
-		Pick P 		= new Pick(name, def, nmax, nMaxRow, desc); 
+	Pick addPick(String name, int def, int _max, String[] desc) {
+		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 
 		nMaxRow		= P.EndRow + 1;
 		picks.add(P);
 		return P;
@@ -243,6 +248,9 @@ public class DPat extends SCPattern
 		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
 		mCtr		= 	new xyz(mMax); mCtr.scale(.5);
 		mHalf		= 	new xyz(.5,.5,.5);
+		xWaveNz		=	new float[ceil(mMax.y)+1];
+		yWaveNz		=	new float[ceil(mMax.x)+1];
+		
 		//println (model.xMin + " " + model.yMin + " " +  model.zMin);
 		//println (model.xMax + " " + model.yMax + " " +  model.zMax);
 		DG.Init();
@@ -251,9 +259,9 @@ public class DPat extends SCPattern
 	void run(double deltaMs)
 	{
 		UpdateState();
-		NoiseMove   	+= deltaMs;
+		NoiseMove   	+= deltaMs; NoiseMove = NoiseMove % 1e7;
 		StartRun		(deltaMs);
-		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05;
+		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05; zSpinHue = zSpinHue % 5000.;
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
 		float fSharp 	= 1/(1.0001-pSharp.Val());
 		float fQuant	= pQuantize.Val();
@@ -263,7 +271,7 @@ public class DPat extends SCPattern
 		nPoint 	= 0;
 		
 		if (fQuant > 0) {
-			float tRamp	= (lx.tempo.rampf() % (1./pow(2,int((1-fQuant) * 4))));
+			float tRamp	= (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
 			float f = LastQuant; LastQuant = tRamp; if (tRamp > f) return;
 		}
 	
@@ -273,12 +281,22 @@ public class DPat extends SCPattern
 			LastJog = tRamp; 
 		}
 
-		for (Point p : model.points) 	{ nPoint++;
+		// precalculate this stuff
+		float yWv = DG._YWave(), xWv = DG._XWave(), sprk = DG._Spark();
+		if (yWv > 0) for (int i=0; i<ceil(mMax.x)+1; i++)
+			yWaveNz[i] = yWv * (noise(i/(mMax.x*.3)-(2e3+NoiseMove)/1500.) - .5) * (mMax.y/2.);
+
+		if (xWv > 0) for (int i=0; i<ceil(mMax.y)+1; i++)
+			xWaveNz[i] = xWv * (noise(i/(mMax.y*.3)-(1e3+NoiseMove)/1500.) - .5) * (mMax.x/2.);
+			
+		for (Point p : model.points) { nPoint++;
 			P.set(p);
 			P.subtract(modmin);
-			if (pJog.b)	P.add(xyzJog);
-			if (DG._Spark () > 0) 	P.y += DG._Spark () * (noise(P.x,P.y+NoiseMove/30  ,P.z)*mMax.y - mMax.y/2.);
-			if (DG._Wiggle() > 0) 	P.y += DG._Wiggle() * (noise(P.x/(mMax.x*.3)-NoiseMove/1500.) - .5) * (mMax.y/2.);
+			if (sprk > 0) {	P.y += sprk*randctr(50); P.x += sprk*randctr(50); P.z += sprk*randctr(50); }
+			if (yWv > 0) 	P.y += interpWv(p.x-modmin.x, yWaveNz);
+			if (xWv > 0) 	P.x += interpWv(p.y-modmin.y, xWaveNz);
+			if (pJog.b)		P.add(xyzJog);
+
 
 			color cNew, cOld = colors[p.index];
 							{ tP.set(P); 				  					cNew = CalcPoint(tP);							}

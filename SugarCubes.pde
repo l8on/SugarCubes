@@ -108,16 +108,16 @@ LXPattern[] patterns(GLucose glucose) {
 LXTransition[] transitions(GLucose glucose) {
   return new LXTransition[] {
     new DissolveTransition(lx),
-    new MultiplyTransition(glucose),
-    new ScreenTransition(glucose),
-    new BurnTransition(glucose),
-    new DodgeTransition(glucose),
-    new OverlayTransition(glucose),
     new AddTransition(glucose),
-    new SubtractTransition(glucose),
-    new SoftLightTransition(glucose),
+    new MultiplyTransition(glucose),
+    new OverlayTransition(glucose),
+    new DodgeTransition(glucose),
     new SwipeTransition(glucose),
     new FadeTransition(lx),
+//  new SubtractTransition(glucose),	// similar to multiply - dh
+//  new BurnTransition(glucose),		// similar to multiply - dh
+//  new ScreenTransition(glucose), 		// same as add -dh
+//  new SoftLightTransition(glucose),	// same as overlay -dh
   };
 }
 

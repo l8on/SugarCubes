@@ -113,10 +113,11 @@ public class DGlobals {
 	MidiOutput 	APCOut			= null;
 	MidiInput	APCIn			= null,		OxygenIn		= null;
 	DPat		CurPat			= null;
+	int			KeyPressed		= -1;
 
 	
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
-	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Xwave", "Ywave", "Trails", "??", "??", "??"};
+	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Xwave", "Ywave", "Trails", "Quant", "??", "??"};
 	
 	void 		SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn		(col, row, clr); 	}
 	void 		SetNoteOff 	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff		(col, row, clr); 	}
@@ -126,12 +127,13 @@ public class DGlobals {
 	Pick 		GetPick (int i) 					{ return (Pick) CurPat.picks .get(i); }
 	DParam 		GetParam(int i) 					{ return (DParam) CurPat.params.get(i); }
 
-	float		_Dim		()						{ return Sliders[0]; }
+	float		_Level		()						{ return Sliders[0]; }
 	float		_SpinHue	()						{ return Sliders[1]; }
 	float		_Spark		()						{ return Sliders[2]; }
 	float		_XWave		()						{ return Sliders[3]; }
 	float		_YWave		()						{ return Sliders[4]; }
 	float		_Trails		()						{ return Sliders[5]; }
+	float		_Quantize	()						{ return Sliders[6]; }
 
 	void		Init		() {
 		if (bInit) return; bInit=true;
@@ -185,7 +187,8 @@ public class DGlobals {
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<CurPat.picks.size(); i++) if (GetPick(i).set(row, col)) 	  return;
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, true)) return;
-		//println("row: " + row + "  col:   " + col);
+		if (row == 52) { KeyPressed = col; return; }
+		println("row: " + row + "  col:   " + col);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -201,10 +204,11 @@ public class DPat extends SCPattern
 	int 		nPoint	, nPoints;
 	xyz			xyzJog = new xyz(), vT1 = new xyz(), vT2 = new xyz();
 	xyz			modmin;
-	
+
 	float		NoiseMove	= random(10000);
-	DParam		pSharp, pQuantize, pSaturate;
-	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog;
+	DParam		pRotX, pRotY, pRotZ, pSpin, pSharp, pSaturate, pTransX, pTransY;
+	
+	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pKey;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
 	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
@@ -227,6 +231,7 @@ public class DPat extends SCPattern
 		super.addParameter(P);
 		params.add(P); return P;
 	}
+
 	Pick addPick(String name, int def, int _max, String[] desc) {
 		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 
 		nMaxRow		= P.EndRow + 1;
@@ -236,15 +241,23 @@ public class DPat extends SCPattern
 
 	DPat(GLucose glucose) {
 		super(glucose);
-		pSharp		=	addParam("Shrp",  0 );
-		pQuantize	=	addParam("Qunt",  0 );
-		pSaturate	=	addParam("Sat" ,  .5);
+
+		pSharp		=	addParam("Shrp",  0);
+		pSaturate	=	addParam("Sat" , .5);
+		pTransX		=	addParam("TrnX", .5);
+		pTransY		=	addParam("TrnY", .5);
+		pRotX 		= 	addParam("RotX", .5);
+		pRotY 		= 	addParam("RotY", .5);
+		pRotZ 		= 	addParam("RotZ", .5);
+		pSpin		= 	addParam("Spin", .5);
+
 		nPoints 	=	model.points.size();
 		pXsym 		=	new DBool("X-SYM", false, 49, 0);	bools.add(pXsym	);
 		pYsym 		=	new DBool("Y-SYM", false, 49, 1);	bools.add(pYsym	);
 		pRsym 		=	new DBool("R-SYM", false, 49, 2);	bools.add(pRsym );
 		pXdup		=	new DBool("X-DUP", false, 49, 3);	bools.add(pXdup );
 		pJog		=	new DBool("JOGGER",false, 49, 4);	bools.add(pJog	);
+		pKey		=	new DBool("KBD"	  ,false, 49, 5);	bools.add(pKey	);
 		modmin		=	new xyz(model.xMin, model.yMin, model.zMin);
 		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
 		mCtr		= 	new xyz(mMax); mCtr.scale(.5);
@@ -264,13 +277,14 @@ public class DPat extends SCPattern
 		StartRun		(deltaMs);
 		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05; zSpinHue = zSpinHue % 5000.;
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
+		xyz pTrans 		= new xyz(pTransX.Val()*200-100, pTransY.Val()*100-50,0);
 		float fSharp 	= 1/(1.0001-pSharp.Val());
-		float fQuant	= pQuantize.Val();
+		float fQuant	= DG._Quantize ();
 		float fSaturate	= pSaturate.Val();
 		
 		DG.SetText();
 		nPoint 	= 0;
-		
+
 		if (fQuant > 0) {
 			float tRamp	= (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
 			float f = LastQuant; LastQuant = tRamp; if (tRamp > f) return;
@@ -293,6 +307,7 @@ public class DPat extends SCPattern
 		for (Point p : model.points) { nPoint++;
 			P.set(p);
 			P.subtract(modmin);
+			P.subtract(pTrans);
 			if (sprk > 0) {	P.y += sprk*randctr(50); P.x += sprk*randctr(50); P.z += sprk*randctr(50); }
 			if (yWv > 0) 	P.y += interpWv(p.x-modmin.x, yWaveNz);
 			if (xWv > 0) 	P.x += interpWv(p.y-modmin.y, xWaveNz);
@@ -313,7 +328,7 @@ public class DPat extends SCPattern
 			colors[p.index] = color(
 				(hue(cNew) + zSpinHue) % 360,
 				saturation(cNew) + 100*(fSaturate*2-1),
-				100 *  b * DG._Dim()
+				100 *  b * DG._Level()
 			);
 
 //			colors[p.index] = color(0,0, p.fx >= modmin.x && p.fy >= modmin.y && p.fz >= modmin.z &&

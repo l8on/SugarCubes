@@ -51,24 +51,24 @@ public class Noise extends DPat
 	int			CurAnim, iSymm;
 	int 		XSym=1,YSym=2,RadSym=3;
 	float 		zTime , zTheta=0, zSin, zCos, rtime, ttime, transAdd;
-	DParam 		pSpeed , pDensity, pRotZ;
+	DParam 		pSpeed , pDensity;
 	Pick 		pChoose, pSymm;
 	int			_ND = 4;
 	NDat		N[] = new NDat[_ND];
 
 	Noise(GLucose glucose) {
 		super(glucose);
-		pRotZ	= addParam("RotZ"	 , .5 );	pSpeed		= addParam("Fast", .55);
-		pDensity= addParam("Dens" 	 , .5);
-		pSymm 	= addPick("Symmetry" , 0, 3, new String[] {"None", "X", "Y", "Radial"}	);
-		pChoose = addPick("Animation", 6, 7, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark","VWave", "Wave"}	);
+		pSpeed		= addParam("Fast"	, .55);
+		pDensity	= addParam("Dens" 	 , .5);
+		pSymm 		= addPick("Symmetry" , 0, 3, new String[] {"None", "X", "Y", "Radial"}	);
+		pChoose 	= addPick("Animation", 6, 7, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark","VWave", "Wave"}	);
 		for (int i=0; i<_ND; i++) N[i] = new NDat();
 	}
 
 	void StartPattern() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; transAdd=0; }
 	void StartRun(double deltaMs) {
 		zTime 	+= deltaMs*(pSpeed.Val()-.5)*.002	;
-		zTheta	+= deltaMs*(pRotZ .Val()-.5)*.01	;
+		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01	;
 		rtime	+= deltaMs;
 		iSymm	 = pSymm.Cur();
 		transAdd = 1*(1 - constrain(rtime - ttime,0,1000)/1000);
@@ -77,8 +77,8 @@ public class Noise extends DPat
 
 		if (pChoose.Cur() != CurAnim) {
 			CurAnim = pChoose.Cur(); ttime = rtime;
-			pRotZ		.reset();	zTheta 		= 0;
-			pDensity	.reset();	pSpeed		.reset();	
+			pSpin		.reset();	zTheta 		= 0;
+			pDensity	.reset();	pSpeed		.reset();
 			for (int i=0; i<_ND; i++) { N[i].isActive = false; }
 			
 			switch(CurAnim) {
@@ -160,7 +160,6 @@ public class Play extends DPat
 
 	int		nBeats	=  	0;
 	DParam 	pAmp, pRadius, pBounce;
-	DParam	pRotX, pRotY, pRotZ;
 
 	float 	t,amp,rad,bnc;
 	
@@ -176,15 +175,11 @@ public class Play extends DPat
 	float	LastBeat=3, LastMeasure=3;
 	int		CurRandTempo = 1, CurRandTPat = 1;
 
-
-	Pick	pTimePattern, pTempoMult, pShape, pForm;
+	Pick	pTimePattern, pTempoMult, pShape;
 	int		RandCube;
 
 	Play(GLucose glucose) {
 		super(glucose);
-		pRotX 		= addParam("RotX", .5);
-		pRotY 		= addParam("RotY", .5);
-		pRotZ 		= addParam("RotZ", .5);
 	    pRadius		= addParam("Rad" 	, .1  	);
 		pBounce		= addParam("Bnc"	, .2	);
 	    pAmp  		= addParam("Amp" 	, .2	);
@@ -193,7 +188,6 @@ public class Play extends DPat
 																	"Pyramid", "Wings", "W2", "Clock",
 																	"Triangle", "Quad", "Sphere", "Cone",
 																	"Noise", "Wave", "?", "?"} 						);
-		pForm	 	= addPick ("Form"	, 2 , 2		, new String[] {"Bar", "Volume", "Fade"}												);
 	}
 
 	public class rWave {
@@ -245,15 +239,19 @@ public class Play extends DPat
 			w.move(deltaMs); if (w.bDone) waves.remove(i); else i++;
 		}
 
-		if (t<LastBeat) {
-			cPrev.set(cRand); cRand.setRand();
-			a1.set(); a2.set(); a3.set(); a4.set();
+		if ((t<LastBeat && !pKey.b) || DG.KeyPressed>-1) {
 			waves.add(new rWave(
-						random(1),		// location
+						pKey.b ? map(DG.KeyPressed,0,7,0,1) : random(1),		// location
 						bnc*10,			// bounciness
 						7,				// velocity
 						2*(1-amp)));	// dampiness
+			DG.KeyPressed=-1;
 			if (waves.size() > 5) waves.remove(0);
+		}
+		
+		if (t<LastBeat) {
+			cPrev.set(cRand); cRand.setRand();
+			a1.set(); a2.set(); a3.set(); a4.set();
 		} LastBeat = t;
 
 		switch (nTPat) {
@@ -332,13 +330,7 @@ public class Play extends DPat
 		default:	return color(0,0,0);
 		}
 
-		switch (pForm.Cur()) {
-			case 0:		return color(0,0,c1c(1 - V.distance(Pn)/rad > .5?1:0));
-			case 1:		return color(0,0,c1c(Pn.y < V.y ?1:0));
-			case 2:		return color(0,0,c1c(1 - V.distance(Pn)/rad));
-
-			default:	return color(0,0,c1c(Pn.y < V.y ?1:0));
-		}
+		return color(0,0,c1c(1 - V.distance(Pn)/rad));
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -363,12 +363,17 @@ public class APC40MidiInput extends SCMidiInput {
 	case 83:	EFF_flash	.trigger(); 				break;	// Flash
 		
 	case 90:	lx.tempo.trigger(); Tap1 = getNow(); 	break;	// dan's dirty tapping mechanism
+
+    case 91: // play
+    case 95: // bank
+      midiEngine.setFocusedDeck(0);
+      break;
+
+    case 93: // rec
     case 94: // right bank
       midiEngine.setFocusedDeck(1);
       break;
-    case 95: // left bank
-      midiEngine.setFocusedDeck(0);
-      break;
+
     case 96: // up bank
       if (shiftOn) {
         glucose.incrementSelectedEffectBy(1);
@@ -398,8 +403,7 @@ public class APC40MidiInput extends SCMidiInput {
       lx.tempo.setBpm(lx.tempo.bpm() - (shiftOn ? 1 : .1));
       break;
 
-    case 91: // play
-    case 93: // rec
+    case 62: // Detail View
       releaseEffect = glucose.getSelectedEffect(); 
       if (releaseEffect.isMomentary()) {
         releaseEffect.enable();
@@ -408,7 +412,7 @@ public class APC40MidiInput extends SCMidiInput {
       }
       break;
 
-    case 92: // stop
+    case 63: // rec quantize
       glucose.getSelectedEffect().disable();
       break;
     }
@@ -426,14 +430,15 @@ public class APC40MidiInput extends SCMidiInput {
 		}
 		break;
 
-    case 93: // rec
+
+    case 63: // rec quantize
       if (releaseEffect != null) {
         if (releaseEffect.isMomentary()) {
           releaseEffect.disable();
         }
       }
       break;
-		
+
     case 98: // shift
       shiftOn = false;
        break;

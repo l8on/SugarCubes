@@ -508,8 +508,8 @@ void mouseReleased() {
     context.mouseReleased(mouseX, mouseY);
   }
 }
- 
-void mouseWheel(int delta) {
+
+void mouseWheel(int delta) {delta*=20;
   boolean wheeled = false;
   for (UIContext context : overlays) {
     wheeled |= context.mouseWheel(mouseX, mouseY, delta);

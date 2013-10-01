@@ -21,6 +21,7 @@ public class Pong extends DPat {
 	void  	StartRun(double deltaMs) 	{ cRad = mMax.x*pSize.Val()/6; }
 	color	CalcPoint(xyz p) 	  	{
 		v.set(x.getValuef(), y.getValuef(), z.getValuef());
+		v.z=0;p.z=0;// ignore z dimension
 		switch(pChoose.Cur()) {
 		case 0: vMir.set(mMax); vMir.subtract(p);
 				return color(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
@@ -162,7 +163,7 @@ public class Play extends DPat
 	DParam 	pAmp, pRadius, pBounce;
 
 	float 	t,amp,rad,bnc;
-	
+	float	zTheta=0;
 	ArrayList<rWave> waves = new ArrayList<rWave>(10);
 	
 	rAngle	a1 = new rAngle(), a2 = new rAngle(),
@@ -184,7 +185,7 @@ public class Play extends DPat
 		pBounce		= addParam("Bnc"	, .2	);
 	    pAmp  		= addParam("Amp" 	, .2	);
 		pTempoMult 	= addPick ("TMult"	, 0 , 5		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);		pShape	 	= addPick ("Shape"	, 2 , 15	, new String[] {"Line", "Tap", "V", "RandV",
+		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);		pShape	 	= addPick ("Shape"	, 3 , 15	, new String[] {"Line", "Tap", "V", "RandV",
 																	"Pyramid", "Wings", "W2", "Clock",
 																	"Triangle", "Quad", "Sphere", "Cone",
 																	"Noise", "Wave", "?", "?"} 						);
@@ -208,13 +209,15 @@ public class Play extends DPat
 		}
 	}
 
+	void StartPattern() { zTheta=0; }
 	void StartRun(double deltaMs) {
 		t 	= lx.tempo.rampf();
 		amp = pAmp.Val();
 		rad	= pRadius.getValuef();
 		bnc	= pBounce.getValuef();		
+		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01;
 
-		Theta	.set(pRotX.Val()*PI*2, pRotY.Val()*PI*2, pRotZ.Val()*PI*2);
+		Theta	.set(pRotX.Val()*PI*2, pRotY.Val()*PI*2, pRotZ.Val()*PI*2 + zTheta);
 		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
 		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
 
@@ -278,7 +281,7 @@ public class Play extends DPat
 
 		float mp	= min(Pn.x, Pn.z);
 		float yt 	= map(t,0,1,.5-bnc/2,.5+bnc/2);
-		float r;
+		float r,d;
 
 		switch (pShape.Cur()) {
 		case 0:		V.set(Pn.x, yt							 	, Pn.z); 							break;	// bouncing line
@@ -295,30 +298,38 @@ public class Play extends DPat
 		case 5:		V.set(Pn.x, bnc*map((Pn.x-.5)*(Pn.x-.5),0,.25,0,t-.5)+.5, Pn.z);				break;	// wings
 		case 6:		V.set(Pn.x, bnc*map((mp  -.5)*(mp  -.5),0,.25,0,t-.5)+.5, Pn.z);				break;	// wings
 
-
-
-		case 7:		return color(0,0, min(
+		case 7:		d = min(
 						distToSeg(Px.x, Px.y, a1.getX(70),a1.getY(70), mCtr.x, mCtr.y),
-						distToSeg(Px.x, Px.y, a2.getX(40),a2.getY(40), mCtr.x, mCtr.y)) <rad*40?100:0); // clock
+						distToSeg(Px.x, Px.y, a2.getX(40),a2.getY(40), mCtr.x, mCtr.y));
+					d = constrain(30*(rad*40-d),0,100);
+					return color(0,max(0,150-d), d); // clock
 
-		case 8:		r = amp*200 * map(bnc,0,1,1,sin(PI*t)); return color(0,0, min(
+		case 8:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
+					d = min(
 						distToSeg(Px.x, Px.y, a1.getX(r),a1.getY(r), a2.getX(r),a2.getY(r)),
 						distToSeg(Px.x, Px.y, a2.getX(r),a2.getY(r), a3.getX(r),a3.getY(r)),
 						distToSeg(Px.x, Px.y, a3.getX(r),a3.getY(r), a1.getX(r),a1.getY(r))				// triangle
-						) <rad*40?100:0);
-						
-		case 9:		r = amp*200 * map(bnc,0,1,1,sin(PI*t)); return color(0,0, min(
+						);
+					d = constrain(30*(rad*40-d),0,100);
+					return color(0,max(0,150-d), d); // clock
+
+		case 9:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
+					d = min(
 						distToSeg(Px.x, Px.y, a1.getX(r),a1.getY(r), a2.getX(r),a2.getY(r)),
 						distToSeg(Px.x, Px.y, a2.getX(r),a2.getY(r), a3.getX(r),a3.getY(r)),
 						distToSeg(Px.x, Px.y, a3.getX(r),a3.getY(r), a4.getX(r),a4.getY(r)),
 						distToSeg(Px.x, Px.y, a4.getX(r),a4.getY(r), a1.getX(r),a1.getY(r))				// quad
-						) <rad*40?100:0); // shape
+					);
+					d = constrain(30*(rad*40-d),0,100);
+					return color(0,max(0,150-d), d); // clock
 
-						
-		case 10:	r = map(bnc,0,1,a1.r,amp*200*sin(PI*t)); 
+		case 10:
+					r = map(bnc,0,1,a1.r,amp*200*sin(PI*t));
 					return color(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
 
-		case 11:	return color(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
+		case 11:
+					Px.z=mCtr.z; cMid.z=mCtr.z;
+					return color(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
 
 		case 12:	return color(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
@@ -330,7 +341,9 @@ public class Play extends DPat
 		default:	return color(0,0,0);
 		}
 
-		return color(0,0,c1c(1 - V.distance(Pn)/rad));
+		return color(0,
+				150-c1c(1 - V.distance(Pn)/rad),
+				c1c(1 - V.distance(Pn)/rad));
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------

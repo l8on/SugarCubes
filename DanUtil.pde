@@ -114,6 +114,7 @@ public class DGlobals {
 	MidiInput	APCIn			= null,		OxygenIn		= null;
 	DPat		CurPat			= null;
 	int			KeyPressed		= -1;
+	boolean		bSustain 		= false;
 
 	
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
@@ -144,6 +145,7 @@ public class DGlobals {
 	boolean		isFocused  () 		{ return CurPat != null && CurPat == midiEngine.getFocusedDeck().getActivePattern(); }
 	void		Deactivate (DPat p) { if (p != CurPat) return; uiDebugText.setText(""); CurPat = null;					 }
 	void		Activate   (DPat p) {
+		bSustain = false;
 		CurPat = p;
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
 		for (int i=0; i<p.params.size(); i++) GetParam(i).reset();
@@ -181,12 +183,17 @@ public class DGlobals {
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, false)) return;
 		UpdateLights();
+		bSustain=false;
 	}
 
 	void noteOnReceived (Note note) { if (!isFocused()) return;
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<CurPat.picks.size(); i++) if (GetPick(i).set(row, col)) 	  return;
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).set(row, col, true)) return;
+
+		if (row == 84 && col==0) { Activate(CurPat); CurPat.StartPattern(); return; }
+		if (row == 85 && col==0) { bSustain=true; return; }
+		
 		if (row == 52) { KeyPressed = col; return; }
 		println("row: " + row + "  col:   " + col);
 	}
@@ -208,7 +215,7 @@ public class DPat extends SCPattern
 	float		NoiseMove	= random(10000);
 	DParam		pRotX, pRotY, pRotZ, pSpin, pSharp, pSaturate, pTransX, pTransY;
 	
-	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pKey;
+	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pKey, pInvert;
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
 	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
@@ -256,15 +263,17 @@ public class DPat extends SCPattern
 		pYsym 		=	new DBool("Y-SYM", false, 49, 1);	bools.add(pYsym	);
 		pRsym 		=	new DBool("R-SYM", false, 49, 2);	bools.add(pRsym );
 		pXdup		=	new DBool("X-DUP", false, 49, 3);	bools.add(pXdup );
-		pJog		=	new DBool("JOGGER",false, 49, 4);	bools.add(pJog	);
-		pKey		=	new DBool("KBD"	  ,false, 49, 5);	bools.add(pKey	);
+		pJog		=	new DBool("JOG"  ,false, 49,  4);	bools.add(pJog	);
+		pKey		=	new DBool("KBD"	 ,false, 49,  5);	bools.add(pKey	);
+		pInvert		=	new DBool("INVRT",false, 49,  6);	bools.add(pInvert);
+
 		modmin		=	new xyz(model.xMin, model.yMin, model.zMin);
 		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
 		mCtr		= 	new xyz(mMax); mCtr.scale(.5);
 		mHalf		= 	new xyz(.5,.5,.5);
 		xWaveNz		=	new float[ceil(mMax.y)+1];
 		yWaveNz		=	new float[ceil(mMax.x)+1];
-		
+
 		//println (model.xMin + " " + model.yMin + " " +  model.zMin);
 		//println (model.xMax + " " + model.yMax + " " +  model.zMax);
 		DG.Init();
@@ -321,13 +330,17 @@ public class DPat extends SCPattern
 			if (pRsym.b) 	{ tP.set(mMax.x-P.x,mMax.y-P.y,mMax.z-P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 			if (pXdup.b) 	{ tP.set((P.x+mMax.x*.5)%mMax.x,P.y,P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 
+			float 								s =	saturation(cNew) + 100*(fSaturate*2-1);
 			float 								b = brightness(cNew)/100.;
  			if (pSharp.Val()>0) 				b = b < .5 ? pow(b,fSharp) : 1-pow(1-b,fSharp);
 			if (DG._Trails()>0 && fQuant == 0) 	b = max(b, (float) (brightness(cOld)/100. - (1-DG._Trails()) * deltaMs/200.));
+			if (DG.bSustain == true) 			b = max(b, (float) (brightness(cOld)/100.));
+
+			if (pInvert.b)	{ b = 1-b; s = 1-s; }
 
 			colors[p.index] = color(
 				(hue(cNew) + zSpinHue) % 360,
-				saturation(cNew) + 100*(fSaturate*2-1),
+				s,
 				100 *  b * DG._Level()
 			);
 

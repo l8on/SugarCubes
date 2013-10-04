@@ -71,18 +71,19 @@ public Model buildModel() {
 
   ////////////////////////////////////////////////////////////////////////
   // dan's proposed lattice
-  ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
-  for (int i=0; i<9; i++) scubes.add(new StaggeredTower(
-		(i+1)*CW,						 // x
-		(i % 2 == 0) ? 0 : CH * 2./3.,   // y
-	 - ((i % 2 == 0) ? 0 : 11) + 97  ,   // z
-	   -135, (i % 2 == 0) ? 7 : 6));	 // num cubes
-
-  ArrayList<Cube> dcubes = new ArrayList<Cube>();
-  for (int i=0; i<7; i++) {
-	if (i>0) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));	
-			 dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR));	
-  }
+	ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
+	if (NumBackTowers != 9) exit();
+	for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
+		  (i+1)*CW,						 		// x
+		  (i % 2 == 0) ? 0 : CH * 2./3.		,   // y
+		 - ((i % 2 == 0) ? 0 : 11) + 97  	,   // z
+		 -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1));	 // num cubes
+	
+	ArrayList<Cube> dcubes = new ArrayList<Cube>();
+	for (int i=1; i<6; i++) {
+		if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));	
+				 dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR));	
+	}
 
   //////////////////////////////////////////////////////////////////////
   //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //
@@ -91,7 +92,7 @@ public Model buildModel() {
   // These guts just convert the shorthand mappings into usable objects
   ArrayList<Tower> towerList = new ArrayList<Tower>();
   ArrayList<Cube> tower;
-  Cube[] cubes = new Cube[80];
+  Cube[] cubes = new Cube[100];
   int cubeIndex = 1;  
   float px, pz, ny;
   for (TowerMapping tm : towerCubes) {
@@ -106,9 +107,6 @@ public Model buildModel() {
     towerList.add(new Tower(tower));
   }
 
-  for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
-  for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
-
   for (StaggeredTower st : scubes) {
     tower = new ArrayList<Cube>();
     for (int i=0; i < st.n; i++)
@@ -116,7 +114,10 @@ public Model buildModel() {
     towerList.add(new Tower(tower));
   }
 
-  return new Model(towerList, cubes, bassBox, speakers);
+  for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
+  for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
+
+ return new Model(towerList, cubes, bassBox, speakers);
 }
 
 /**

@@ -165,7 +165,7 @@ public class Play extends DPat
 	float 	t,amp,rad,bnc;
 	float	zTheta=0;
 	ArrayList<rWave> waves = new ArrayList<rWave>(10);
-	
+
 	rAngle	a1 = new rAngle(), a2 = new rAngle(),
 			a3 = new rAngle(), a4 = new rAngle();
 	xyz		cPrev 	= new xyz(), cRand	= new xyz(),
@@ -185,7 +185,8 @@ public class Play extends DPat
 		pBounce		= addParam("Bnc"	, .2	);
 	    pAmp  		= addParam("Amp" 	, .2	);
 		pTempoMult 	= addPick ("TMult"	, 0 , 5		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);		pShape	 	= addPick ("Shape"	, 3 , 15	, new String[] {"Line", "Tap", "V", "RandV",
+		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);
+		pShape	 	= addPick ("Shape"	, 3 , 15	, new String[] {"Line", "Tap", "V", "RandV",
 																	"Pyramid", "Wings", "W2", "Clock",
 																	"Triangle", "Quad", "Sphere", "Cone",
 																	"Noise", "Wave", "?", "?"} 						);
@@ -344,6 +345,227 @@ public class Play extends DPat
 		return color(0,
 				150-c1c(1 - V.distance(Pn)/rad),
 				c1c(1 - V.distance(Pn)/rad));
+	}
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+// 0 - TLB, L (b), BLB, B (l)		// Fwd , Down, Back, Up
+// 4 - TLF, F (l), BLF, L (f)		// Fwd , Down, Back, Up
+// 8 - TRF, R (f), BRF, F (r)		// Back, Down, Fwd , Up
+// 12- TRB, B (r), BRB, R (b)		// Back, Down, Fwd , Up
+// 1->7, 15->9
+
+class dBolt {
+	dStrip v, h;
+	int    vpos, hpos;
+	dBolt(dStrip _v, dStrip _h, int _vpos, int _hpos) {
+		v=_v; h=_h; vpos=_vpos; hpos=_hpos;
+		if (v.b0 == null) { v.b0=this; h.b0=this; } 
+		else 			  { v.b1=this; h.b1=this; }
+	}
+}
+
+class dVertex {
+	dStrip 	s1	, s2	;
+	int 	dir1, dir2	;
+	dVertex(dStrip s, int d) {
+		int _a = (s.iS%4==1)? (d==1? 5: 3) :
+				 (s.iS%4==3)? (d==1? 9:11) :
+				 (d==1)  	? (s.Top()?4:12)   : (s.Top()?12:4);
+		dir1 = d * (s.isVert() ? -1 : 1);
+		dir2 = d;
+		s1 	 = DL_.DS[s.iCube() + ((s.iS+_a) % 16)];
+		s2 	 = DL_.DS[d == 1 ? 	(s.idx == s.iFace()+3 ? s.idx-3 : s.idx+1):
+			   			 		(s.idx == s.iFace()   ? s.idx+3 : s.idx-1)];
+		swapout(1 , 6);
+		swapout(15,-6);
+	}
+	void swapout(int a, int b) {
+		if (s1.iS == a) { s1 = DL_.DS[s1.idx + b]; dir1 = -dir1; }
+		if (s2.iS == a) { s2 = DL_.DS[s2.idx + b]; dir2 = -dir2; }
+	}
+
+}
+
+class dStrip  { // THIS WAS SUCH A PAIN!
+	int row, col, ci, idx, iS, axis;	// 1-y, 2-left, 3-right
+	Strip s; 
+	boolean bTop;	// direction: top ccw, bottom cw.
+
+	boolean Top   (){ 	return axis!=1 &&  bTop ;		}
+	boolean Bottom(){ 	return axis!=1 && !bTop;		}
+	boolean isVert(){ 	return axis==1;					}
+	boolean isHorz(){ 	return axis!=1;					}
+	int 	iCube (){ 	return 16*floor(idx/16);		}
+	int 	iFace (){ 	return iCube() + 4*floor(iS/4);	}
+
+	void 	init(Strip _s, int _i, int _row, int _col)  {
+		idx = _i; row = _row; col = _col; s = _s;
+		iS 	= idx%16; bTop = (iS%4==0);
+		ci  = s.points.get(0).index;
+		DL_.DQ[col][row] = iCube();
+		switch (iS) {
+			case 4:	case 6 : case 12: case 14:	axis=2; break;
+			case 0:	case 2 : case 8 : case 10:	axis=3; break;
+			default:							axis=1; break;
+		}
+	}
+
+	void addBolts() {
+		v0 = new dVertex(this, 1);
+		v1 = new dVertex(this,-1);
+
+
+		if (iS == 7 && col != 0 && row != 0) 									// left bottom
+			new dBolt(this, DL_.GetStrip(row-1,col-1,(col % 2 == 1) ? 8 : 12),  
+							4, (col % 2 == 1) ? 6 : 9);	
+
+		if (iS == 7 && col != 0 && row < MaxCubeHeight*2-2) 					// left top
+			new dBolt(this, DL_.GetStrip(row+1,col-1,(col % 2 == 1) ? 10 : 14), 
+							11, (col % 2 == 1) ? 9 : 6);
+
+		if (iS == 9 && col < NumBackTowers-1 && row < MaxCubeHeight*2-2) 		// right top
+			new dBolt(this, DL_.GetStrip(row+1,col+1,(col % 2 == 1) ? 6 : 2), 
+							4, (col % 2 == 1) ? 6 : 9);
+
+		if (iS == 9 && col < NumBackTowers-1 && row != 0) 						// right bottom
+			new dBolt(this, DL_.GetStrip(row-1,col+1,(col % 2 == 1) ? 4 : 0), 
+							11, (col % 2 == 1) ? 9 : 6);
+	}
+
+	dBolt 	b0, b1;
+	dVertex v0, v1;
+}
+
+class dCursor {
+	dStrip 	s, sNext;
+	int 	nLast,pos,posNext,end;	// 0 - 65535
+	int 	dir;			// 1 or -1
+	color 	clr;
+	
+	dCursor(color _c) { clr=_c;}
+
+	boolean isDone() 				 	{ return pos==end; }
+	void 	set(dStrip _s, int _dir) 	{ 
+			s=_s; dir=_dir; pos = 0; end=65536; nLast=-1; sNext=null;
+	}
+
+	boolean	MakeTurn(dBolt b) {
+		int nEnd=	(s.isVert() ? b.vpos : b.hpos) <<12;
+			nEnd= 	(dir==1 ? nEnd : 65536-nEnd);
+		if (nEnd < pos) return false;
+		if (s.isVert()) { sNext = b.h; posNext = b.hpos<<12; end = nEnd; }
+		else  			{ sNext = b.v; posNext = b.vpos<<12; end = nEnd; }
+		return true;
+	}
+
+	void 	PickNext() 	{
+		if (sNext != null) {
+			if (end == 65536) exit();
+			end			= 65536;	
+			pos			= posNext;
+			dir			= randDir(); 
+			if (dir<0) pos = end-pos;
+			s			= sNext; sNext = null;
+			nLast 		= -1;
+			return;// could switch again!!
+		} else {
+			dVertex v = (dir == 1 ? s.v0 : s.v1);
+			int r = floor(random(2));
+			set(r==0 ? v.s1 : v.s2,r==0 ? v.dir1 : v.dir2);
+		}
+
+		// plan to turn the corner
+		if (random(6)<1 && s.b0 != null && MakeTurn(s.b0)) return;
+		if (random(6)<1 && s.b1 != null && MakeTurn(s.b1)) return;
+	}
+}
+
+int randDir() { return round(random(1))*2-1; }
+
+class dLattice {
+	int   		iTowerStrips=-1;
+	dStrip[] 	DS = new dStrip[glucose.model.strips.size()];
+	int[][]  	DQ = new int[NumBackTowers][MaxCubeHeight*2];
+
+	int		nStrips() { return iTowerStrips; }
+	dStrip GetStrip (int row, int col, int off) { return DS[DQ[col][row]+off]; }
+	dLattice() {
+		DL_=this;
+		int   col = 0, row = -2, i=-1;
+		for (Strip strip : glucose.model.strips  ) { i++; 
+			if (i % 16 == 0) row+=2;
+			if (row >= MaxCubeHeight*2-1) { col++; row = (col%2==1)?1:0; }
+			if (col >= NumBackTowers) continue;
+			iTowerStrips++	;
+			dStrip s = DS[iTowerStrips] = new dStrip();
+			s.init(strip, iTowerStrips, row, col);
+		}
+
+		for (int j=0; j<iTowerStrips; j++) DS[j].addBolts();
+	}
+	dStrip 	rand() 				{ return DS[floor(random(iTowerStrips))]; 		}
+	void	setRand(dCursor c) 	{ c.set(rand(),randDir());			}
+}
+
+dLattice DL_;
+//----------------------------------------------------------------------------------------------------------------------------------
+class Graph extends SCPattern {
+
+	int draw(dCursor c, int nAmount) {
+		int nFrom	= max(c.nLast+1,c.pos >> 12);
+		int	nTo 	= min(15,(c.pos+nAmount) >> 12); c.nLast=nTo;
+		int	nMv 	= min(nAmount, c.end-c.pos);
+			c.pos 	+= nMv;
+		for (int i = nFrom; i <= nTo; i++) {
+			int n = c.s.ci + (c.dir>0 ? i : 15-i);
+			colors[n] = c.clr;
+		}
+		return nAmount - nMv;
+	}
+
+	float 	StripsPerSec 	= 6;
+	float	TrailTime		= 1500;
+	int 	Cursors 		= 40;
+	dCursor	cur[] = new dCursor[Cursors];
+
+	Graph(GLucose glucose) { 
+		super(glucose); 
+		if (DL_ == null) DL_ = new dLattice();
+		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(color(random(360),50+random(50),50+random(50))); DL_.setRand(cur[i]); }
+	}
+
+	void run(double deltaMs) {
+			//Test Joints
+		if (false) {
+			for (int j=0; j<DL_.nStrips(); j++) {
+						dStrip s =DL_.DS[j]; dBolt d = s.b0;
+						if (d != null) {for (int i=0;i<16;i++) {
+							if (s == d.v && i <= d.vpos) colors[d.v.ci+i] 	= color(0,0,30);
+							if (s == d.h && i <= d.hpos) colors[d.h.ci+i] 	= color(0,0,30);
+						}}
+
+						d = s.b1; 
+						if (d != null) {for (int i=0;i<16;i++) {
+							if (s == d.v && i >= d.vpos) colors[d.v.ci+i] 	= color(0,0,30);
+							if (s == d.h && i >= d.hpos) colors[d.h.ci+i] 	= color(0,0,30);
+						}}
+			}
+		} else {
+			for (int i=0; i<Cursors; i++) {
+				int nLeft = floor((float)deltaMs*.001*StripsPerSec * 65536);
+				while(nLeft > 0) { 	
+					nLeft = draw(cur[i], nLeft);
+					if (cur[i].isDone()) cur[i].PickNext(); 
+				}
+			}
+
+			for (int i=0,s=model.points.size(); i<s; i++) {
+				float b = brightness(colors[i]); 
+				color c = colors[i];
+				if (b>0) colors[i] = color(hue(c), saturation(c), 
+						(float)(b-100*deltaMs/TrailTime));
+			}
+		}
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -509,7 +509,7 @@ class dLattice {
 
 dLattice DL_;
 //----------------------------------------------------------------------------------------------------------------------------------
-class Graph extends SCPattern {
+class Worms extends SCPattern {
 
 	int draw(dCursor c, int nAmount) {
 		int nFrom	= max(c.nLast+1,c.pos >> 12);
@@ -528,7 +528,7 @@ class Graph extends SCPattern {
 	int 	Cursors 		= 40;
 	dCursor	cur[] = new dCursor[Cursors];
 
-	Graph(GLucose glucose) { 
+	Worms(GLucose glucose) { 
 		super(glucose); 
 		if (DL_ == null) DL_ = new dLattice();
 		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(color(random(360),50+random(50),50+random(50))); DL_.setRand(cur[i]); }

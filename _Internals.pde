@@ -262,23 +262,23 @@ void draw() {
   // Send output colors
   color[] sendColors = glucose.getColors();
   if (debugMode) {
-    debugUI.maskColors(colors);
+    debugUI.maskColors(sendColors);
   }
   
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
-  for (int i = 0; i < colors.length; ++i) {
-    float b = brightness(colors[i]) / 100.f;
-    colors[i] = color(
-      hue(colors[i]),
-      saturation(colors[i]),
+  for (int i = 0; i < sendColors.length; ++i) {
+    float b = brightness(sendColors[i]) / 100.f;
+    sendColors[i] = color(
+      hue(sendColors[i]),
+      saturation(sendColors[i]),
       (b*b*b) * 100.
     );
   }
   
   // TODO(mcslee): move into GLucose engine
   for (PandaDriver p : pandaBoards) {
-    p.send(colors);
+    p.send(sendColors);
   }
 }
 

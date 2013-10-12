@@ -1,3 +1,79 @@
+class Pulley extends SCPattern {
+  
+  final int NUM_DIVISIONS = 16;
+  private final Accelerator[] gravity = new Accelerator[NUM_DIVISIONS];
+  private final Click[] delays = new Click[NUM_DIVISIONS];
+  
+  private final Click reset = new Click(9000);
+  private boolean isRising = false;
+  
+  Pulley(GLucose glucose) {
+    super(glucose);
+    for (int i = 0; i < NUM_DIVISIONS; ++i) {
+      addModulator(gravity[i] = new Accelerator(0, 0, 0));
+      addModulator(delays[i] = new Click(0));
+    }
+    addModulator(reset).start();
+    trigger();
+  }
+  
+  private void trigger() {
+    isRising = !isRising;
+    int i = 0;
+    for (Accelerator g : gravity) {
+      if (isRising) {
+        g.setSpeed(random(40, 50), 0).start();
+      } else {
+        g.setVelocity(0).setAcceleration(-420);
+        delays[i].setDuration(random(0, 500)).trigger();
+      }
+      ++i;
+    }
+  }
+  
+  public void run(double deltaMs) {
+    if (reset.click()) {
+      trigger();
+    }
+    int j = 0;
+    for (Click d : delays) {
+      if (d.click()) {
+        gravity[j].start();
+        d.stop();
+      }
+      ++j;
+    }   
+    
+    for (Accelerator g : gravity) {
+      if (isRising) {
+        if (g.getValuef() > model.yMax) {
+          g.stop();
+        } else if (g.getValuef() > model.yMax*.55) {
+          if (g.getVelocityf() > 10) {
+            g.setAcceleration(-16);
+          } else {
+            g.setAcceleration(0);
+          }
+        }
+      } else {
+        if (g.getValuef() < 0) {
+          g.setValue(-g.getValuef());
+          g.setVelocity(-g.getVelocityf() * random(0.74, 0.84));
+        }
+      }
+    }
+    
+    for (Point p : model.points) {
+      int i = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
+      colors[p.index] = color(
+        (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
+        constrain(130 - p.y*.8, 0, 100),
+        max(0, 100 - abs(p.y - gravity[i].getValuef())*4.)
+      );
+    }
+  }
+}
+
 class ViolinWave extends SCPattern {
   
   BasicParameter level = new BasicParameter("LVL", 0.45);

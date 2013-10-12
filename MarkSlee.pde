@@ -7,6 +7,7 @@ class Pulley extends SCPattern {
   private final Click reset = new Click(9000);
   private boolean isRising = false;
   
+  private BasicParameter sz = new BasicParameter("SIZE", 0.5);
   private BasicParameter beatAmount = new BasicParameter("BEAT", 0.1);
   
   Pulley(GLucose glucose) {
@@ -16,6 +17,7 @@ class Pulley extends SCPattern {
       addModulator(delays[i] = new Click(0));
     }
     addModulator(reset).start();
+    addParameter(sz);
     addParameter(beatAmount);
     trigger();
   }
@@ -70,7 +72,7 @@ class Pulley extends SCPattern {
     if (fPos < .2) {
       fPos = .2 + 4 * (.2 - fPos);
     }
-    float falloff = 100. / (12 + fPos * beatAmount.getValuef()*48);
+    float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
     for (Point p : model.points) {
       int i = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
       colors[p.index] = color(

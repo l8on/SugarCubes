@@ -7,6 +7,8 @@ class Pulley extends SCPattern {
   private final Click reset = new Click(9000);
   private boolean isRising = false;
   
+  private BasicParameter beatAmount = new BasicParameter("BEAT", 0.1);
+  
   Pulley(GLucose glucose) {
     super(glucose);
     for (int i = 0; i < NUM_DIVISIONS; ++i) {
@@ -14,6 +16,7 @@ class Pulley extends SCPattern {
       addModulator(delays[i] = new Click(0));
     }
     addModulator(reset).start();
+    addParameter(beatAmount);
     trigger();
   }
   
@@ -63,12 +66,17 @@ class Pulley extends SCPattern {
       }
     }
     
+    float fPos = 1 - lx.tempo.rampf();
+    if (fPos < .2) {
+      fPos = .2 + 4 * (.2 - fPos);
+    }
+    float falloff = 100. / (12 + fPos * beatAmount.getValuef()*48);
     for (Point p : model.points) {
       int i = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
       colors[p.index] = color(
         (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
         constrain(130 - p.y*.8, 0, 100),
-        max(0, 100 - abs(p.y - gravity[i].getValuef())*4.)
+        max(0, 100 - abs(p.y - gravity[i].getValuef())*falloff)
       );
     }
   }

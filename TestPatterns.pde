@@ -140,7 +140,7 @@ class TestXPattern extends TestPattern {
       // You can use abs() to determine the distance between two
       // values. The further away this point is from an exact
       // point, the more we decrease its brightness
-      float bv = max(0, 100 - abs(p.fx - xPos.getValuef()));
+      float bv = max(0, 100 - abs(p.x - xPos.getValuef()));
       colors[p.index] = color(hv, 100, bv);
     }
   }
@@ -158,7 +158,7 @@ class TestYPattern extends TestPattern {
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
-      float bv = max(0, 100 - abs(p.fy - yPos.getValuef()));
+      float bv = max(0, 100 - abs(p.y - yPos.getValuef()));
       colors[p.index] = color(hv, 100, bv);
     }
   }
@@ -176,7 +176,7 @@ class TestZPattern extends TestPattern {
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
-      float bv = max(0, 100 - abs(p.fz - zPos.getValuef()));
+      float bv = max(0, 100 - abs(p.z - zPos.getValuef()));
       colors[p.index] = color(hv, 100, bv);
     }
   }

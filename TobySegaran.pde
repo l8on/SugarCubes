@@ -25,10 +25,10 @@ class GlitchPlasma extends SCPattern {
 
   public void run(double deltaMs) {
     for (Point p : model.points) {
-      float hv = sin(dist(p.fx + pos, p.fy, 128.0, 128.0) / 8.0)
-	  + sin(dist(p.fx, p.fy, 64.0, 64.0) / 8.0)
-	  + sin(dist(p.fx, p.fy + pos / 7, 192.0, 64.0) / 7.0)
-	  + sin(dist(p.fx, p.fz + pos, 192.0, 100.0) / 8.0);
+      float hv = sin(dist(p.x + pos, p.y, 128.0, 128.0) / 8.0)
+	  + sin(dist(p.x, p.y, 64.0, 64.0) / 8.0)
+	  + sin(dist(p.x, p.y + pos / 7, 192.0, 64.0) / 7.0)
+	  + sin(dist(p.x, p.z + pos, 192.0, 100.0) / 8.0);
       float bv = 100;
       colors[p.index] = color((hv+2)*50, satu, bv);
     }
@@ -82,8 +82,8 @@ class FireEffect extends SCPattern {
     }
     
     for (Point p : model.points) {
-      int x = max(0,(int(p.fx)+int(p.fz))%xm);
-      int y = constrain(ym-int(p.fy),0,ym-1);
+      int x = max(0,(int(p.x)+int(p.z))%xm);
+      int y = constrain(ym-int(p.y),0,ym-1);
       colors[p.index] = flameColor(intensity[x][y]);
     }
   }
@@ -116,7 +116,7 @@ class StripBounce extends SCPattern {
     for (Strip strip : model.strips) {
       for (int i=0;i<numOsc;i++) {
         float avgdist=0.0;
-        avgdist = dist(strip.points.get(8).fx,strip.points.get(8).fy,strip.points.get(8).fz,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
+        avgdist = dist(strip.points.get(8).x,strip.points.get(8).y,strip.points.get(8).z,fX[i].getValuef(),fY[i].getValuef(),fZ[i].getValuef());
         boolean on = avgdist<30;
         float hv = (lx.getBaseHuef()+colorOffset[i])%360;
         float br = max(0,100-avgdist*4);
@@ -185,9 +185,9 @@ class SoundRain extends SCPattern {
         Strip s = c.strips.get(j);
         if (j%4!=0 && j%4!=2) {
           for (Point p : s.points) {
-            int seq = int(p.fy*avgSize/model.yMax+pos.getValuef()+sin(p.fx+p.fz)*2)%avgSize;
+            int seq = int(p.y*avgSize/model.yMax+pos.getValuef()+sin(p.x+p.z)*2)%avgSize;
             seq=min(abs(seq-(avgSize/2)),avgSize-1);
-            colors[p.index] = color(200,max(0,100-abs(p.fx-col1.getValuef())/2),lightVals[seq]);
+            colors[p.index] = color(200,max(0,100-abs(p.x-col1.getValuef())/2),lightVals[seq]);
           }
         }
       }
@@ -218,15 +218,15 @@ class FaceSync extends SCPattern {
       for (Point p : s.points) {
         float dx, dz;
         if (i%32 < 16) {
-          dx = p.fx - (s.cx+xosc.getValuef());
-          dz = p.fz - (s.cz+zosc.getValuef());
+          dx = p.x - (s.cx+xosc.getValuef());
+          dz = p.z - (s.cz+zosc.getValuef());
         } else {
-          dx = p.fx - (s.cx+zosc.getValuef());
-          dz = p.fz - (s.cz+xosc.getValuef());
+          dx = p.x - (s.cx+zosc.getValuef());
+          dz = p.z - (s.cz+xosc.getValuef());
         }                
         //println(dx);
-        float a1=max(0,100-abs(p.fx-col1.getValuef()));
-        float a2=max(0,100-abs(p.fx-col2.getValuef()));        
+        float a1=max(0,100-abs(p.x-col1.getValuef()));
+        float a2=max(0,100-abs(p.x-col2.getValuef()));        
         float sat = max(a1,a2);
         float h = (359*a1+200*a2) / (a1+a2);
         colors[p.index] = color(h,sat,100-abs(dx*5)-abs(dz*5));
@@ -287,11 +287,11 @@ class SoundSpikes extends SCPattern {
         Strip s = c.strips.get(j);
         if (j%4!=0 && j%4!=2) {
           for (Point p : s.points) {
-            float dis = (abs(p.fx-model.xMax/2)+pos.getValuef())%model.xMax/2;
+            float dis = (abs(p.x-model.xMax/2)+pos.getValuef())%model.xMax/2;
             int seq = int((dis*avgSize*2)/model.xMax);
             if (seq>avgSize) seq=avgSize-seq;
             seq=constrain(seq,0,avgSize-1);
-            float br=max(0, lightVals[seq]-p.fy);
+            float br=max(0, lightVals[seq]-p.y);
             colors[p.index] = color((dis*avgSize*65)/model.xMax,90,br);
           }
         }

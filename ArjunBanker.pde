@@ -40,7 +40,7 @@ class AbstractPainting extends SCPattern {
   void run(double deltaMs) {    
     for (Point p : model.points) {
       color c = img.get((int)((p.x / model.xMax) * img.width), img.height - (int)((p.y / model.yMax) * img.height));
-      colors[p.index] = color(hue(c) + colorMod.getValuef()%360, saturation(c), brightness(c) - ((p.fz - brightMod.getValuef())/p.fz));
+      colors[p.index] = color(hue(c) + colorMod.getValuef()%360, saturation(c), brightness(c) - ((p.z - brightMod.getValuef())/p.z));
     }    
   }       
 }
@@ -66,7 +66,7 @@ class Spirality extends SCPattern {
     float x = model.xMax / 2 + cos(angle) * rad;
     float y = model.yMax / 2 + sin(angle) * rad;
     for (Point p : model.points) {    
-      float b = dist(x,y,p.fx,p.fy);
+      float b = dist(x,y,p.x,p.y);
       if (b < 90) {
         colors[p.index] = blendColor(
           colors[p.index],

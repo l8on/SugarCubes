@@ -437,7 +437,7 @@ class SpaceTime extends SCPattern {
       int i = 0;
       for (Point p : strip.points) {
         colors[p.index] = color(
-          (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
+          (lx.getBaseHuef() + 360 - p.x*.2 + p.y * .3) % 360, 
           constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
           max(0, 100 - fVal*abs(i - pVal*(strip.metrics.numPoints - 1)))
         );
@@ -485,9 +485,9 @@ class Swarm extends SCPattern {
     for (Strip strip : model.strips  ) {
       int i = 0;
       for (Point p : strip.points) {
-        float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
+        float fV = max(-1, 1 - dist(p.x/2., p.y, fX.getValuef()/2., fY.getValuef()) / 64.);
         colors[p.index] = color(
-        (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
+        (lx.getBaseHuef() + 0.3 * abs(p.x - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
         constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
           );
@@ -512,7 +512,7 @@ class SwipeTransition extends SCTransition {
     float bleedf = 10 + bleed.getValuef() * 200.;
     float xPos = (float) (-bleedf + progress * (model.xMax + bleedf));
     for (Point p : model.points) {
-      float d = (p.fx - xPos) / bleedf;
+      float d = (p.x - xPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
       } else if (d > 1) {
@@ -628,17 +628,17 @@ class BassPod extends SCPattern {
     float bassLevel = eq.getAverageLevel(0, 5);
     
     for (Point p : model.points) {
-      int avgIndex = (int) constrain(1 + abs(p.fx-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
+      int avgIndex = (int) constrain(1 + abs(p.x-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
       float value = 0;
       for (int i = avgIndex; i < avgIndex + 5; ++i) {
         value += eq.getLevel(i);
       }
       value /= 5.;
 
-      float b = constrain(8 * (value*model.yMax - abs(p.fy-model.yMax/2.)), 0, 100);
+      float b = constrain(8 * (value*model.yMax - abs(p.y-model.yMax/2.)), 0, 100);
       colors[p.index] = color(
-        (lx.getBaseHuef() + abs(p.fy - model.cy) + abs(p.fx - model.cx)) % 360,
-        constrain(bassLevel*240 - .6*dist(p.fx, p.fy, model.cx, model.cy), 0, 100),
+        (lx.getBaseHuef() + abs(p.y - model.cy) + abs(p.x - model.cx)) % 360,
+        constrain(bassLevel*240 - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
         b
       );
     }
@@ -679,7 +679,7 @@ class CubeEQ extends SCPattern {
     float clrConst = 1.1 + clr.getValuef();
 
     for (Point p : model.points) {
-      float avgIndex = constrain(2 + p.fx / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
+      float avgIndex = constrain(2 + p.x / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
       int avgFloor = (int) avgIndex;
 
       float leftVal = eq.getLevel(avgFloor);
@@ -695,9 +695,9 @@ class CubeEQ extends SCPattern {
       
       float value = lerp(smoothValue, chunkyValue, blockiness.getValuef());
 
-      float b = constrain(edgeConst * (value*model.yMax - p.fy), 0, 100);
+      float b = constrain(edgeConst * (value*model.yMax - p.y), 0, 100);
       colors[p.index] = color(
-        (480 + lx.getBaseHuef() - min(clrConst*p.fy, 120)) % 360, 
+        (480 + lx.getBaseHuef() - min(clrConst*p.y, 120)) % 360, 
         100, 
         b
       );
@@ -736,7 +736,7 @@ class BoomEffect extends SCEffect {
       for (Point p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
-        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 3*p.fz, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
+        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
         ADD);
       }
     }
@@ -912,19 +912,19 @@ class CrossSections extends SCPattern {
     for (Point p : model.points) {
       color c = 0;
       c = blendColor(c, color(
-      (lx.getBaseHuef() + p.fx/10 + p.fy/3) % 360, 
-      constrain(140 - 1.1*abs(p.fx - model.xMax/2.), 0, 100), 
-      max(0, xlv - xwv*abs(p.fx - xv))
+      (lx.getBaseHuef() + p.x/10 + p.y/3) % 360, 
+      constrain(140 - 1.1*abs(p.x - model.xMax/2.), 0, 100), 
+      max(0, xlv - xwv*abs(p.x - xv))
         ), ADD);
       c = blendColor(c, color(
-      (lx.getBaseHuef() + 80 + p.fy/10) % 360, 
-      constrain(140 - 2.2*abs(p.fy - model.yMax/2.), 0, 100), 
-      max(0, ylv - ywv*abs(p.fy - yv))
+      (lx.getBaseHuef() + 80 + p.y/10) % 360, 
+      constrain(140 - 2.2*abs(p.y - model.yMax/2.), 0, 100), 
+      max(0, ylv - ywv*abs(p.y - yv))
         ), ADD); 
       c = blendColor(c, color(
-      (lx.getBaseHuef() + 160 + p.fz / 10 + p.fy/2) % 360, 
-      constrain(140 - 2.2*abs(p.fz - model.zMax/2.), 0, 100), 
-      max(0, zlv - zwv*abs(p.fz - zv))
+      (lx.getBaseHuef() + 160 + p.z / 10 + p.y/2) % 360, 
+      constrain(140 - 2.2*abs(p.z - model.zMax/2.), 0, 100), 
+      max(0, zlv - zwv*abs(p.z - zv))
         ), ADD); 
       colors[p.index] = c;
     }
@@ -958,8 +958,8 @@ class Blinders extends SCPattern {
       float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
         colors[p.index] = color(
-          (hv + p.fz + p.fy*hs.getValuef()) % 360, 
-          min(100, abs(p.fx - s.getValuef())/2.), 
+          (hv + p.z + p.y*hs.getValuef()) % 360, 
+          min(100, abs(p.x - s.getValuef())/2.), 
           max(0, 100 - mv/2. - mv * abs(i - (strip.metrics.length-1)/2.))
         );
         ++i;
@@ -994,8 +994,8 @@ class Psychedelia extends SCPattern {
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
         colors[p.index] = color(
-          (huev + i*constrain(cv, 0, 2) + p.fz/2. + p.fx/4.) % 360, 
-          min(100, abs(p.fy-sv)), 
+          (huev + i*constrain(cv, 0, 2) + p.z/2. + p.x/4.) % 360, 
+          min(100, abs(p.y-sv)), 
           max(0, 100 - 50*abs((i%NUM) - mv))
         );
       }
@@ -1058,12 +1058,12 @@ class AskewPlanes extends SCPattern {
       float d = MAX_FLOAT;
       for (Plane plane : planes) {
         if (plane.denom != 0) {
-          d = min(d, abs(plane.av*(p.fx-model.cx) + plane.bv*(p.fy-model.cy) + plane.cv) / plane.denom);
+          d = min(d, abs(plane.av*(p.x-model.cx) + plane.bv*(p.y-model.cy) + plane.cv) / plane.denom);
         }
       }
       colors[p.index] = color(
-        (huev + abs(p.fx-model.cx)*.3 + p.fy*.8) % 360,
-        max(0, 100 - .8*abs(p.fx - model.cx)),
+        (huev + abs(p.x-model.cx)*.3 + p.y*.8) % 360,
+        max(0, 100 - .8*abs(p.x - model.cx)),
         constrain(140 - 10.*d, 0, 100)
       );
     }
@@ -1093,9 +1093,9 @@ class ShiftingPlane extends SCPattern {
     float dv = d.getValuef();    
     float denom = sqrt(av*av + bv*bv + cv*cv);
     for (Point p : model.points) {
-      float d = abs(av*(p.fx-model.cx) + bv*(p.fy-model.cy) + cv*(p.fz-model.cz) + dv) / denom;
+      float d = abs(av*(p.x-model.cx) + bv*(p.y-model.cy) + cv*(p.z-model.cz) + dv) / denom;
       colors[p.index] = color(
-        (hv + abs(p.fx-model.cx)*.6 + abs(p.fy-model.cy)*.9 + abs(p.fz - model.cz)) % 360,
+        (hv + abs(p.x-model.cx)*.6 + abs(p.y-model.cy)*.9 + abs(p.z - model.cz)) % 360,
         constrain(110 - d*6, 0, 100),
         constrain(130 - 7*d, 0, 100)
       );
@@ -1166,12 +1166,12 @@ class Traktor extends SCPattern {
       colors[p.index] = color(
         (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
         100,
-        constrain(9 * (bass[pos]*model.cy - abs(p.fy - model.cy)), 0, 100)
+        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy)), 0, 100)
       );
       colors[p.index] = blendColor(colors[p.index], color(
         (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
         60,
-        constrain(5 * (treble[pos]*.6*model.cy - abs(p.fy - model.cy)), 0, 100)
+        constrain(5 * (treble[pos]*.6*model.cy - abs(p.y - model.cy)), 0, 100)
 
       ), ADD);
     }

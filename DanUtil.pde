@@ -67,10 +67,10 @@ public class DParam extends BasicParameter {
 //----------------------------------------------------------------------------------------------------------------------------------
 public class xyz {	float x,y,z;
 			xyz() {x=y=z=0;}
-			xyz(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
+			xyz(Point p					  ) {x=p.x	; y=p.y; z=p.z;}
 			xyz(xyz p					  ) {set(p);				 }
 			xyz(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
-	void	set(Point p					  ) {x=p.fx	; y=p.fy; z=p.fz;}
+	void	set(Point p					  ) {x=p.x	; y=p.y; z=p.z;}
 	void	set(xyz p					  ) {x=p.x	; y=p.y ; z=p.z ;}
 	void	set(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
 
@@ -344,8 +344,8 @@ public class DPat extends SCPattern
 				100 *  b * DG._Level()
 			);
 
-//			colors[p.index] = color(0,0, p.fx >= modmin.x && p.fy >= modmin.y && p.fz >= modmin.z &&
-//				p.fx <= modmin.x+mMax.x && p.fy <= modmin.y+mMax.y && p.fz <= modmin.z+mMax.z ? 100 : 0); 
+//			colors[p.index] = color(0,0, p.x >= modmin.x && p.y >= modmin.y && p.z >= modmin.z &&
+//				p.x <= modmin.x+mMax.x && p.y <= modmin.y+mMax.y && p.z <= modmin.z+mMax.z ? 100 : 0); 
 		}
 	}
 }

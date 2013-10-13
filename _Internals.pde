@@ -252,7 +252,7 @@ void draw() {
   beginShape(POINTS);
   for (Point p : glucose.model.points) {
     stroke(colors[p.index]);
-    vertex(p.fx, p.fy, p.fz);
+    vertex(p.x, p.y, p.z);
   }
   endShape();
   

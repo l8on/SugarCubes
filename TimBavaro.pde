@@ -125,7 +125,7 @@ class Vector3 {
   }
   
   float distanceTo(Point p) {
-    return distanceTo(p.fx, p.fy, p.fz);
+    return distanceTo(p.x, p.y, p.z);
   }
   
   void add(Vector3 other, float multiplier) {
@@ -249,12 +249,12 @@ class TimRaindrops extends SCPattern {
     for (Point p : model.points) {
       color c = 
         blendColor(
-          color(210, 20, (float)Math.max(0, 1 - Math.pow((model.yMax - p.fy) / 10, 2)) * 50),
-          color(220, 60, (float)Math.max(0, 1 - Math.pow((p.fy - model.yMin) / 10, 2)) * 100),
+          color(210, 20, (float)Math.max(0, 1 - Math.pow((model.yMax - p.y) / 10, 2)) * 50),
+          color(220, 60, (float)Math.max(0, 1 - Math.pow((p.y - model.yMin) / 10, 2)) * 100),
           ADD);
       for (Raindrop raindrop : raindrops) {
-        if (p.fx >= (raindrop.p.x - raindrop.radius) && p.fx <= (raindrop.p.x + raindrop.radius) &&
-            p.fy >= (raindrop.p.y - raindrop.radius) && p.fy <= (raindrop.p.y + raindrop.radius)) {
+        if (p.x >= (raindrop.p.x - raindrop.radius) && p.x <= (raindrop.p.x + raindrop.radius) &&
+            p.y >= (raindrop.p.y - raindrop.radius) && p.y <= (raindrop.p.y + raindrop.radius)) {
           float d = raindrop.p.distanceTo(p) / raindrop.radius;
   //      float value = (float)Math.max(0, 1 - Math.pow(Math.min(0, d - raindrop.radius) / 5, 2)); 
           if (d < 1) {
@@ -464,9 +464,9 @@ class TimPlanes extends SCPattern {
       color c = 0;
       
       for (Plane plane : planes) {
-        normalizedPoint.x = p.fx - plane.center.x;
-        normalizedPoint.y = p.fy - plane.center.y;
-        normalizedPoint.z = p.fz - plane.center.z;
+        normalizedPoint.x = p.x - plane.center.x;
+        normalizedPoint.y = p.y - plane.center.y;
+        normalizedPoint.z = p.z - plane.center.z;
         
         float v = plane.rotation.rotatedY(normalizedPoint);
         float d = abs(v);
@@ -636,7 +636,7 @@ class TimPinwheels extends SCPattern {
       
       int value = 0;
       for (Pinwheel pw : pinwheels) {
-        value += (pw.isOnBlade(p.fx, p.fy - p.fz * zSlope) ? 1 : 0);
+        value += (pw.isOnBlade(p.x, p.y - p.z * zSlope) ? 1 : 0);
       }
       if (value == 1) {
         values[i] = 1;
@@ -746,7 +746,7 @@ class TimTrace extends SCPattern {
     for (Strip s : model.strips) {
       Vector3 v = new Vector3();
       for (Point p : s.points) {
-        v.add(p.fx, p.fy, p.fz);
+        v.add(p.x, p.y, p.z);
       }
       v.divide(s.points.size());
       stripToCenter.put(s, v);
@@ -778,7 +778,7 @@ class TimTrace extends SCPattern {
       List<Strip> nearbyStrips = stripToNearbyStrips.get(s);
       
       for (Point p : s.points) {
-        Vector3 v = new Vector3(p.fx, p.fy, p.fz);
+        Vector3 v = new Vector3(p.x, p.y, p.z);
         
         List<Point> neighbors = new ArrayList();
         
@@ -787,7 +787,7 @@ class TimTrace extends SCPattern {
           float closestPointDistance = 100000;
           
           for (Point nsp : nearbyStrip.points) {
-            float distance = v.distanceTo(nsp.fx, nsp.fy, nsp.fz);
+            float distance = v.distanceTo(nsp.x, nsp.y, nsp.z);
             if (closestPoint == null || distance < closestPointDistance) {
               closestPoint = nsp;
               closestPointDistance = distance;

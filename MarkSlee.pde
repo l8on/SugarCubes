@@ -172,11 +172,11 @@ class Pulley extends SCPattern {
     }
     float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
     for (Point p : model.points) {
-      int i = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
+      int g = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
       colors[p.index] = color(
         (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
         constrain(130 - p.y*.8, 0, 100),
-        max(0, 100 - abs(p.y - gravity[i].getValuef())*falloff)
+        max(0, 100 - abs(p.y - gravity[g].getValuef())*falloff)
       );
     }
   }
@@ -246,7 +246,7 @@ class ViolinWave extends SCPattern {
       for (Point p : model.points) {
         float b = 100 - pFalloff * (abs(p.x - x.getValuef()) + abs(p.y - y.getValuef()));
         if (b > 0) {
-          colors[p.index] = blendColor(colors[p.index], color(
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
             lx.getBaseHuef(), 20, b
           ), ADD);
         }
@@ -297,7 +297,7 @@ class ViolinWave extends SCPattern {
     for (Point p : model.points) {
       int ci = (int) lerp(0, centers.length-1, (p.x - model.xMin) / (model.xMax - model.xMin));
       float rFactor = 1.0 -  0.9 * abs(p.x - model.cx) / (model.xMax - model.cx);
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.x - model.cx)) % 360,
         min(100, 20 + 8*abs(p.y - centers[ci])),
         constrain(edg*(val*rFactor - rng * abs(p.y-centers[ci])), 0, 100)

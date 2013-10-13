@@ -703,7 +703,7 @@ public class UIScrollList extends UIObject {
         itemColor = #707070;
       }
       float factor = even ? .92 : 1.08;
-      itemColor = color(hue(itemColor), saturation(itemColor), min(100, factor*brightness(itemColor)));
+      itemColor = lx.scaleBrightness(itemColor, factor);
       
       pg.noStroke();
       pg.fill(itemColor);

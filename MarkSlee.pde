@@ -1,3 +1,101 @@
+class MidiMusic extends SCPattern {
+  
+  private final Map<Integer, LightUp> lightMap = new HashMap<Integer, LightUp>();
+  private final List<LightUp> allLights = new ArrayList<LightUp>();
+  
+  private final Stack<LightUp> newLayers = new Stack<LightUp>();
+  
+  MidiMusic(GLucose glucose) {
+    super(glucose);
+  }
+  
+  class LightUp extends LXLayer {
+    
+    private LinearEnvelope brt = new LinearEnvelope(0, 0, 0);
+    private Accelerator yPos = new Accelerator(0, 0, 0);
+    private float xPos;
+    
+    LightUp() {
+      addModulator(brt);
+      addModulator(yPos);
+    }
+    
+    boolean isAvailable() {
+      return brt.getValuef() <= 0;
+    }
+    
+    void noteOn(Note note) {
+      xPos = lerp(0, model.xMax, constrain(0.5 + (note.getPitch() - 64) / 12., 0, 1));
+      yPos.setValue(lerp(20, model.yMax, note.getVelocity() / 127.));
+      brt.setRangeFromHereTo(lerp(40, 100, note.getVelocity() / 127.), 20).start();     
+    }
+
+    void noteOff(Note note) {
+      yPos.setVelocity(0).setAcceleration(-380).start();
+      brt.setRangeFromHereTo(0, 1000).start();
+    }
+    
+    public void run(double deltaMs, color[] colors) {
+      float bVal = brt.getValuef();
+      if (bVal <= 0) {
+        return;
+      }
+      float yVal = yPos.getValuef();
+      for (Point p : model.points) {
+        float b = max(0, bVal - 3*dist(p.x, p.y, xPos, yVal));
+        if (b > 0) {
+          colors[p.index] = blendColor(colors[p.index], color(
+            (lx.getBaseHuef() + abs(p.x - model.cx) + abs(p.y - model.cy)) % 360,
+            100,
+            b
+          ), ADD);
+        }
+      }
+    }
+  }
+  
+  public synchronized boolean noteOnReceived(Note note) {
+    if (note.getChannel() == 0) {
+      for (LightUp light : allLights) {
+        if (light.isAvailable()) {
+          light.noteOn(note);
+          lightMap.put(note.getPitch(), light);
+          return true;
+        }
+      }
+      LightUp newLight = new LightUp();
+      newLight.noteOn(note);
+      lightMap.put(note.getPitch(), newLight);
+      synchronized(newLayers) {
+        newLayers.push(newLight);
+      }
+    } else if (note.getChannel() == 1) {
+    }
+    return true;
+  }
+  
+  public synchronized boolean noteOffReceived(Note note) {
+    if (note.getChannel() == 0) {
+      LightUp light = lightMap.get(note.getPitch());
+      if (light != null) {
+        light.noteOff(note);
+      }
+    }
+    return true;
+  }
+  
+  public synchronized void run(double deltaMs) {
+    setColors(#000000);
+    if (!newLayers.isEmpty()) {
+      synchronized(newLayers) {
+        while (!newLayers.isEmpty()) {
+          addLayer(newLayers.pop());
+        }
+      }
+    }
+  }
+}
+
 class Pulley extends SCPattern {
   
   final int NUM_DIVISIONS = 16;
@@ -1085,6 +1183,7 @@ class ColorFuckerEffect extends SCEffect {
   BasicParameter hueShift = new BasicParameter("HSHFT", 0);
   BasicParameter sat = new BasicParameter("SAT", 1);  
   BasicParameter bright = new BasicParameter("BRT", 1);
+  float[] hsb = new float[3];
   
   ColorFuckerEffect(GLucose glucose) {
     super(glucose);
@@ -1102,10 +1201,11 @@ class ColorFuckerEffect extends SCEffect {
     float hMod = hueShift.getValuef();
     if (bMod < 1 || sMod < 1 || hMod > 0) {    
       for (int i = 0; i < colors.length; ++i) {
-        colors[i] = color(
-          (hue(colors[i]) + hueShift.getValuef()*360.) % 360,
-          saturation(colors[i]) * sat.getValuef(),
-          brightness(colors[i]) * bright.getValuef()
+        lx.RGBtoHSB(colors[i], hsb);
+        colors[i] = lx.hsb(
+          (360. * hsb[0] + hueShift.getValuef()*360.) % 360,
+          100. * hsb[1] * sat.getValuef(),
+          100. * hsb[2] * bright.getValuef()
         );
       }
     }

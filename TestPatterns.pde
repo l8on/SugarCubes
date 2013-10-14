@@ -96,29 +96,42 @@ class TestPerformancePattern extends TestPattern {
   }
   
   public void run(double deltaMs) {
-    if (iter.getValuef() > 0.5) {
-       for (int i = 0; i < colors.length; ++i) {
-         float x = 1;
-         for (int j = 0; j < ops.getValuef() * 30; ++j) {
-           x *= random(0, 1);
-         }
-         colors[i] = lx.hsb(
-           (lx.getBaseHuef() + model.px[i]*.2 + model.py[i]*.4) % 360,
-           100,
-           100
-         );
-       }
-    } else {
+    float x = 1;
+    for (int j = 0; j < ops.getValuef() * 400000; ++j) {
+      x *= random(0, 1);
+    }
+
+    if (iter.getValuef() < 0.25) {
       for (Point p : model.points) {
-        float x = 1;
-        for (int j = 0; j < ops.getValuef() * 30; ++j) {
-          x *= random(0, 1);
-        }
         colors[p.index] = lx.hsb(
-           (lx.getBaseHuef() + p.x*.2 + p.y*.4) % 360,
-           100,
-           100
-         );
+          (p.x*.1 + p.y*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else if (iter.getValuef() < 0.5) {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (90 + model.px[i]*.1 + model.py[i]*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else if (iter.getValuef() < 0.75) {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (180 + model.p[3*i]*.1 + model.p[3*i+1]*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (270 + model.x(i)*.1 + model.y(i)*.1) % 360,
+          100,
+          100
+        );
       }
     }
   }

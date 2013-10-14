@@ -106,7 +106,7 @@ class Pulley extends SCPattern {
   private boolean isRising = false;
   
   private BasicParameter sz = new BasicParameter("SIZE", 0.5);
-  private BasicParameter beatAmount = new BasicParameter("BEAT", 0.1);
+  private BasicParameter beatAmount = new BasicParameter("BEAT", 0);
   
   Pulley(GLucose glucose) {
     super(glucose);
@@ -125,7 +125,7 @@ class Pulley extends SCPattern {
     int i = 0;
     for (Accelerator g : gravity) {
       if (isRising) {
-        g.setSpeed(random(40, 50), 0).start();
+        g.setSpeed(random(20, 33), 0).start();
       } else {
         g.setVelocity(0).setAcceleration(-420);
         delays[i].setDuration(random(0, 500)).trigger();
@@ -138,27 +138,31 @@ class Pulley extends SCPattern {
     if (reset.click()) {
       trigger();
     }
-    int j = 0;
-    for (Click d : delays) {
-      if (d.click()) {
-        gravity[j].start();
-        d.stop();
-      }
-      ++j;
-    }   
-    
-    for (Accelerator g : gravity) {
-      if (isRising) {
-        if (g.getValuef() > model.yMax) {
-          g.stop();
-        } else if (g.getValuef() > model.yMax*.55) {
-          if (g.getVelocityf() > 10) {
-            g.setAcceleration(-16);
-          } else {
-            g.setAcceleration(0);
-          }
+    if (isRising) {
+      // Fucking A, had to comment this all out because of that bizarre
+      // Processing bug where some simple loop takes an absurd amount of
+      // time, must be some pre-processor bug
+//      for (Accelerator g : gravity) {
+//        if (g.getValuef() > model.yMax) {
+//          g.stop();
+//        } else if (g.getValuef() > model.yMax*.55) {
+//          if (g.getVelocityf() > 10) {
+//            g.setAcceleration(-16);
+//          } else {
+//            g.setAcceleration(0);
+//          }
+//        }
+//      }
+    } else {
+      int j = 0;
+      for (Click d : delays) {
+        if (d.click()) {
+          gravity[j].start();
+          d.stop();
         }
-      } else {
+        ++j;
+      }
+      for (Accelerator g : gravity) {
         if (g.getValuef() < 0) {
           g.setValue(-g.getValuef());
           g.setVelocity(-g.getVelocityf() * random(0.74, 0.84));
@@ -172,11 +176,11 @@ class Pulley extends SCPattern {
     }
     float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
     for (Point p : model.points) {
-      int g = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
+      int gi = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
       colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
         constrain(130 - p.y*.8, 0, 100),
-        max(0, 100 - abs(p.y - gravity[g].getValuef())*falloff)
+        max(0, 100 - abs(p.y - gravity[gi].getValuef())*falloff)
       );
     }
   }

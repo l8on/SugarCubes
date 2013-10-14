@@ -52,7 +52,6 @@ LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 MidiEngine midiEngine;
-color[] threadColors;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -61,6 +60,7 @@ DebugUI debugUI;
 boolean uiOn = true;
 LXPattern restoreToPattern = null;
 PImage logo;
+float[] hsb = new float[3];
 
 // Handles to UI objects
 UIContext[] overlays;
@@ -121,7 +121,6 @@ void setup() {
   glucose = new GLucose(this, buildModel());
   lx = glucose.lx;
   lx.enableKeyboardTempo();
-  threadColors = new color[lx.total];
   logTime("Built GLucose engine");
   
   // Set the patterns
@@ -267,12 +266,9 @@ void draw() {
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   for (int i = 0; i < sendColors.length; ++i) {
-    float b = brightness(sendColors[i]) / 100.f;
-    sendColors[i] = color(
-      hue(sendColors[i]),
-      saturation(sendColors[i]),
-      (b*b*b) * 100.
-    );
+    lx.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
   
   // TODO(mcslee): move into GLucose engine

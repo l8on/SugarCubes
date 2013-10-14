@@ -56,13 +56,13 @@ class TimSpheres extends SCPattern {
     for (Point p : model.points) {
       float value = 0;
 
-      color c = color(0, 0, 0);      
+      color c = lx.hsb(0, 0, 0);      
       for (Sphere s : spheres) {
         float d = sqrt(pow(p.x - s.x, 2) + pow(p.y - s.y, 2) + pow(p.z - s.z, 2));
         float r = (s.radius); // * (sinLfoValue + 0.5));
         value = max(0, 1 - max(0, d - r) / 10);
         
-        c = blendColor(c, color(((s.hue + lfoValue) % 1) * 360, 100, min(1, value) * 100), ADD);
+        c = blendColor(c, lx.hsb(((s.hue + lfoValue) % 1) * 360, 100, min(1, value) * 100), ADD);
       }
       
       colors[p.index] = c;
@@ -249,8 +249,8 @@ class TimRaindrops extends SCPattern {
     for (Point p : model.points) {
       color c = 
         blendColor(
-          color(210, 20, (float)Math.max(0, 1 - Math.pow((model.yMax - p.y) / 10, 2)) * 50),
-          color(220, 60, (float)Math.max(0, 1 - Math.pow((p.y - model.yMin) / 10, 2)) * 100),
+          lx.hsb(210, 20, (float)Math.max(0, 1 - Math.pow((model.yMax - p.y) / 10, 2)) * 50),
+          lx.hsb(220, 60, (float)Math.max(0, 1 - Math.pow((p.y - model.yMin) / 10, 2)) * 100),
           ADD);
       for (Raindrop raindrop : raindrops) {
         if (p.x >= (raindrop.p.x - raindrop.radius) && p.x <= (raindrop.p.x + raindrop.radius) &&
@@ -258,7 +258,7 @@ class TimRaindrops extends SCPattern {
           float d = raindrop.p.distanceTo(p) / raindrop.radius;
   //      float value = (float)Math.max(0, 1 - Math.pow(Math.min(0, d - raindrop.radius) / 5, 2)); 
           if (d < 1) {
-            c = blendColor(c, color(raindrop.hue, 80, (float)Math.pow(1 - d, 0.01) * 100), ADD);
+            c = blendColor(c, lx.hsb(raindrop.hue, 80, (float)Math.pow(1 - d, 0.01) * 100), ADD);
           }
         }
       }
@@ -343,7 +343,7 @@ class TimCubes extends SCPattern {
     
     for (CubeFlash flash : flashes) {
       float hue = (hueParameter.getValuef() + (hueVarianceParameter.getValuef() * flash.hue)) % 1.0;
-      color c = color(hue * 360, saturationParameter.getValuef() * 100, (flash.value) * 100);
+      color c = lx.hsb(hue * 360, saturationParameter.getValuef() * 100, (flash.value) * 100);
       for (Point p : flash.c.points) {
         colors[p.index] = c;
       }
@@ -473,10 +473,10 @@ class TimPlanes extends SCPattern {
         
         final color planeColor;
         if (d <= thickness) {
-          planeColor = color(plane.hue, saturation, 100);
+          planeColor = lx.hsb(plane.hue, saturation, 100);
         } else if (d <= thickness * 2) {    
           float value = 1 - ((d - thickness) / thickness);
-          planeColor = color(plane.hue, saturation, value * 100);
+          planeColor = lx.hsb(plane.hue, saturation, value * 100);
         } else {
           planeColor = 0;
         }
@@ -640,16 +640,16 @@ class TimPinwheels extends SCPattern {
       }
       if (value == 1) {
         values[i] = 1;
-//        colors[p.index] = color(120, 0, 100);
+//        colors[p.index] = lx.hsb(120, 0, 100);
       } else {
         values[i] = max(0, values[i] - fadeAmount);
         //color c = colors[p.index];
-        //colors[p.index] = color(max(0, hue(c) - 10), min(100, saturation(c) + 10), brightness(c) - 5 );
+        //colors[p.index] = lx.hsb(max(0, lx.h(c) - 10), min(100, lx.s(c) + 10), lx.b(c) - 5 );
       }
       
       if (random(1.0) >= derez) {
         float v = values[i];
-        colors[p.index] = color((360 + hue + pow(v, 2) * hueSpread) % 360, 30 + pow(1 - v, 0.25) * 60, v * 100);
+        colors[p.index] = lx.hsb((360 + hue + pow(v, 2) * hueSpread) % 360, 30 + pow(1 - v, 0.25) * 60, v * 100);
       }      
     }
   }
@@ -819,12 +819,12 @@ class TimTrace extends SCPattern {
   public void run(double deltaMs) {
     for (Point p : model.points) {
       color c = colors[p.index];
-      colors[p.index] = color(hue(c), saturation(c), brightness(c) - 3);
+      colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c) - 3);
     }
     
     for (MovingPoint mp : movingPoints) {
       mp.step();
-      colors[mp.currentPoint.index] = blendColor(colors[mp.currentPoint.index], color(mp.hue, 10, 100), ADD);
+      colors[mp.currentPoint.index] = blendColor(colors[mp.currentPoint.index], lx.hsb(mp.hue, 10, 100), ADD);
     }
   }
 }

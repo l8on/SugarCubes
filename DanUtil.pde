@@ -225,7 +225,7 @@ public class DPat extends SCPattern
 
 	void  		StartPattern() 						{								}
 	void  		StartRun(double deltaMs) 			{								}
-	color		CalcPoint(xyz p) 					{ return color(0,0,0); 			}
+	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 			}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
 	boolean		IsFocused()							{ return this == midiEngine.getFocusedDeck().getActivePattern();		}
 	void 		onInactive() 						{ UpdateState(); }
@@ -330,21 +330,21 @@ public class DPat extends SCPattern
 			if (pRsym.b) 	{ tP.set(mMax.x-P.x,mMax.y-P.y,mMax.z-P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 			if (pXdup.b) 	{ tP.set((P.x+mMax.x*.5)%mMax.x,P.y,P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 
-			float 								s =	saturation(cNew) + 100*(fSaturate*2-1);
-			float 								b = brightness(cNew)/100.;
+			float 								s =	lx.s(cNew) + 100*(fSaturate*2-1);
+			float 								b = lx.b(cNew)/100.;
  			if (pSharp.Val()>0) 				b = b < .5 ? pow(b,fSharp) : 1-pow(1-b,fSharp);
-			if (DG._Trails()>0 && fQuant == 0) 	b = max(b, (float) (brightness(cOld)/100. - (1-DG._Trails()) * deltaMs/200.));
-			if (DG.bSustain == true) 			b = max(b, (float) (brightness(cOld)/100.));
+			if (DG._Trails()>0 && fQuant == 0) 	b = max(b, (float) (lx.b(cOld)/100. - (1-DG._Trails()) * deltaMs/200.));
+			if (DG.bSustain == true) 			b = max(b, (float) (lx.b(cOld)/100.));
 
 			if (pInvert.b)	{ b = 1-b; s = 1-s; }
 
-			colors[p.index] = color(
-				(hue(cNew) + zSpinHue) % 360,
+			colors[p.index] = lx.hsb(
+				(lx.h(cNew) + zSpinHue) % 360,
 				s,
 				100 *  b * DG._Level()
 			);
 
-//			colors[p.index] = color(0,0, p.x >= modmin.x && p.y >= modmin.y && p.z >= modmin.z &&
+//			colors[p.index] = lx.hsb(0,0, p.x >= modmin.x && p.y >= modmin.y && p.z >= modmin.z &&
 //				p.x <= modmin.x+mMax.x && p.y <= modmin.y+mMax.y && p.z <= modmin.z+mMax.z ? 100 : 0); 
 		}
 	}

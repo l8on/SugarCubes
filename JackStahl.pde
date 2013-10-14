@@ -64,7 +64,7 @@ class Swim extends SCPattern {
       float v1 = sin_x > y_in_range  ? (100 + 100*(y_in_range - sin_x)) : 0;     
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.)*.3 + abs(p.y-model.yMax/2)*.9 + abs(p.z - model.zMax/2.))) % 360;
-      colors[p.index] = color(hue_color, 70, v1);
+      colors[p.index] = lx.hsb(hue_color, 70, v1);
     }
   }
 }
@@ -172,7 +172,7 @@ class Balance extends SCPattern {
       float v1 = max(0, 100 * (1 - 4*abs(sin_x - y_in_range)));     
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.) + abs(p.y-model.yMax/2)*.2 + abs(p.z - model.zMax/2.)*.5)) % 360;
-      color c = color(hue_color, 80, v1);
+      color c = lx.hsb(hue_color, 80, v1);
 
       // Now draw the spheres
       for (Sphere s : spheres) {
@@ -197,7 +197,7 @@ class Balance extends SCPattern {
 
         float sphere_color = (lx.getBaseHuef() - (1 - hueScale.getValuef()) * d/r * 45) % 360;
 
-        c = blendColor(c, color((sphere_color + 270) % 360, 60, min(1, value) * 100), ADD);
+        c = blendColor(c, lx.hsb((sphere_color + 270) % 360, 60, min(1, value) * 100), ADD);
       }
       colors[p.index] = c;
     }

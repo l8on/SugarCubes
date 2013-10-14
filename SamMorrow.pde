@@ -18,7 +18,7 @@ class JazzRainbow extends SamPattern {
       float a = hv%250;
       if (i%2 == 0) {
         for (int b = 0; b < 70; b++) {
-         colors[(i+b)%colors.length] = color(a+i%250, 100, b*a%100);
+         colors[(i+b)%colors.length] = lx.hsb(a+i%250, 100, b*a%100);
         }
       }
     }

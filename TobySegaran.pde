@@ -30,7 +30,7 @@ class GlitchPlasma extends SCPattern {
 	  + sin(dist(p.x, p.y + pos / 7, 192.0, 64.0) / 7.0)
 	  + sin(dist(p.x, p.z + pos, 192.0, 100.0) / 8.0);
       float bv = 100;
-      colors[p.index] = color((hv+2)*50, satu, bv);
+      colors[p.index] = lx.hsb((hv+2)*50, satu, bv);
     }
     if (random(1.0)<glitch/20) {
       pos=pos-int(random(10,30));
@@ -63,9 +63,9 @@ class FireEffect extends SCPattern {
     }
   } 
   private color flameColor(float level) {
-    if (level<=0) return color(0,0,0);
+    if (level<=0) return lx.hsb(0,0,0);
     float br=min(100,sqrt(level)*15);
-    return color(level/1.7,100,br);
+    return lx.hsb(level/1.7,100,br);
   }
   public void run(double deltaMs) {
     for (int x=10;x<xm-10;x++) {
@@ -122,7 +122,7 @@ class StripBounce extends SCPattern {
         float br = max(0,100-avgdist*4);
         for (Point p : strip.points) {
           if (on && br>bright[p.index]) {
-            colors[p.index] = color(hv,sat[i].getValuef(),br);
+            colors[p.index] = lx.hsb(hv,sat[i].getValuef(),br);
             bright[p.index] = br;
           }
         }
@@ -187,7 +187,7 @@ class SoundRain extends SCPattern {
           for (Point p : s.points) {
             int seq = int(p.y*avgSize/model.yMax+pos.getValuef()+sin(p.x+p.z)*2)%avgSize;
             seq=min(abs(seq-(avgSize/2)),avgSize-1);
-            colors[p.index] = color(200,max(0,100-abs(p.x-col1.getValuef())/2),lightVals[seq]);
+            colors[p.index] = lx.hsb(200,max(0,100-abs(p.x-col1.getValuef())/2),lightVals[seq]);
           }
         }
       }
@@ -229,7 +229,7 @@ class FaceSync extends SCPattern {
         float a2=max(0,100-abs(p.x-col2.getValuef()));        
         float sat = max(a1,a2);
         float h = (359*a1+200*a2) / (a1+a2);
-        colors[p.index] = color(h,sat,100-abs(dx*5)-abs(dz*5));
+        colors[p.index] = lx.hsb(h,sat,100-abs(dx*5)-abs(dz*5));
       }
     }
   }
@@ -292,7 +292,7 @@ class SoundSpikes extends SCPattern {
             if (seq>avgSize) seq=avgSize-seq;
             seq=constrain(seq,0,avgSize-1);
             float br=max(0, lightVals[seq]-p.y);
-            colors[p.index] = color((dis*avgSize*65)/model.xMax,90,br);
+            colors[p.index] = lx.hsb((dis*avgSize*65)/model.xMax,90,br);
           }
         }
       }

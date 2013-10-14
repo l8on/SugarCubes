@@ -27,7 +27,7 @@ class Granim extends Graphic
 	{
 		while(width()< g.position+1)
 		{
-				graphicBuffer.add(color(0,0,0));
+				graphicBuffer.add(lx.hsb(0,0,0));
 		}
 		drawAll();
 		displayList.put(name , g);
@@ -55,7 +55,7 @@ class Granim extends Graphic
 			{
 				while(width()< g.position + g.width())
 				{
-					graphicBuffer.add(color(0,0,0));
+					graphicBuffer.add(lx.hsb(0,0,0));
 				}
 				if(g.changed)
 				{
@@ -141,7 +141,7 @@ class RedsGraphic extends Graphic
 	{
 		for(int i = 0; i < len ;i++)
 		{
-			graphicBuffer.add(color(0,255,255));
+			graphicBuffer.add(lx.hsb(0,255,255));
 		}
 	}
 };
@@ -229,7 +229,7 @@ class ColorDotsGraphic extends Graphic
 		super();
 		for (int colorVal : colorSequence)
 		{
-			graphicBuffer.add(color(colorVal, 255, 255));
+			graphicBuffer.add(lx.hsb(colorVal, 255, 255));
 		}
 		changed = true;
 	}

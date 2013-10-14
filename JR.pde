@@ -1,4 +1,4 @@
-color BLACK = color(0, 0, 0);
+color BLACK = #000000;
 
 class Gimbal extends SCPattern {
 
@@ -121,7 +121,7 @@ class Gimbal extends SCPattern {
                + pow(nearest_circle_z - c.z * ringExtendParam.getValuef(), 2));
 
       float xy_distance = sqrt(c.x*c.x + c.y*c.y);
-      return color(this.hue, 100, (1 - distance_to_circle / girth * fadeFromCoreParam.getValuef()) * 100);
+      return lx.hsb(this.hue, 100, (1 - distance_to_circle / girth * fadeFromCoreParam.getValuef()) * 100);
     }
 
   }
@@ -166,18 +166,18 @@ class Zebra extends SCPattern {
     int stripe_count = 12;
     float stripe_width = model.xMax / (float)stripe_count;
     if (Math.floor((c.x) / stripe_width) % 2 == 0) {
-      return color(hue, 100, 100);
+      return lx.hsb(hue, 100, 100);
     } else {
-      return color((hue + 90) % 360, 100, 100);
+      return lx.hsb((hue + 90) % 360, 100, 100);
     }
 
 
     /* OCTANTS
 
     if ((isPositiveBit(c.x) + isPositiveBit(c.y) + isPositiveBit(c.z)) % 2 == 0) {
-      return color(lx.getBaseHuef(), 100, 100);
+      return lx.hsb(lx.getBaseHuef(), 100, 100);
     } else {
-      return color(0, 0, 0);
+      return lx.hsb(0, 0, 0);
     }
     */
   }
@@ -271,7 +271,7 @@ color specialBlend(color c1, color c2, color c3) {
   float relative_b2 = b2 / (b1 + b2 + b3);
   float relative_b3 = b3 / (b1 + b2 + b3);
   
-  return color(
+  return lx.hsb(
     (h1 * relative_b1 + h2 * relative_b1 + h3 * relative_b3) % 360,
      s1 * relative_b1 + s2 * relative_b2 + s3 * relative_b3,
      max(max(b1, b2), b3)

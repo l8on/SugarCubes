@@ -718,7 +718,7 @@ public class UIScrollList extends UIObject {
     }
     if (hasScroll) {
       pg.noStroke();
-      pg.fill(color(0, 0, 100, 15));
+      pg.fill(0x26ffffff);
       pg.rect(w-12, 0, 12, h);
       pg.fill(#333333);
       pg.rect(w-12, scrollYStart, 12, scrollYHeight);

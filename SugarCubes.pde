@@ -102,6 +102,7 @@ LXPattern[] patterns(GLucose glucose) {
     new TestBassMapping(glucose),
     new TestFloorMapping(glucose),
     new TestSpeakerMapping(glucose),    
+    new TestPerformancePattern(glucose),
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

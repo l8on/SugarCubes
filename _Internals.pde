@@ -52,6 +52,7 @@ LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 MidiEngine midiEngine;
+color[] threadColors;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -120,6 +121,7 @@ void setup() {
   glucose = new GLucose(this, buildModel());
   lx = glucose.lx;
   lx.enableKeyboardTempo();
+  threadColors = new color[lx.total];
   logTime("Built GLucose engine");
   
   // Set the patterns
@@ -196,16 +198,19 @@ void setup() {
 void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
-  color[] colors = glucose.getColors();
 
+  color[] simulationColors;
+  color[] sendColors;
+  simulationColors = sendColors = glucose.getColors();
   String displayMode = uiCrossfader.getDisplayMode();
   if (displayMode == "A") {
-    colors = lx.engine.getDeck(0).getColors();
+    simulationColors = lx.engine.getDeck(0).getColors();
   } else if (displayMode == "B") {
-    colors = lx.engine.getDeck(1).getColors();
+    simulationColors = lx.engine.getDeck(1).getColors();
   }
   if (debugMode) {
-    debugUI.maskColors(colors);
+    debugUI.maskColors(simulationColors);
+    debugUI.maskColors(sendColors);
   }
 
   camera(
@@ -251,7 +256,7 @@ void draw() {
   strokeWeight(2);
   beginShape(POINTS);
   for (Point p : glucose.model.points) {
-    stroke(colors[p.index]);
+    stroke(simulationColors[p.index]);
     vertex(p.x, p.y, p.z);
   }
   endShape();
@@ -259,12 +264,6 @@ void draw() {
   // 2D Overlay UI
   drawUI();
     
-  // Send output colors
-  color[] sendColors = glucose.getColors();
-  if (debugMode) {
-    debugUI.maskColors(sendColors);
-  }
-  
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   for (int i = 0; i < sendColors.length; ++i) {
@@ -456,6 +455,11 @@ void keyPressed() {
           lx.goPattern(restoreToPattern);
           restoreToPattern.setTransition(pop);
         }
+      }
+      break;
+    case 't':
+      if (!midiEngine.isQwertyEnabled()) {
+        lx.engine.setThreaded(!lx.engine.isThreaded());
       }
       break;
     case 'p':

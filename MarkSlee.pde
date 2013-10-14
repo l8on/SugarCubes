@@ -44,7 +44,7 @@ class MidiMusic extends SCPattern {
       for (Point p : model.points) {
         float b = max(0, bVal - 3*dist(p.x, p.y, xPos, yVal));
         if (b > 0) {
-          colors[p.index] = blendColor(colors[p.index], color(
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
             (lx.getBaseHuef() + abs(p.x - model.cx) + abs(p.y - model.cy)) % 360,
             100,
             b
@@ -173,7 +173,7 @@ class Pulley extends SCPattern {
     float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
     for (Point p : model.points) {
       int g = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
         constrain(130 - p.y*.8, 0, 100),
         max(0, 100 - abs(p.y - gravity[g].getValuef())*falloff)
@@ -354,7 +354,7 @@ class BouncyBalls extends SCPattern {
         float d = sqrt((p.x-xv)*(p.x-xv) + (p.y-yv)*(p.y-yv) + .1*(p.z-zPos)*(p.z-zPos));
         float b = constrain(130 - falloff*d, 0, 100);
         if (b > 0) {
-          colors[p.index] = blendColor(colors[p.index], color(
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
             (lx.getBaseHuef() + p.y*.5 + abs(model.cx - p.x) * .5) % 360,
             max(0, 100 - .45*(p.y - flrLevel)),
             b
@@ -436,7 +436,7 @@ class SpaceTime extends SCPattern {
     for (Strip strip : model.strips) {
       int i = 0;
       for (Point p : strip.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           (lx.getBaseHuef() + 360 - p.x*.2 + p.y * .3) % 360, 
           constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
           max(0, 100 - fVal*abs(i - pVal*(strip.metrics.numPoints - 1)))
@@ -486,7 +486,7 @@ class Swarm extends SCPattern {
       int i = 0;
       for (Point p : strip.points) {
         float fV = max(-1, 1 - dist(p.x/2., p.y, fX.getValuef()/2., fY.getValuef()) / 64.);
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + 0.3 * abs(p.x - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
         constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
@@ -636,7 +636,7 @@ class BassPod extends SCPattern {
       value /= 5.;
 
       float b = constrain(8 * (value*model.yMax - abs(p.y-model.yMax/2.)), 0, 100);
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.y - model.cy) + abs(p.x - model.cx)) % 360,
         constrain(bassLevel*240 - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
         b
@@ -696,7 +696,7 @@ class CubeEQ extends SCPattern {
       float value = lerp(smoothValue, chunkyValue, blockiness.getValuef());
 
       float b = constrain(edgeConst * (value*model.yMax - p.y), 0, 100);
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (480 + lx.getBaseHuef() - min(clrConst*p.y, 120)) % 360, 
         100, 
         b
@@ -736,7 +736,7 @@ class BoomEffect extends SCEffect {
       for (Point p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
-        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
+        lx.hsb(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
         ADD);
       }
     }
@@ -834,7 +834,7 @@ public class PianoKeyPattern extends SCPattern {
     float levelf = level.getValuef();
     for (Cube c : model.cubes) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
-      setColor(c, color(
+      setColor(c, lx.hsb(
         (huef + 20*v + abs(c.cx-model.xMax/2.)*.3 + c.cy) % 360,
         min(100, 120*v),
         100*v
@@ -911,17 +911,17 @@ class CrossSections extends SCPattern {
     
     for (Point p : model.points) {
       color c = 0;
-      c = blendColor(c, color(
+      c = blendColor(c, lx.hsb(
       (lx.getBaseHuef() + p.x/10 + p.y/3) % 360, 
       constrain(140 - 1.1*abs(p.x - model.xMax/2.), 0, 100), 
       max(0, xlv - xwv*abs(p.x - xv))
         ), ADD);
-      c = blendColor(c, color(
+      c = blendColor(c, lx.hsb(
       (lx.getBaseHuef() + 80 + p.y/10) % 360, 
       constrain(140 - 2.2*abs(p.y - model.yMax/2.), 0, 100), 
       max(0, ylv - ywv*abs(p.y - yv))
         ), ADD); 
-      c = blendColor(c, color(
+      c = blendColor(c, lx.hsb(
       (lx.getBaseHuef() + 160 + p.z / 10 + p.y/2) % 360, 
       constrain(140 - 2.2*abs(p.z - model.zMax/2.), 0, 100), 
       max(0, zlv - zwv*abs(p.z - zv))
@@ -957,7 +957,7 @@ class Blinders extends SCPattern {
       int i = 0;
       float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           (hv + p.z + p.y*hs.getValuef()) % 360, 
           min(100, abs(p.x - s.getValuef())/2.), 
           max(0, 100 - mv/2. - mv * abs(i - (strip.metrics.length-1)/2.))
@@ -993,7 +993,7 @@ class Psychedelia extends SCPattern {
     int i = 0;
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           (huev + i*constrain(cv, 0, 2) + p.z/2. + p.x/4.) % 360, 
           min(100, abs(p.y-sv)), 
           max(0, 100 - 50*abs((i%NUM) - mv))
@@ -1061,7 +1061,7 @@ class AskewPlanes extends SCPattern {
           d = min(d, abs(plane.av*(p.x-model.cx) + plane.bv*(p.y-model.cy) + plane.cv) / plane.denom);
         }
       }
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (huev + abs(p.x-model.cx)*.3 + p.y*.8) % 360,
         max(0, 100 - .8*abs(p.x - model.cx)),
         constrain(140 - 10.*d, 0, 100)
@@ -1094,7 +1094,7 @@ class ShiftingPlane extends SCPattern {
     float denom = sqrt(av*av + bv*bv + cv*cv);
     for (Point p : model.points) {
       float d = abs(av*(p.x-model.cx) + bv*(p.y-model.cy) + cv*(p.z-model.cz) + dv) / denom;
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (hv + abs(p.x-model.cx)*.6 + abs(p.y-model.cy)*.9 + abs(p.z - model.cz)) % 360,
         constrain(110 - d*6, 0, 100),
         constrain(130 - 7*d, 0, 100)
@@ -1163,12 +1163,12 @@ class Traktor extends SCPattern {
       int i = (int) constrain((model.xMax - p.x) / model.xMax * FRAME_WIDTH, 0, FRAME_WIDTH-1);
       int pos = (index + FRAME_WIDTH - i) % FRAME_WIDTH;
       
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
         100,
         constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy)), 0, 100)
       );
-      colors[p.index] = blendColor(colors[p.index], color(
+      colors[p.index] = blendColor(colors[p.index], lx.hsb(
         (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
         60,
         constrain(5 * (treble[pos]*.6*model.cy - abs(p.y - model.cy)), 0, 100)

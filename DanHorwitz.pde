@@ -24,12 +24,12 @@ public class Pong extends DPat {
 		v.z=0;p.z=0;// ignore z dimension
 		switch(pChoose.Cur()) {
 		case 0: vMir.set(mMax); vMir.subtract(p);
-				return color(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
-		case 1: return color(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
+				return lx.hsb(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
+		case 1: return lx.hsb(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
 		case 2: vMir.set(mMax.x/2,0,mMax.z/2);
-				return color(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
+				return lx.hsb(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
 		}
-		return color(0,0,0);
+		return lx.hsb(0,0,0);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ public class Noise extends DPat
 		
 		if (CurAnim == 6 || CurAnim == 7) {
 			P.setNorm();
-			return color(0,0, 100 * (
+			return lx.hsb(0,0, 100 * (
 							constrain(1-50*(1-pDensity.Val())*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
 			(CurAnim == 7 ? constrain(1-50*(1-pDensity.Val())*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
 			);
@@ -303,7 +303,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a1.getX(70),a1.getY(70), mCtr.x, mCtr.y),
 						distToSeg(Px.x, Px.y, a2.getX(40),a2.getY(40), mCtr.x, mCtr.y));
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 8:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -312,7 +312,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a3.getX(r),a3.getY(r), a1.getX(r),a1.getY(r))				// triangle
 						);
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 9:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -322,27 +322,27 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a4.getX(r),a4.getY(r), a1.getX(r),a1.getY(r))				// quad
 					);
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 10:
 					r = map(bnc,0,1,a1.r,amp*200*sin(PI*t));
-					return color(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
+					return lx.hsb(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
 
 		case 11:
 					Px.z=mCtr.z; cMid.z=mCtr.z;
-					return color(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
+					return lx.hsb(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
 
-		case 12:	return color(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
+		case 12:	return lx.hsb(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
 
 		case 13:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);
 					V.set(Pn.x, .7+y, Pn.z);
 					break;
 
-		default:	return color(0,0,0);
+		default:	return lx.hsb(0,0,0);
 		}
 
-		return color(0,
+		return lx.hsb(0,
 				150-c1c(1 - V.distance(Pn)/rad),
 				c1c(1 - V.distance(Pn)/rad));
 	}
@@ -411,13 +411,12 @@ class Worms extends SCPattern {
 	Worms(GLucose glucose) { 
 		super(glucose); 
 		if (DL_ == null) DL_ = new dLattice();
-		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(color(135,100,100)); DL_.setRand(cur[i]); }
+		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(lx.hsb(135,100,100)); DL_.setRand(cur[i]); }
 	}
 
 	void run(double deltaMs) {
 		for (int i=0,s=model.points.size(); i<s; i++) {
-			float b = brightness(colors[i]); 
-			color c = colors[i];
+			color c = colors[i]; float b = brightness(c); 
 			if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/TrailTime));
 		}
 

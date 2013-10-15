@@ -350,3 +350,102 @@ public class DPat extends SCPattern
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
+class dTurn { 
+	dVertex v; 
+	int pos0, pos1; 
+	dTurn(int _pos0, dVertex _v, int _pos1) { v = _v; pos0 = _pos0; pos1 = _pos1; }
+}
+
+class dVertex {
+	dVertex c0, c1, opp, same;
+	dTurn 	t0, t1;
+	dStrip  s;
+	int 	dir, ci;
+
+	dVertex(dStrip _s, Point _p) { s = _s; ci  = _p.index; }
+	Point 	getPoint(int i) 	 { return s.s.points.get(dir>0 ? i : 15-i);  }
+	void 	setOpp(dVertex _opp) { opp = _opp; dir = (ci < opp.ci ? 1 : -1); }
+}
+
+class dStrip  {
+	dVertex v0, v1;
+	int 	row, col;
+	Strip 	s;
+	dStrip(Strip _s, int _i, int _row, int _col)  { s = _s; row = _row; col = _col; }
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+float PointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); }
+
+class dLattice {
+	private 	int iTowerStrips=0;
+
+	dStrip[] 	DS = new dStrip[glucose.model.strips.size()];
+	int[][]  	DQ = new int[NumBackTowers][MaxCubeHeight*2];
+	dStrip  GetStrip (int row, int col, int off) { 
+		return (!btwn(off,0,15) || !btwn(row,0,MaxCubeHeight*2-1) || !btwn(col,0,NumBackTowers-1) || DQ[col][row]<0) ? null : 
+				DS[DQ[col][row]+off]; 
+	}
+
+	void	addTurn(dVertex v0, int pos0, dVertex v1, int pos1) {	dTurn t = new dTurn(pos0, v1, pos1); if (v0.t0 == null) v0.t0=t; else v0.t1=t; }
+	void	setRand(dCursor c) 									{ 	c.set(DS[floor(random(iTowerStrips))].v0,0); }
+	float   Dist2	 (Strip s1, int pos1, Strip s2, int pos2) 	{ 	return PointDist(s1.points.get(pos1), s2.points.get(pos2)); }
+	boolean SameSame (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2, 0), Dist2(s1,15, s2,15)) < 5 ;	}
+	boolean SameOpp  (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2,15), Dist2(s1,15, s2,0 )) < 5 ;	}
+	boolean SameBar  (Strip s1, Strip s2) 						{	return SameSame(s1,s2) || SameOpp(s1,s2);					}
+	void 	AddJoint (dVertex v1, dVertex v2) {
+		// should probably replace parallel but further with the new one
+		if (v1.c0 != null && SameBar(v2.s.s, v1.c0.s.s)) return;
+		if (v1.c1 != null && SameBar(v2.s.s, v1.c1.s.s)) return;
+		if 		(v1.c0 == null) v1.c0 = v2; 
+		else if (v1.c1 == null) v1.c1 = v2; 
+	}
+
+	dLattice() {
+		DL_=this;
+		for (int i=0;i<NumBackTowers;i++) for (int j=0;j<MaxCubeHeight*2;j++) DQ[i][j]=-1;
+
+		int   col = 0, row = -2, i=-1;
+		for (Strip strip : glucose.model.strips  ) { i++;
+			if (i % 16 == 0) row+=2;
+			if (row >= MaxCubeHeight*2-1) { col++; row = (col%2==1)?1:0; }	// only include lattice parts!
+			iTowerStrips++;
+			dStrip s = DS[iTowerStrips-1] = new dStrip(strip, iTowerStrips-1, row, col);
+			s.v0 = new dVertex(s,strip.points.get(0 ));
+			s.v1 = new dVertex(s,strip.points.get(15));
+			s.v0.setOpp(s.v1); s.v1.setOpp(s.v0);
+			if (col < NumBackTowers) DQ[col][row] = 16*floor((iTowerStrips-1)/16);
+		}
+
+		for (int j=0; j<iTowerStrips; j++) { for (int k=j+1; k<iTowerStrips; k++) { 
+			dStrip s1 = DS[j], s2 = DS[k];
+			int c=0;
+			if (SameSame(s1.s,s2.s)) {	s1.v0.same = s2.v0; s1.v1.same = s2.v1;
+										s2.v0.same = s1.v0; s2.v1.same = s1.v1; continue; } // parallel
+			if (SameOpp (s1.s,s2.s)) {	s1.v0.same = s2.v1; s1.v1.same = s2.v0;
+										s2.v0.same = s1.v1; s2.v1.same = s1.v0; continue; } // parallel
+			if (Dist2(s1.s, 0, s2.s, 0) < 5) { c++; AddJoint(s1.v1, s2.v0); AddJoint(s2.v1, s1.v0); }
+			if (Dist2(s1.s, 0, s2.s,15) < 5) { c++; AddJoint(s1.v1, s2.v1); AddJoint(s2.v0, s1.v0); }
+			if (Dist2(s1.s,15, s2.s, 0) < 5) { c++; AddJoint(s1.v0, s2.v0); AddJoint(s2.v1, s1.v1); }
+			if (Dist2(s1.s,15, s2.s,15) < 5) { c++; AddJoint(s1.v0, s2.v1); AddJoint(s2.v0, s1.v1); }
+			if (c>0) continue;
+
+			// Are they touching at all?
+			int pos1=0, pos2=0; float d = 100;
+
+			while (pos1 < 15 || pos2 < 15) {
+				float oldD = d;
+				if (pos1<15) { float d2 = Dist2(s1.s, pos1+1, s2.s, pos2+0); if (d2 < d) { d=d2; pos1++; } }
+				if (pos2<15) { float d2 = Dist2(s1.s, pos1+0, s2.s, pos2+1); if (d2 < d) { d=d2; pos2++; } }
+				if (d > 50  || oldD == d) break ;
+			}
+
+			if (d>5) continue;
+			addTurn(s1.v0, pos1, s2.v0, pos2); addTurn(s1.v1, 15-pos1, s2.v0, pos2); 
+			addTurn(s2.v0, pos2, s1.v0, pos1); addTurn(s2.v1, 15-pos2, s1.v0, pos1);
+
+		}}
+	}
+}
+
+dLattice DL_;
+//----------------------------------------------------------------------------------------------------------------------------------

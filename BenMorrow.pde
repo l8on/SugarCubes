@@ -50,7 +50,6 @@ class TowerParams extends SCPattern
 		}
 		towerSize = model.towers.size();
 		colorSpan = 255 / towerSize;
-		println("towers "+towerSize);
 	}
 
 	void run(double deltaMs)

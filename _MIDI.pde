@@ -54,6 +54,11 @@ class MidiEngine {
         midiControllers.add(new SCMidiInput(device).setEnabled(enabled));
       }
     }
+    for (MidiOutputDevice device : RWMidi.getOutputDevices()) {
+      if (device.getName().contains("APC")) {
+        new APC40MidiOutput(this, device);
+      }
+    }
   }
 
   public List<SCMidiInput> getControllers() {
@@ -349,20 +354,29 @@ public class APC40MidiInput extends SCMidiInput {
     }
   }
 
-  
+  private long tap1 = 0;
 
-	private double Tap1 = 0;
-	private double  getNow() { return millis() + 1000*second() + 60*1000*minute() + 3600*1000*hour(); }
-	private boolean dbtwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
+  private boolean lbtwn(long a, long b, long c) {
+    return a >= b && a <= c;
+  }
 
   protected void handleNoteOn(Note note) {
-	int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch(), nChan = note.getChannel();
     switch (nPitch) {
 		
-	case 82:	EFF_boom	.trigger(); 				break;	// BOOM!
-	case 83:	EFF_flash	.trigger(); 				break;	// Flash
-		
-	case 90:	lx.tempo.trigger(); Tap1 = getNow(); 	break;	// dan's dirty tapping mechanism
+    case 82: // scene 1
+      EFF_boom.trigger();
+      break;
+      
+    case 83: // scene 2
+      EFF_flash.trigger();
+      break;
+      
+    case 90:
+      // dan's dirty tapping mechanism
+      lx.tempo.trigger();
+      tap1 = millis();
+      break;
 
     case 91: // play
     case 95: // bank
@@ -419,17 +433,20 @@ public class APC40MidiInput extends SCMidiInput {
   }
 
   protected void handleNoteOff(Note note) {
-	int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch(), nChan = note.getChannel();
     switch (nPitch) {
-	case 90:
-		if (dbtwn(getNow() - Tap1,5000,300*1000)) {	// hackish tapping mechanism
-			double bpm = 32.*60000./(getNow()-Tap1);
-			while (bpm < 20) bpm*=2;
-			while (bpm > 40) bpm/=2;
-			lx.tempo.setBpm(bpm); lx.tempo.trigger(); Tap1=0; println("Tap Set - " + bpm + " bpm");
-		}
-		break;
-
+    case 90:
+      long tapDelta = millis() - tap1;
+      if (lbtwn(tapDelta,5000,300*1000)) {	// hackish tapping mechanism
+        double bpm = 32.*60000./(tapDelta);
+        while (bpm < 20) bpm*=2;
+        while (bpm > 40) bpm/=2;
+        lx.tempo.setBpm(bpm);
+        lx.tempo.trigger();
+        tap1 = 0;
+        println("Tap Set - " + bpm + " bpm");
+      }
+      break;
 
     case 63: // rec quantize
       if (releaseEffect != null) {
@@ -441,7 +458,7 @@ public class APC40MidiInput extends SCMidiInput {
 
     case 98: // shift
       shiftOn = false;
-       break;
+      break;
     }
   }
 }
@@ -485,3 +502,112 @@ class KorgNanoKontrolMidiInput extends SCMidiInput {
   }
 }
 
+class APC40MidiOutput implements LXParameter.Listener {
+  
+  private final MidiEngine midiEngine;
+  private final MidiOutput output;
+  private LXPattern focusedPattern = null;
+  private LXEffect focusedEffect = null;
+  
+  APC40MidiOutput(MidiEngine midiEngine, MidiOutputDevice device) {
+    this.midiEngine = midiEngine;
+    output = device.createOutput();
+    midiEngine.addListener(new MidiEngineListener() {
+      public void onFocusedDeck(int deckIndex) {
+        resetPatternParameters();
+      }
+    });
+    glucose.addEffectListener(new GLucose.EffectListener() {
+      public void effectSelected(LXEffect effect) {
+        resetEffectParameters();
+      }
+    });
+    Engine.Listener deckListener = new Engine.AbstractListener() {
+      public void patternDidChange(Engine.Deck deck, LXPattern pattern) {
+        resetPatternParameters();
+      }
+    };
+    for (Engine.Deck d : lx.engine.getDecks()) {
+      d.addListener(deckListener);
+    }
+    resetParameters();
+  }
+
+  private void resetParameters() {
+    resetPatternParameters();
+    resetEffectParameters();
+  }
+  
+  private void resetPatternParameters() {
+    LXPattern newPattern = midiEngine.getFocusedDeck().getActivePattern();
+    if (newPattern == focusedPattern) {
+      return;
+    }
+    if (focusedPattern != null) {
+      for (LXParameter p : focusedPattern.getParameters()) {
+        ((LXListenableParameter) p).removeListener(this);
+      }
+    }
+    focusedPattern = newPattern;
+    int i = 0;
+    for (LXParameter p : focusedPattern.getParameters()) {
+      ((LXListenableParameter) p).addListener(this);
+      sendKnob(i++, p);
+    }
+    while (i < 12) {
+      sendKnob(i++, 0);
+    }
+  }
+  
+  private void resetEffectParameters() {
+    LXEffect newEffect = glucose.getSelectedEffect();
+    if (newEffect == focusedEffect) {
+      return;
+    }
+    if (focusedEffect != null) {
+      for (LXParameter p : focusedPattern.getParameters()) {
+        ((LXListenableParameter) p).removeListener(this);
+      }
+    }
+    focusedEffect = newEffect;
+    int i = 0;
+    for (LXParameter p : focusedEffect.getParameters()) {
+      ((LXListenableParameter) p).addListener(this);
+      sendKnob(12 + i++, p);
+    }
+    while (i < 4) {
+      sendKnob(12 + i++, 0);
+    }
+  }
+
+  private void sendKnob(int i, LXParameter p) {
+    sendKnob(i, (int) (p.getValuef() * 127.));
+  }
+  
+  private void sendKnob(int i, int value) {
+    if (i < 8) {
+      output.sendController(0, 48+i, value);
+    } else if (i < 16) {
+      output.sendController(0, 8+i, value);
+    }
+  }
+  
+  public void onParameterChanged(LXParameter parameter) {
+    int i = 0;
+    for (LXParameter p : focusedPattern.getParameters()) {
+      if (p == parameter) {
+        sendKnob(i, p);
+        break;
+      }
+      ++i;
+    }
+    i = 12;
+    for (LXParameter p : focusedEffect.getParameters()) {
+      if (p == parameter) {
+        sendKnob(i, p);
+        break;
+      }
+      ++i;
+    }
+  }
+}

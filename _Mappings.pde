@@ -77,7 +77,7 @@ public Model buildModel() {
 		  (i+1)*CW,						 		// x
 		  (i % 2 == 0) ? 0 : CH * 2./3.		,   // y
 		 - ((i % 2 == 0) ? 0 : 11) + 97  	,   // z
-		 -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1));	 // num cubes
+		 -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );	 // num cubes
 	
 	ArrayList<Cube> dcubes = new ArrayList<Cube>();
 	for (int i=1; i<6; i++) {

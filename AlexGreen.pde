@@ -171,6 +171,58 @@ final Sphery[] spherys;
         
   }
 
+class CubeCurl extends SCPattern{
+
+private SinLFO curl = new SinLFO(0, Cube.EDGE_HEIGHT, 5000 ); 
+
+private SinLFO bg = new SinLFO(180, 220, 3000);
+
+CubeCurl(GLucose glucose){
+super(glucose);
+addModulator(curl).trigger();
+addModulator(bg).trigger();
+
+}
+
+void run(double deltaMs){
+for (int i =0; i < model.cubes.size(); i++)  {
+Cube c = model.cubes.get(i);
+float cfloor = c.y;
+
+if (i%3 == 0){
+
+for (Point p : c.points ){
+ // colors[p.index]=color(0,0,0);
+  //float dif = (p.y - c.y);
+  //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
+   }
+ }
+
+else if (i%3 == 1) {
+  
+ for (Point p: c.points){
+   colors[p.index]=color(0,0,0);
+  float dif = (p.y - c.y);
+  // colors[p.index] = 
+  // color(bg.getValuef(),
+  //   map(curl.getValuef(), 0, Cube.EDGE_HEIGHT, 20, 100), 
+  //   100 - 10*abs(dif - curl.getValuef()), ADD );
+     }
+    }
+else if (i%3 == 2){
+   for (Point p: c.points) {
+      
+
+
+   }
+
+
+}
+
+   }
+  }
+ }
+
  class HueTestHSB extends SCPattern{
   BasicParameter HueT = new BasicParameter("Hue", .5);
   BasicParameter SatT = new BasicParameter("Sat", .5);

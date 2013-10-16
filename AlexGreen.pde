@@ -172,7 +172,7 @@ final Sphery[] spherys;
   }
 
 class CubeCurl extends SCPattern{
-
+float CH, CW;
 private SinLFO curl = new SinLFO(0, Cube.EDGE_HEIGHT, 5000 ); 
 
 private SinLFO bg = new SinLFO(180, 220, 3000);
@@ -181,8 +181,29 @@ CubeCurl(GLucose glucose){
 super(glucose);
 addModulator(curl).trigger();
 addModulator(bg).trigger();
+ this.CH = Cube.EDGE_HEIGHT;
+ this.CW = Cube.EDGE_WIDTH;
+final float diag = sqrt(CH*CH + CW*CW + CW*CW);
+ArrayList<PVector> centerlist = new ArrayList<PVector>();
+
+for (int i = 0; i < model.cubes.size(); i++){
+  centerlist.add(centerofcube(i));
+   } 
 
 }
+//there is definitely a better way of doing this!
+PVector centerofcube(int i) { 
+Cube c = model.cubes.get(i);
+PVector cubeorigin = new PVector(c.x, c.y, c.z);
+PVector cubecenter = new PVector(c.x+ CW/2, c.y + CH/2, c.z + CW/2);
+PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
+cubeangle.normalize();
+println( cubeangle.x + cubeangle.y + cubeangle.z);
+PVector cubecenterf = new PVector(cubecenter.x + tan(c.rx)*CW/2, cubecenter.y + tan(c.ry)*CH/2, cubecenter.z + tan(c.rz)*CW/2);
+
+return cubecenterf;
+}
+
 
 void run(double deltaMs){
 for (int i =0; i < model.cubes.size(); i++)  {
@@ -211,7 +232,7 @@ else if (i%3 == 1) {
     }
 else if (i%3 == 2){
    for (Point p: c.points) {
-      
+    
 
 
    }

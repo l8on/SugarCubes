@@ -24,6 +24,8 @@ public Model buildModel() {
   // Utility value if you need the height of a cube shorthand
   final float CH = Cube.EDGE_HEIGHT;
   final float CW = Cube.EDGE_WIDTH ;
+
+  
   
   // Positions for the bass box
   final float BBY = BassBox.EDGE_HEIGHT + BoothFloor.PLEXI_WIDTH;
@@ -141,17 +143,17 @@ public PandaMapping[] buildPandaList() {
     //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J15 (unplugged)
     //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 53, 54, 55, 72 }), // 30 J16
     // }),
-    // new PandaMapping(
-    //   "10.200.1.29", new ChannelMapping[] {
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 29 J3  (not connected)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 29 J4  (not connected)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 28, 29, 30,  2}),  // 29 J7
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33, 34, 32, 31}),  // 29 J8  //XXX   
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 29 J13 //XX //bassbox  (not working)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 29 J14 (not working)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 12, 13, 14, 15 }), // 29 J15
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  8,  9, 10, 11 }), // 29 J16
-    // }),    
+    new PandaMapping(
+      "10.200.1.29", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),                // 29 J3  (not connected)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4 }),                // 29 J4  (not connected)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),  // 29 J7
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),  // 29 J8  //XXX   
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 8,9,10}),                // 29 J13 //XX //bassbox  (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 8,9,10 }),                // 29 J14 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 14,15,16,17 }), // 29 J15
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  14,15,16,17 }), // 29 J16
+    }),    
     new PandaMapping(
       "10.200.1.28", new ChannelMapping[] {
 /*        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 60, 61, 62, 63 }), // 28 J3

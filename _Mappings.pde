@@ -117,7 +117,7 @@ public Model buildModel() {
   for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
   for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
 
- return new Model(towerList, cubes, bassBox, speakers);
+  return new Model(towerList, cubes, bassBox, speakers);
 }
 
 /**

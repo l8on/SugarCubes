@@ -56,7 +56,7 @@ public Model buildModel() {
   // Single cubes can be constructed directly here if you need them
   Cube[] singleCubes = new Cube[] {
     // new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL),     // Back left channel behind speaker
-    // new Cube(x, y, z, rx, ry, rz, wiring),
+     //new Cube(0, 0, 0, 0, 45, rz, wiring),
   };
 
   // The bass box!

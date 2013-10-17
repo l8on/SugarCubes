@@ -379,27 +379,27 @@ public class APC40MidiInput extends SCMidiInput {
       break;
 
     case 91: // play
-    case 95: // bank
+    case 97: // left bank
       midiEngine.setFocusedDeck(0);
       break;
 
     case 93: // rec
-    case 94: // right bank
+    case 96: // right bank
       midiEngine.setFocusedDeck(1);
       break;
 
-    case 96: // up bank
-      if (shiftOn) {
-        glucose.incrementSelectedEffectBy(1);
-      } else {
-        midiEngine.getFocusedDeck().goNext();
-      }
-      break;
-    case 97: // down bank
+    case 94: // up bank
       if (shiftOn) {
         glucose.incrementSelectedEffectBy(-1);
       } else {
         midiEngine.getFocusedDeck().goPrev();
+      }
+      break;
+    case 95: // down bank
+      if (shiftOn) {
+        glucose.incrementSelectedEffectBy(1);
+      } else {
+        midiEngine.getFocusedDeck().goNext();
       }
       break;
 
@@ -417,7 +417,7 @@ public class APC40MidiInput extends SCMidiInput {
       lx.tempo.setBpm(lx.tempo.bpm() - (shiftOn ? 1 : .1));
       break;
 
-    case 62: // Detail View
+    case 62: // Detail View / red 5
       releaseEffect = glucose.getSelectedEffect(); 
       if (releaseEffect.isMomentary()) {
         releaseEffect.enable();
@@ -426,7 +426,7 @@ public class APC40MidiInput extends SCMidiInput {
       }
       break;
 
-    case 63: // rec quantize
+    case 63: // rec quantize / red 6
       glucose.getSelectedEffect().disable();
       break;
     }
@@ -435,7 +435,7 @@ public class APC40MidiInput extends SCMidiInput {
   protected void handleNoteOff(Note note) {
     int nPitch = note.getPitch(), nChan = note.getChannel();
     switch (nPitch) {
-    case 90:
+    case 90: // SEND C
       long tapDelta = millis() - tap1;
       if (lbtwn(tapDelta,5000,300*1000)) {	// hackish tapping mechanism
         double bpm = 32.*60000./(tapDelta);
@@ -448,7 +448,7 @@ public class APC40MidiInput extends SCMidiInput {
       }
       break;
 
-    case 63: // rec quantize
+    case 63: // rec quantize / RED 6
       if (releaseEffect != null) {
         if (releaseEffect.isMomentary()) {
           releaseEffect.disable();

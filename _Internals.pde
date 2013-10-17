@@ -52,6 +52,7 @@ LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 MidiEngine midiEngine;
+GridController gridController;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -99,7 +100,6 @@ LXPattern[] _rightPatterns(GLucose glucose) {
   }
   return rightPatterns;
 }
-  
 
 void logTime(String evt) {
   int now = millis();

@@ -54,7 +54,7 @@ class MidiMusic extends SCPattern {
     }
   }
   
-  public synchronized boolean noteOnReceived(Note note) {
+  public synchronized boolean noteOn(Note note) {
     if (note.getChannel() == 0) {
       for (LightUp light : allLights) {
         if (light.isAvailable()) {
@@ -74,7 +74,7 @@ class MidiMusic extends SCPattern {
     return true;
   }
   
-  public synchronized boolean noteOffReceived(Note note) {
+  public synchronized boolean noteOff(Note note) {
     if (note.getChannel() == 0) {
       LightUp light = lightMap.get(note.getPitch());
       if (light != null) {
@@ -118,6 +118,7 @@ class Pulley extends SCPattern {
     addParameter(sz);
     addParameter(beatAmount);
     trigger();
+
   }
   
   private void trigger() {
@@ -138,6 +139,7 @@ class Pulley extends SCPattern {
     if (reset.click()) {
       trigger();
     }
+        
     if (isRising) {
       // Fucking A, had to comment this all out because of that bizarre
       // Processing bug where some simple loop takes an absurd amount of
@@ -167,6 +169,15 @@ class Pulley extends SCPattern {
           g.setValue(-g.getValuef());
           g.setVelocity(-g.getVelocityf() * random(0.74, 0.84));
         }
+      }
+    }
+
+    // A little silliness to test the grid API    
+    for (int i = 0; i < 7; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
+        float b = 1 - 4.*abs((6-i)/7. - gravity[gi].getValuef() / model.yMax);
+        midiEngine.grid.setState(i, j, (b < 0) ? 0 : 1);
       }
     }
     
@@ -391,7 +402,7 @@ class BouncyBalls extends SCPattern {
     }
   }
   
-  public boolean noteOnReceived(Note note) {
+  public boolean noteOn(Note note) {
     int pitch = (note.getPitch() + note.getChannel()) % NUM_BALLS;
     balls[pitch].bounce(note.getVelocity());
     return true;
@@ -821,13 +832,13 @@ public class PianoKeyPattern extends SCPattern {
     return base[index % base.length];
   }
     
-  public boolean noteOnReceived(Note note) {
+  public boolean noteOn(Note note) {
     LinearEnvelope env = getEnvelope(note.getPitch());
     env.setEndVal(min(1, env.getValuef() + (note.getVelocity() / 127.)), getAttackTime()).start();
     return true;
   }
   
-  public boolean noteOffReceived(Note note) {
+  public boolean noteOff(Note note) {
     getEnvelope(note.getPitch()).setEndVal(0, getReleaseTime()).start();
     return true;
   }

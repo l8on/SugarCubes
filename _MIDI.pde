@@ -22,6 +22,7 @@ interface MidiEngineListener {
 
 class MidiEngine {
 
+  public final GridController grid;
   private final List<MidiEngineListener> listeners = new ArrayList<MidiEngineListener>();
   private final List<SCMidiInput> midiControllers = new ArrayList<SCMidiInput>();
 
@@ -41,17 +42,17 @@ class MidiEngine {
   private int activeDeckIndex = 0;
 
   public MidiEngine() {
-
-    midiControllers.add(midiQwertyKeys = new SCMidiInput(SCMidiInput.KEYS));
-    midiControllers.add(midiQwertyAPC = new SCMidiInput(SCMidiInput.APC));
+    grid = new GridController(this);
+    midiControllers.add(midiQwertyKeys = new SCMidiInput(this, SCMidiInput.KEYS));
+    midiControllers.add(midiQwertyAPC = new SCMidiInput(this, SCMidiInput.APC));
     for (MidiInputDevice device : RWMidi.getInputDevices()) {
       if (device.getName().contains("APC")) {
-        midiControllers.add(new APC40MidiInput(device).setEnabled(true));
+        midiControllers.add(new APC40MidiInput(this, device).setEnabled(true));
       } else if (device.getName().contains("SLIDER/KNOB KORG")) {
-        midiControllers.add(new KorgNanoKontrolMidiInput(device).setEnabled(true));
+        midiControllers.add(new KorgNanoKontrolMidiInput(this, device).setEnabled(true));
       } else {
         boolean enabled = device.getName().contains("KEYBOARD KORG") || device.getName().contains("Bus 1 Apple");
-        midiControllers.add(new SCMidiInput(device).setEnabled(enabled));
+        midiControllers.add(new SCMidiInput(this, device).setEnabled(enabled));
       }
     }
     for (MidiOutputDevice device : RWMidi.getOutputDevices()) {
@@ -65,6 +66,14 @@ class MidiEngine {
     return this.midiControllers;
   }
 
+  public Engine.Deck getFocusedDeck() {
+    return lx.engine.getDeck(activeDeckIndex);
+  }
+
+  public SCPattern getFocusedPattern() {
+    return (SCPattern) getFocusedDeck().getActivePattern();
+  }
+
   public MidiEngine setFocusedDeck(int deckIndex) {
     if (this.activeDeckIndex != deckIndex) {
       this.activeDeckIndex = deckIndex;
@@ -73,10 +82,6 @@ class MidiEngine {
       }
     }
     return this;
-  }
-
-  public Engine.Deck getFocusedDeck() {
-    return lx.engine.getDeck(activeDeckIndex);
   }
 
   public boolean isQwertyEnabled() {
@@ -98,6 +103,8 @@ public class SCMidiInput extends AbstractScrollItem {
   private final String name;
   private final int mode;
   private int octaveShift = 0;
+
+  protected final MidiEngine midiEngine;
 
   class NoteMeta {
     int channel;
@@ -122,13 +129,15 @@ public class SCMidiInput extends AbstractScrollItem {
     return this;
   }
 
-  SCMidiInput(MidiInputDevice d) {
+  SCMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    this.midiEngine = midiEngine;
     mode = MIDI;
     d.createInput(this);
     name = d.getName().replace("Unknown vendor","");
   }
 
-  SCMidiInput(int mode) {
+  SCMidiInput(MidiEngine midiEngine, int mode) {
+    this.midiEngine = midiEngine;
     this.mode = mode;
     switch (mode) {
     case APC:
@@ -249,10 +258,6 @@ public class SCMidiInput extends AbstractScrollItem {
     return this;
   }
 
-  protected SCPattern getFocusedPattern() {
-    return (SCPattern) midiEngine.getFocusedDeck().getActivePattern();
-  }
-
   private boolean logMidi() {
     return (uiMidi != null) && uiMidi.logMidi();
   }
@@ -272,10 +277,12 @@ public class SCMidiInput extends AbstractScrollItem {
       return;
     }
     if (logMidi()) {
-      println(getLabel() + " :: Controller :: " + cc.getCC() + ":" + cc.getValue());
+      println(getLabel() + " :: Controller :: " + cc.getChannel() + " :: " + cc.getCC() + ":" + cc.getValue());
     }
-    if (!getFocusedPattern().controllerChangeReceived(cc)) {
-      handleControllerChange(cc);
+    if (!handleGridControllerChange(cc)) {
+      if (!midiEngine.getFocusedPattern().controllerChange(cc)) {
+        handleControllerChange(cc);
+      }
     }
   }
 
@@ -286,8 +293,10 @@ public class SCMidiInput extends AbstractScrollItem {
     if (logMidi()) {
       println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
-    if (!getFocusedPattern().noteOnReceived(note)) {
-      handleNoteOn(note);
+    if (!handleGridNoteOn(note)) {
+      if (!midiEngine.getFocusedPattern().noteOn(note)) {
+        handleNoteOn(note);
+      }
     }
   }
 
@@ -298,20 +307,21 @@ public class SCMidiInput extends AbstractScrollItem {
     if (logMidi()) {
       println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
-    if (!getFocusedPattern().noteOffReceived(note)) {
-      handleNoteOff(note);
+    if (!handleGridNoteOff(note)) {
+      if (!midiEngine.getFocusedPattern().noteOff(note)) {
+        handleNoteOff(note);
+      }
     }
   }
 
   // Subclasses may implement these to map top-level functionality
-  protected void handleProgramChange(ProgramChange pc) {
-  }
-  protected void handleControllerChange(rwmidi.Controller cc) {
-  }
-  protected void handleNoteOn(Note note) {
-  }
-  protected void handleNoteOff(Note note) {
-  }
+  protected boolean handleGridNoteOn(Note note) { return false; }
+  protected boolean handleGridNoteOff(Note note) { return false; }
+  protected boolean handleGridControllerChange(rwmidi.Controller cc) { return false; }
+  protected void handleProgramChange(ProgramChange pc) {}
+  protected void handleControllerChange(rwmidi.Controller cc) {}
+  protected void handleNoteOn(Note note) {}
+  protected void handleNoteOff(Note note) {}
 }
 
 public class APC40MidiInput extends SCMidiInput {
@@ -319,8 +329,42 @@ public class APC40MidiInput extends SCMidiInput {
   private boolean shiftOn = false;
   private LXEffect releaseEffect = null;
   
-  APC40MidiInput(MidiInputDevice d) {
-    super(d);
+  APC40MidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    super(midiEngine, d);
+  }
+
+  private class GridPosition {
+    public final int row, col;
+    GridPosition(int r, int c) {
+      row = r;
+      col = c;
+    }
+  }
+  
+  private GridPosition getGridPosition(Note note) {
+    int channel = note.getChannel();
+    int pitch = note.getPitch();
+    if (channel < 8) {
+      if (pitch >= 53 && pitch <=57) return new GridPosition(pitch-53, channel);
+      else if (pitch == 52) return new GridPosition(5, channel);
+    }
+    return null;
+  }
+
+  protected boolean handleGridNoteOn(Note note) {
+    GridPosition p = getGridPosition(note);
+    if (p != null) {
+      return midiEngine.grid.gridPressed(p.row, p.col);
+    }
+    return false;
+  }
+
+  protected boolean handleGridNoteOff(Note note) {
+    GridPosition p = getGridPosition(note);
+    if (p != null) {
+      return midiEngine.grid.gridReleased(p.row, p.col);
+    }
+    return false;
   }
 
   protected void handleControllerChange(rwmidi.Controller cc) {
@@ -339,7 +383,7 @@ public class APC40MidiInput extends SCMidiInput {
       parameterIndex = 8 + (number-16);
     }
     if (parameterIndex >= 0) {
-      List<LXParameter> parameters = getFocusedPattern().getParameters();
+      List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
       if (parameterIndex < parameters.size()) {
         parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
       }
@@ -465,15 +509,15 @@ public class APC40MidiInput extends SCMidiInput {
 
 class KorgNanoKontrolMidiInput extends SCMidiInput {
   
-  KorgNanoKontrolMidiInput(MidiInputDevice d) {
-    super(d);
+  KorgNanoKontrolMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    super(midiEngine, d);
   }
   
   protected void handleControllerChange(rwmidi.Controller cc) {
     int number = cc.getCC();
     if (number >= 16 && number <= 23) {
       int parameterIndex = number - 16;
-      List<LXParameter> parameters = getFocusedPattern().getParameters();
+      List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
       if (parameterIndex < parameters.size()) {
         parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
       }
@@ -502,7 +546,7 @@ class KorgNanoKontrolMidiInput extends SCMidiInput {
   }
 }
 
-class APC40MidiOutput implements LXParameter.Listener {
+class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   
   private final MidiEngine midiEngine;
   private final MidiOutput output;
@@ -531,6 +575,7 @@ class APC40MidiOutput implements LXParameter.Listener {
       d.addListener(deckListener);
     }
     resetParameters();
+    midiEngine.grid.addOutput(this);
   }
 
   private void resetParameters() {
@@ -556,6 +601,11 @@ class APC40MidiOutput implements LXParameter.Listener {
     }
     while (i < 12) {
       sendKnob(i++, 0);
+    }
+    for (int row = 0; row < 7; ++row) {
+      for (int col = 0; col < 8; ++col) {
+        setGridState(row, col, 0);
+      }
     }
   }
   
@@ -610,4 +660,53 @@ class APC40MidiOutput implements LXParameter.Listener {
       ++i;
     }
   }
+  
+  public void setGridState(int row, int col, int state) {
+    if (col < 8) {
+      if (row < 5) output.sendNoteOn(col, 53+row, state);
+      else if (row == 6) output.sendNoteOn(col, 52, state);
+    }
+  }
 }
+
+interface GridOutput {
+  public static final int OFF = 0;
+  public static final int GREEN = 1;
+  public static final int GREEN_BLINK = 2;
+  public static final int RED = 3;
+  public static final int RED_BLINK = 4;
+  public static final int YELLOW = 5;
+  public static final int YELLOW_BLINK = 6;
+  public static final int ON = 127;
+  
+  public void setGridState(int row, int col, int state);
+}
+
+class GridController {
+  private final List<GridOutput> outputs = new ArrayList<GridOutput>();
+  
+  private final MidiEngine midiEngine;
+  
+  GridController(MidiEngine midiEngine) {
+    this.midiEngine = midiEngine;
+  }
+  
+  public void addOutput(GridOutput output) {
+    outputs.add(output);
+  }
+  
+  public boolean gridPressed(int row, int col) {
+    return midiEngine.getFocusedPattern().gridPressed(row, col);
+  }
+  
+  public boolean gridReleased(int row, int col) {
+    return midiEngine.getFocusedPattern().gridReleased(row, col);
+  }
+  
+  public void setState(int row, int col, int state) {
+    for (GridOutput g : outputs) {
+      g.setGridState(row, col, state);
+    }
+  }
+}
+

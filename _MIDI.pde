@@ -378,19 +378,19 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 7:
      switch (channel) {
        case 0:
-         EFF_colorFucker.sharp.setValue(value);
+         EFF_colorFucker.hueShift.setValue(value);
          break;
        case 1:
-         EFF_colorFucker.hueShift.setValue(value);
-         break;       
-       case 5:
+         EFF_colorFucker.desat.setValue(value);
+         break;
+       case 2:
+         EFF_colorFucker.sharp.setValue(value);
+         break;
+       case 3:
          EFF_blur.amount.setValue(value);
          break;
-       case 6:
+       case 4:
          EFF_quantize.amount.setValue(value);
-         break;
-       case 7:
-         EFF_colorFucker.desat.setValue(value);
          break;
      }
      break;

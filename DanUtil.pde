@@ -227,7 +227,8 @@ public class DPat extends SCPattern
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 			}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
-	boolean		IsFocused()							{ return this == midiEngine.getFocusedDeck().getActivePattern();		}
+	boolean		IsFocused()							{ return midiEngine != null && midiEngine.getFocusedDeck() != null &&
+															 this == midiEngine.getFocusedDeck().getActivePattern();		}
 	void 		onInactive() 						{ UpdateState(); }
 	void 		onActive  () 						{ UpdateState(); StartPattern(); }
 	void 		UpdateState() 						{ if (IsFocused() != IsActive()) { if (IsFocused()) DG.Activate(this); else DG.Deactivate(this); } }

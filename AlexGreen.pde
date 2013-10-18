@@ -203,12 +203,12 @@ Cube c = model.cubes.get(i);
 
 println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
 PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-//println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
+println("c.rx" + cubeangle.x + "c.ry" + cubeangle.y + "c.rz" + cubeangle.z);
 PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
 println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
-PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, 0, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
+PVector centerrot = new PVector(cos(c.ry)*CW/2 + sin(c.ry)*CW/2, CH/2, sin(c.ry)*CW/2 - cos(c.ry)*CW/2);
  // nCos*(y-o.y) - nSin*(z-o.z) + o.y
-cubecenter = PVector.add(cubecenter, centerrot);
+cubecenter = PVector.add(new PVector(c.x, c.y, c.z), centerrot);
 println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
 
 

@@ -26,7 +26,9 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
 
-    
+    new SineSphere(glucose),
+     new CubeCurl(glucose),
+
     // Slee
     // new MidiMusic(glucose),
     new Pulley(glucose),
@@ -52,9 +54,7 @@ LXPattern[] patterns(GLucose glucose) {
     new Worms(glucose),
 
     // Alex G
-     new SineSphere(glucose),
-//     new CubeCurl(glucose),
-
+     
     // Shaheen
     new HelixPattern(glucose).setEligible(false),
     
@@ -104,6 +104,7 @@ LXPattern[] patterns(GLucose glucose) {
     new TestFloorMapping(glucose),
     new TestSpeakerMapping(glucose),    
     new TestPerformancePattern(glucose),
+    new HueTestHSB(glucose),
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

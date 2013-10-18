@@ -26,7 +26,9 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
 
-   
+    new SineSphere(glucose),
+     new CubeCurl(glucose),
+
     // Slee
     new Swarm(glucose),
     new ViolinWave(glucose),
@@ -50,9 +52,7 @@ LXPattern[] patterns(GLucose glucose) {
     new Worms(glucose),
 
     // Alex G
-    new SineSphere(glucose),
-     new CubeCurl(glucose),
-
+   
     // Shaheen
     new HelixPattern(glucose).setEligible(false),
     

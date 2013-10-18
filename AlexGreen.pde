@@ -185,7 +185,7 @@ addModulator(curl).trigger();
 addModulator(bg).trigger();
  this.CH = Cube.EDGE_HEIGHT;
  this.CW = Cube.EDGE_WIDTH;
- this.diag = sqrt(CH*CH + CW*CW + CW*CW);
+ this.diag = sqrt(CW*CW + CW*CW);
 
 
 ArrayList<PVector> centerlistrelative = new ArrayList<PVector>();
@@ -200,16 +200,18 @@ for (int i = 0; i < model.cubes.size(); i++){
 //there is definitely a better way of doing this!
 PVector centerofcube(int i) { 
 Cube c = model.cubes.get(i);
-PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
-cubeangle.normalize();
-println( "norm"+ cubeangle.x + "norm" + cubeangle.y +"norm" + cubeangle.z);
-PVector cubecenter = PVector.add(cubeorigin.get(i), PVector.mult(cubeangle, diag));
 
-//PVector cubecenter = new PVector(c.x+ CW/2, c.y + CH/2, c.z + CW/2);
-//println("cubecenter raw" + " : " +  cubecenter.x + "  " + cubecenter.y + "  " + cubecenter.z ); 
-//PVector cubecenterf = new PVector(cubecenter.x + cos(c.ry)*CW/2, cubecenter.y , cubecenter.z - tan(c.ry) * CW/2);
-//println("cubecenter angled" + " : " +  cubecenterf.x + "  " + cubecenterf.y + "  " + cubecenterf.z );
+println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
+PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
+//println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
+PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
+println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
+PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, 0, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
+ // nCos*(y-o.y) - nSin*(z-o.z) + o.y
+cubecenter = PVector.add(cubecenter, centerrot);
+println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
+
+
 return cubecenter;
 }
 
@@ -219,38 +221,38 @@ for (int i =0; i < model.cubes.size(); i++)  {
 Cube c = model.cubes.get(i);
 float cfloor = c.y;
 
-if (i%3 == 0){
+// if (i%3 == 0){
 
-for (Point p : c.points ){
- // colors[p.index]=color(0,0,0);
-  //float dif = (p.y - c.y);
-  //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
-   }
- }
+// for (Point p : c.points ){
+//  // colors[p.index]=color(0,0,0);
+//   //float dif = (p.y - c.y);
+//   //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
+//    }
+//  }
 
-else if (i%3 == 1) {
+// else if (i%3 == 1) {
   
- for (Point p: c.points){
-  colors[p.index]=color(0,0,0);
-  float dif = (p.y - c.y);
-  // colors[p.index] = 
-  // color(bg.getValuef(),
-  //   map(curl.getValuef(), 0, Cube.EDGE_HEIGHT, 20, 100), 
-  //   100 - 10*abs(dif - curl.getValuef()), ADD );
-     }
-    }
-else if (i%3 == 2){
+//  for (Point p: c.points){
+//   colors[p.index]=color(0,0,0);
+//   float dif = (p.y - c.y);
+//   // colors[p.index] = 
+//   // color(bg.getValuef(),
+//   //   map(curl.getValuef(), 0, Cube.EDGE_HEIGHT, 20, 100), 
+//   //   100 - 10*abs(dif - curl.getValuef()), ADD );
+//      }
+//     }
+// else if (i%3 == 2){
  // centerlist[i].sub(cubeorigin(i);
    for (Point p: c.points) {
     PVector pv = new PVector(p.x, p.y, p.z);
-     colors[p.index] =color( constrain(5*pv.dist(centerlist.get(i)), 0, 360)  , 50, 100 );
+     colors[p.index] =color( constrain(4* pv.dist(centerlist.get(i)), 0, 360)  , 50, 100 );
    // colors[p.index] =color(constrain(centerlist[i].x, 0, 360), constrain(centerlist[i].y, 0, 100),  );
 
 
     }
 
 
-  }
+  //}
 
    }
   }

@@ -56,7 +56,8 @@ public Model buildModel() {
   // Single cubes can be constructed directly here if you need them
   Cube[] singleCubes = new Cube[] {
     // new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL),     // Back left channel behind speaker
-     //new Cube(0, 0, 0, 0, 45, rz, wiring),
+     //new Cube(x, y, z, rx, ry, rz, wiring),
+    new Cube(0,0,0,0,-135,0, WRR),
   };
 
   // The bass box!
@@ -109,15 +110,15 @@ public Model buildModel() {
     towerList.add(new Tower(tower));
   }
 
-  for (StaggeredTower st : scubes) {
+  
+  for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
+  for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
+for (StaggeredTower st : scubes) {
     tower = new ArrayList<Cube>();
     for (int i=0; i < st.n; i++)
       tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, WRR));
     towerList.add(new Tower(tower));
   }
-
-  for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
-  for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
 
  return new Model(towerList, cubes, bassBox, speakers);
 }

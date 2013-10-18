@@ -43,8 +43,8 @@ class MidiEngine {
 
   public MidiEngine() {
     grid = new GridController(this);
-    midiControllers.add(midiQwertyKeys = new SCMidiInput(this, SCMidiInput.KEYS));
-    midiControllers.add(midiQwertyAPC = new SCMidiInput(this, SCMidiInput.APC));
+    midiControllers.add(midiQwertyKeys = new VirtualKeyMidiInput(this, VirtualKeyMidiInput.KEYS));
+    midiControllers.add(midiQwertyAPC = new VirtualKeyMidiInput(this, VirtualKeyMidiInput.APC));
     for (MidiInputDevice device : RWMidi.getInputDevices()) {
       if (device.getName().contains("APC")) {
         midiControllers.add(new APC40MidiInput(this, device).setEnabled(true));
@@ -52,7 +52,7 @@ class MidiEngine {
         midiControllers.add(new KorgNanoKontrolMidiInput(this, device).setEnabled(true));
       } else {
         boolean enabled = device.getName().contains("KEYBOARD KORG") || device.getName().contains("Bus 1 Apple");
-        midiControllers.add(new SCMidiInput(this, device).setEnabled(enabled));
+        midiControllers.add(new GenericDeviceMidiInput(this, device).setEnabled(enabled));
       }
     }
     for (MidiOutputDevice device : RWMidi.getOutputDevices()) {
@@ -93,31 +93,19 @@ public interface SCMidiInputListener {
   public void onEnabled(SCMidiInput controller, boolean enabled);
 }
 
-public class SCMidiInput extends AbstractScrollItem {
+public abstract class SCMidiInput extends AbstractScrollItem {
 
-  public static final int MIDI = 0;
-  public static final int KEYS = 1;
-  public static final int APC = 2;
-
-  private boolean enabled = false;
+  protected boolean enabled = false;
   private final String name;
-  private final int mode;
-  private int octaveShift = 0;
 
   protected final MidiEngine midiEngine;
 
-  class NoteMeta {
-    int channel;
-    int number;
-    NoteMeta(int channel, int number) {
-      this.channel = channel;
-      this.number = number;
-    }
-  }
-
-  final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();
-
   final List<SCMidiInputListener> listeners = new ArrayList<SCMidiInputListener>();
+
+  protected SCMidiInput(MidiEngine midiEngine, String name) {
+    this.midiEngine = midiEngine;
+    this.name = name;
+  }
 
   public SCMidiInput addListener(SCMidiInputListener l) {
     listeners.add(l);
@@ -129,111 +117,8 @@ public class SCMidiInput extends AbstractScrollItem {
     return this;
   }
 
-  SCMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
-    this.midiEngine = midiEngine;
-    mode = MIDI;
-    d.createInput(this);
-    name = d.getName().replace("Unknown vendor","");
-  }
-
-  SCMidiInput(MidiEngine midiEngine, int mode) {
-    this.midiEngine = midiEngine;
-    this.mode = mode;
-    switch (mode) {
-    case APC:
-      name = "QWERTY (APC Mode)";
-      mapAPC();
-      break;
-    default:
-    case KEYS:
-      name = "QWERTY (Key Mode)";
-      mapKeys();
-      break;
-    }
-  }
-
-  private void mapAPC() {
-    mapNote('1', 0, 53);
-    mapNote('2', 1, 53);
-    mapNote('3', 2, 53);
-    mapNote('4', 3, 53);
-    mapNote('5', 4, 53);
-    mapNote('6', 5, 53);
-    mapNote('q', 0, 54);
-    mapNote('w', 1, 54);
-    mapNote('e', 2, 54);
-    mapNote('r', 3, 54);
-    mapNote('t', 4, 54);
-    mapNote('y', 5, 54);
-    mapNote('a', 0, 55);
-    mapNote('s', 1, 55);
-    mapNote('d', 2, 55);
-    mapNote('f', 3, 55);
-    mapNote('g', 4, 55);
-    mapNote('h', 5, 55);
-    mapNote('z', 0, 56);
-    mapNote('x', 1, 56);
-    mapNote('c', 2, 56);
-    mapNote('v', 3, 56);
-    mapNote('b', 4, 56);
-    mapNote('n', 5, 56);
-    registerKeyEvent(this);
-  }
-
-  private void mapKeys() {
-    int note = 48;
-    mapNote('a', 1, note++);
-    mapNote('w', 1, note++);
-    mapNote('s', 1, note++);
-    mapNote('e', 1, note++);
-    mapNote('d', 1, note++);
-    mapNote('f', 1, note++);
-    mapNote('t', 1, note++);
-    mapNote('g', 1, note++);
-    mapNote('y', 1, note++);
-    mapNote('h', 1, note++);
-    mapNote('u', 1, note++);
-    mapNote('j', 1, note++);
-    mapNote('k', 1, note++);
-    mapNote('o', 1, note++);
-    mapNote('l', 1, note++);
-    registerKeyEvent(this);
-  }
-
-  void mapNote(char ch, int channel, int number) {
-    keyToNote.put(ch, new NoteMeta(channel, number));
-  }
-
   public String getLabel() {
     return name;
-  }
-
-  public void keyEvent(KeyEvent e) {
-    if (!enabled) {
-      return;
-    }
-    char c = Character.toLowerCase(e.getKeyChar());
-    NoteMeta nm = keyToNote.get(c);
-    if (nm != null) {
-      switch (e.getID()) {
-      case KeyEvent.KEY_PRESSED:
-        noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number + octaveShift*12, 127));
-        break;
-      case KeyEvent.KEY_RELEASED:
-        noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number + octaveShift*12, 0));
-        break;
-      }
-    }
-    if ((mode == KEYS) && (e.getID() == KeyEvent.KEY_PRESSED)) {
-      switch (c) {
-      case 'z':
-        octaveShift = constrain(octaveShift-1, -4, 4);
-        break;
-      case 'x':
-        octaveShift = constrain(octaveShift+1, -4, 4);
-        break;
-      }
-    }
   }
 
   public boolean isEnabled() {
@@ -324,7 +209,124 @@ public class SCMidiInput extends AbstractScrollItem {
   protected void handleNoteOff(Note note) {}
 }
 
-public class APC40MidiInput extends SCMidiInput {
+public class VirtualKeyMidiInput extends SCMidiInput {
+
+  public static final int KEYS = 1;
+  public static final int APC = 2;
+  
+  private final int mode;
+  
+  private int octaveShift = 0;
+
+  class NoteMeta {
+    int channel;
+    int number;
+    NoteMeta(int channel, int number) {
+      this.channel = channel;
+      this.number = number;
+    }
+  }
+
+  final Map<Character, NoteMeta> keyToNote = new HashMap<Character, NoteMeta>();  
+  
+  VirtualKeyMidiInput(MidiEngine midiEngine, int mode) {
+    super(midiEngine, "QWERTY (" + (mode == APC ? "APC" : "Key") + "  Mode)");
+    this.mode = mode;
+    if (mode == APC) {
+      mapAPC();
+    } else {
+      mapKeys();
+    }
+    registerKeyEvent(this);    
+  }
+
+  private void mapAPC() {
+    mapNote('1', 0, 53);
+    mapNote('2', 1, 53);
+    mapNote('3', 2, 53);
+    mapNote('4', 3, 53);
+    mapNote('5', 4, 53);
+    mapNote('6', 5, 53);
+    mapNote('q', 0, 54);
+    mapNote('w', 1, 54);
+    mapNote('e', 2, 54);
+    mapNote('r', 3, 54);
+    mapNote('t', 4, 54);
+    mapNote('y', 5, 54);
+    mapNote('a', 0, 55);
+    mapNote('s', 1, 55);
+    mapNote('d', 2, 55);
+    mapNote('f', 3, 55);
+    mapNote('g', 4, 55);
+    mapNote('h', 5, 55);
+    mapNote('z', 0, 56);
+    mapNote('x', 1, 56);
+    mapNote('c', 2, 56);
+    mapNote('v', 3, 56);
+    mapNote('b', 4, 56);
+    mapNote('n', 5, 56);
+  }
+
+  private void mapKeys() {
+    int note = 48;
+    mapNote('a', 1, note++);
+    mapNote('w', 1, note++);
+    mapNote('s', 1, note++);
+    mapNote('e', 1, note++);
+    mapNote('d', 1, note++);
+    mapNote('f', 1, note++);
+    mapNote('t', 1, note++);
+    mapNote('g', 1, note++);
+    mapNote('y', 1, note++);
+    mapNote('h', 1, note++);
+    mapNote('u', 1, note++);
+    mapNote('j', 1, note++);
+    mapNote('k', 1, note++);
+    mapNote('o', 1, note++);
+    mapNote('l', 1, note++);
+  }
+
+  void mapNote(char ch, int channel, int number) {
+    keyToNote.put(ch, new NoteMeta(channel, number));
+  }
+  
+  public void keyEvent(KeyEvent e) {
+    if (!enabled) {
+      return;
+    }
+    char c = Character.toLowerCase(e.getKeyChar());
+    NoteMeta nm = keyToNote.get(c);
+    if (nm != null) {
+      switch (e.getID()) {
+      case KeyEvent.KEY_PRESSED:
+        noteOnReceived(new Note(Note.NOTE_ON, nm.channel, nm.number + octaveShift*12, 127));
+        break;
+      case KeyEvent.KEY_RELEASED:
+        noteOffReceived(new Note(Note.NOTE_OFF, nm.channel, nm.number + octaveShift*12, 0));
+        break;
+      }
+    }
+    if ((mode == KEYS) && (e.getID() == KeyEvent.KEY_PRESSED)) {
+      switch (c) {
+      case 'z':
+        octaveShift = constrain(octaveShift-1, -4, 4);
+        break;
+      case 'x':
+        octaveShift = constrain(octaveShift+1, -4, 4);
+        break;
+      }
+    }
+  }
+}
+
+public class GenericDeviceMidiInput extends SCMidiInput {
+  GenericDeviceMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    super(midiEngine, d.getName().replace("Unknown vendor",""));
+    d.createInput(this);
+  }
+}
+
+public class APC40MidiInput extends GenericDeviceMidiInput {
 
   private boolean shiftOn = false;
   private LXEffect releaseEffect = null;
@@ -507,7 +509,7 @@ public class APC40MidiInput extends SCMidiInput {
   }
 }
 
-class KorgNanoKontrolMidiInput extends SCMidiInput {
+class KorgNanoKontrolMidiInput extends GenericDeviceMidiInput {
   
   KorgNanoKontrolMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
     super(midiEngine, d);

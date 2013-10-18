@@ -51,6 +51,24 @@ public Model buildModel() {
   //  We can do better than this.  The raw object index should be obvious from the code-- looking through the
   //  rendered simulation and counting through cubes in mapping mode is grossly inefficient. 
 
+
+  ////////////////////////////////////////////////////////////////////////
+  // dan's proposed lattice
+  ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
+  if (NumBackTowers != 9) exit();
+  for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
+      (i+1)*CW,               // x
+      (i % 2 == 0) ? 0 : CH * 2./3.   ,   // y
+     - ((i % 2 == 0) ? 0 : 11) + 97   ,   // z
+     -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );  // num cubes
+  
+  ArrayList<Cube> dcubes = new ArrayList<Cube>();
+  for (int i=1; i<6; i++) {
+    if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));  
+         dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR)); 
+  }
+
+
   TowerMapping[] towerCubes = new TowerMapping[] {};
   
   // Single cubes can be constructed directly here if you need them
@@ -70,23 +88,6 @@ public Model buildModel() {
      // Each speaker parameter is x, y, z, rotation, the left speaker comes first
      // new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
   });
-
-
-  ////////////////////////////////////////////////////////////////////////
-  // dan's proposed lattice
-	ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
-	if (NumBackTowers != 9) exit();
-	for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
-		  (i+1)*CW,						 		// x
-		  (i % 2 == 0) ? 0 : CH * 2./3.		,   // y
-		 - ((i % 2 == 0) ? 0 : 11) + 97  	,   // z
-		 -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );	 // num cubes
-	
-	ArrayList<Cube> dcubes = new ArrayList<Cube>();
-	for (int i=1; i<6; i++) {
-		if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));	
-				 dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR));	
-	}
 
   //////////////////////////////////////////////////////////////////////
   //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //

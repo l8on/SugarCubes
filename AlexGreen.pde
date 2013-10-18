@@ -72,14 +72,14 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
  color spheryvalue (float px, float py, float pz , float f1xc, float f1yc, float f1zc) 
  {
 //switch(sShpape.cur() ) {}  
-   return color(constrain(huespread.getValuef()*5*px, 0, 360) , dist(px, py, pz, f1xc, f1yc, f1zc) , 
+   return lx.hsb(constrain(huespread.getValuef()*5*px, 0, 360) , dist(px, py, pz, f1xc, f1yc, f1zc) , 
     max(0, 100 - 100*widthparameter.getValuef()*abs(dist(px, py, pz, f1xcenter, ybounce.getValuef(), f1zcenter)
       - vibration.getValuef() ) ) ); 
  }
  color ellipsevalue(float px, float py, float pz , float f1xc, float f1yc, float f1zc, float f2xc, float f2yc, float f2zc)
   {
 //switch(sShpape.cur() ) {}  
-   return color(huespread.getValuef()*5*px, dist(model.xMax-px, model.yMax-py, model.zMax-pz, f1xc, f1yc, f1zc) , 
+   return lx.hsb(huespread.getValuef()*5*px, dist(model.xMax-px, model.yMax-py, model.zMax-pz, f1xc, f1yc, f1zc) , 
     max(0, 100 - 100*widthparameter.getValuef() *
       abs( (dist(px, py, pz, f1xc, ybounce.getValuef(), f1zc) + 
         (dist(px, py , pz, f2xc, ybounce.getValuef(), f2zc) ) )/2  
@@ -159,10 +159,10 @@ final Sphery[] spherys;
       //   c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/4, 3*model.xMax/4, 3*model.yMax/4, 3*model.zMax/4),ADD);
       //   return c; 
       // }
-      // return color(0,0,0);
+      // return lx.hsb(0,0,0);
       //  // else if(spheremode ==2)
        // { color c = 0;
-       //   return color(CalcCone( (xyz by = new xyz(0,spherys[2].ybounce.getValuef(),0) ), Px, mid) );
+       //   return lx.hsb(CalcCone( (xyz by = new xyz(0,spherys[2].ybounce.getValuef(),0) ), Px, mid) );
 
        // }
 
@@ -273,7 +273,7 @@ HueTestHSB(GLucose glucose) {
 
   for (Point p : model.points) {
     color c = 0;
-    c = blendColor(c, color(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
+    c = blendColor(c, lx.hsb(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
     colors[p.index]= c;
   }
    int now= millis();

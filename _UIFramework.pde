@@ -703,7 +703,7 @@ public class UIScrollList extends UIObject {
         itemColor = #707070;
       }
       float factor = even ? .92 : 1.08;
-      itemColor = color(hue(itemColor), saturation(itemColor), min(100, factor*brightness(itemColor)));
+      itemColor = lx.scaleBrightness(itemColor, factor);
       
       pg.noStroke();
       pg.fill(itemColor);
@@ -718,7 +718,7 @@ public class UIScrollList extends UIObject {
     }
     if (hasScroll) {
       pg.noStroke();
-      pg.fill(color(0, 0, 100, 15));
+      pg.fill(0x26ffffff);
       pg.rect(w-12, 0, 12, h);
       pg.fill(#333333);
       pg.rect(w-12, scrollYStart, 12, scrollYHeight);

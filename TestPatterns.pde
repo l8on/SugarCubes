@@ -26,7 +26,7 @@ class TestSpeakerMapping extends TestPattern {
       for (Strip strip : speaker.strips) {
         float b = 100;
         for (Point p : strip.points) {
-          colors[p.index] = color(h % 360, 100, b);
+          colors[p.index] = lx.hsb(h % 360, 100, b);
           b = max(0, b - 10);
         }
         h += 70;
@@ -47,7 +47,7 @@ class TestBassMapping extends TestPattern {
     for (int si : strips) {
       float b = 100;
       for (Point p : model.bassBox.strips.get(si).points) {
-        colors[p.index] = color(h % 360, 100, b);
+        colors[p.index] = lx.hsb(h % 360, 100, b);
         b = max(0, b - 10);
       }
       h += 70;
@@ -66,7 +66,7 @@ class TestFloorMapping extends TestPattern {
     for (int si : strutIndices) {
       float b = 100;
       for (Point p : model.bassBox.struts.get(si).points) {
-        colors[p.index] = color(h % 360, 100, b);
+        colors[p.index] = lx.hsb(h % 360, 100, b);
         b = max(0, b - 10);
       }
       h += 50;
@@ -76,10 +76,63 @@ class TestFloorMapping extends TestPattern {
     for (int fi : floorIndices) {
       float b = 100;
       for (Point p : model.boothFloor.strips.get(fi).points) {
-        colors[p.index] = color(h, 100, b);
+        colors[p.index] = lx.hsb(h, 100, b);
         b = max(0, b - 3);
       }
       h += 90;
+    }
+  }
+}
+
+class TestPerformancePattern extends TestPattern {
+  
+  final BasicParameter ops = new BasicParameter("OPS", 0);
+  final BasicParameter iter = new BasicParameter("ITER", 0);
+  
+  TestPerformancePattern(GLucose glucose) {
+    super(glucose);
+    addParameter(ops);
+    addParameter(iter);
+  }
+  
+  public void run(double deltaMs) {
+    float x = 1;
+    for (int j = 0; j < ops.getValuef() * 400000; ++j) {
+      x *= random(0, 1);
+    }
+
+    if (iter.getValuef() < 0.25) {
+      for (Point p : model.points) {
+        colors[p.index] = lx.hsb(
+          (p.x*.1 + p.y*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else if (iter.getValuef() < 0.5) {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (90 + model.px[i]*.1 + model.py[i]*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else if (iter.getValuef() < 0.75) {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (180 + model.p[3*i]*.1 + model.p[3*i+1]*.1) % 360,
+          100,
+          100
+        );
+      }
+    } else {
+      for (int i = 0; i < colors.length; ++i) {
+        colors[i] = lx.hsb(
+          (270 + model.x(i)*.1 + model.y(i)*.1) % 360,
+          100,
+          100
+        );
+      }
     }
   }
 }
@@ -96,7 +149,7 @@ class TestStripPattern extends TestPattern {
   public void run(double deltaMs) {
     for (Strip s : model.strips) {
       for (Point p : s.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,
           max(0, 100 - d.getValuef()*dist(p.x, p.y, s.cx, s.cy))
@@ -119,7 +172,7 @@ class TestHuePattern extends TestPattern {
     // Access the core master hue via this method call
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length; ++i) {
-      colors[i] = color(hv, 100, 100);
+      colors[i] = lx.hsb(hv, 100, 100);
     }
   } 
 }
@@ -140,8 +193,8 @@ class TestXPattern extends TestPattern {
       // You can use abs() to determine the distance between two
       // values. The further away this point is from an exact
       // point, the more we decrease its brightness
-      float bv = max(0, 100 - abs(p.fx - xPos.getValuef()));
-      colors[p.index] = color(hv, 100, bv);
+      float bv = max(0, 100 - abs(p.x - xPos.getValuef()));
+      colors[p.index] = lx.hsb(hv, 100, bv);
     }
   }
 }
@@ -158,8 +211,8 @@ class TestYPattern extends TestPattern {
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
-      float bv = max(0, 100 - abs(p.fy - yPos.getValuef()));
-      colors[p.index] = color(hv, 100, bv);
+      float bv = max(0, 100 - abs(p.y - yPos.getValuef()));
+      colors[p.index] = lx.hsb(hv, 100, bv);
     }
   }
 }
@@ -176,8 +229,8 @@ class TestZPattern extends TestPattern {
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     for (Point p : model.points) {
-      float bv = max(0, 100 - abs(p.fz - zPos.getValuef()));
-      colors[p.index] = color(hv, 100, bv);
+      float bv = max(0, 100 - abs(p.z - zPos.getValuef()));
+      colors[p.index] = lx.hsb(hv, 100, bv);
     }
   }
 }
@@ -197,7 +250,7 @@ class TestTowerPattern extends TestPattern {
     int ti = 0;
     for (Tower t : model.towers) {
       for (Point p : t.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,
           max(0, 100 - 80*LXUtils.wrapdistf(ti, towerIndex.getValuef(), model.towers.size()))
@@ -260,7 +313,7 @@ class TestProjectionPattern extends TestPattern {
       float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
       // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
       d = max(0, abs(c.y) - 10 + .1*abs(c.z) + .02*abs(c.x)); // plane / spear thing
-      colors[c.index] = color(
+      colors[c.index] = lx.hsb(
         (hv + .6*abs(c.x) + abs(c.z)) % 360,
         100,
         constrain(140 - 40*d, 0, 100)
@@ -282,7 +335,7 @@ class TestCubePattern extends TestPattern {
     for (Cube c : model.cubes) {
       int i = 0;
       for (Point p : c.points) {
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,
           max(0, 100 - 80.*abs(i - index.getValuef()))
@@ -365,7 +418,7 @@ class MappingTool extends TestPattern {
   }
   
   public void run(double deltaMs) {
-    color off = color(0, 0, 0);
+    color off = #000000;
     color c = off;
     color r = #FF0000;
     color g = #00FF00;

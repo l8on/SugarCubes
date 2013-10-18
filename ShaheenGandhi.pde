@@ -130,7 +130,7 @@ class HelixPattern extends SCPattern {
       // For performance reasons, cut out points that are outside of
       // the tube where the toroidal coil lives.
       if (abs(myDist(p, axisPoint) - radius) > girth*.5f) {
-        return color(0,0,0);
+        return lx.hsb(0,0,0);
       }
 
       // Find the appropriate point for the current rotation
@@ -146,7 +146,7 @@ class HelixPattern extends SCPattern {
 
       // Soften edges by fading brightness.
       float b = constrain(100*(1 - ((d-.5*girth)/(girth*.5))), 0, 100);
-      return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80, b);
+      return lx.hsb((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80, b);
     }
   }
   
@@ -232,7 +232,7 @@ class HelixPattern extends SCPattern {
     float t = axis.getTValue(pt) + spokePhase;
     int spokeIndex = (int)floor((t - tMin + spokePeriod/2) / spokePeriod);
     if (spokeIndex < 0 || spokeIndex >= basePairs.length) {
-      return color(0,0,0);
+      return lx.hsb(0,0,0);
     }
     BasePairInfo basePair = basePairs[spokeIndex];
     Line spokeLine = basePair.line;
@@ -240,7 +240,7 @@ class HelixPattern extends SCPattern {
     float d = PVector.dist(pt, pointOnSpoke);
     float b = (PVector.dist(pointOnSpoke, spokeLine.getPoint()) < spokeRadius) ? constrain(100*(1 - ((d-.5*spokeGirth)/(spokeGirth*.5))), 0, 100) : 0.f;
     float phase = spokeLine.getTValue(pointOnSpoke) < 0 ? basePair.colorPhase1 : basePair.colorPhase2;
-    return color((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80.f, b);
+    return lx.hsb((lx.getBaseHuef() + (360*(phase / TWO_PI)))%360, 80.f, b);
   }
 
   void run(double deltaMs) {
@@ -259,15 +259,15 @@ class HelixPattern extends SCPattern {
       color spokeColor = calculateSpokeColor(pt);
 
       if (!h1on) {
-        h1c = color(0,0,0);
+        h1c = lx.hsb(0,0,0);
       }
 
       if (!h2on) {
-        h2c = color(0,0,0);
+        h2c = lx.hsb(0,0,0);
       }
 
       if (!spokesOn) {
-        spokeColor = color(0,0,0);
+        spokeColor = lx.hsb(0,0,0);
       }
 
       // The helices are positioned to not overlap.  If that changes,

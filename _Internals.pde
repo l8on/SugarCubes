@@ -52,6 +52,7 @@ LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 MidiEngine midiEngine;
+GridController gridController;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -60,6 +61,7 @@ DebugUI debugUI;
 boolean uiOn = true;
 LXPattern restoreToPattern = null;
 PImage logo;
+float[] hsb = new float[3];
 
 // Handles to UI objects
 UIContext[] overlays;
@@ -98,7 +100,6 @@ LXPattern[] _rightPatterns(GLucose glucose) {
   }
   return rightPatterns;
 }
-  
 
 void logTime(String evt) {
   int now = millis();
@@ -122,10 +123,6 @@ void setup() {
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
   
-  // MIDI devices
-  midiEngine = new MidiEngine();
-  logTime("Setup MIDI devices");
-
   // Set the patterns
   Engine engine = lx.engine;
   engine.setPatterns(patterns = _leftPatterns(glucose));
@@ -135,7 +132,11 @@ void setup() {
   logTime("Built transitions");
   glucose.lx.addEffects(effects(glucose));
   logTime("Built effects");
-    
+
+  // MIDI devices
+  midiEngine = new MidiEngine();
+  logTime("Setup MIDI devices");
+
   // Build output driver
   PandaMapping[] pandaMappings = buildPandaList();
   pandaBoards = new PandaDriver[pandaMappings.length];
@@ -196,16 +197,19 @@ void setup() {
 void draw() {
   // Draws the simulation and the 2D UI overlay
   background(40);
-  color[] colors = glucose.getColors();
 
+  color[] simulationColors;
+  color[] sendColors;
+  simulationColors = sendColors = glucose.getColors();
   String displayMode = uiCrossfader.getDisplayMode();
   if (displayMode == "A") {
-    colors = lx.engine.getDeck(0).getColors();
+    simulationColors = lx.engine.getDeck(0).getColors();
   } else if (displayMode == "B") {
-    colors = lx.engine.getDeck(1).getColors();
+    simulationColors = lx.engine.getDeck(1).getColors();
   }
   if (debugMode) {
-    debugUI.maskColors(colors);
+    debugUI.maskColors(simulationColors);
+    debugUI.maskColors(sendColors);
   }
 
   camera(
@@ -251,29 +255,20 @@ void draw() {
   strokeWeight(2);
   beginShape(POINTS);
   for (Point p : glucose.model.points) {
-    stroke(colors[p.index]);
-    vertex(p.fx, p.fy, p.fz);
+    stroke(simulationColors[p.index]);
+    vertex(p.x, p.y, p.z);
   }
   endShape();
   
   // 2D Overlay UI
   drawUI();
     
-  // Send output colors
-  color[] sendColors = glucose.getColors();
-  if (debugMode) {
-    debugUI.maskColors(sendColors);
-  }
-  
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   for (int i = 0; i < sendColors.length; ++i) {
-    float b = brightness(sendColors[i]) / 100.f;
-    sendColors[i] = color(
-      hue(sendColors[i]),
-      saturation(sendColors[i]),
-      (b*b*b) * 100.
-    );
+    lx.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
   
   // TODO(mcslee): move into GLucose engine
@@ -458,6 +453,11 @@ void keyPressed() {
         }
       }
       break;
+    case 't':
+      if (!midiEngine.isQwertyEnabled()) {
+        lx.engine.setThreaded(!lx.engine.isThreaded());
+      }
+      break;
     case 'p':
       for (PandaDriver p : pandaBoards) {
         p.toggle();
@@ -512,7 +512,7 @@ void mouseReleased() {
   }
 }
 
-void mouseWheel(int delta) {delta*=20;
+void mouseWheel(int delta) {
   boolean wheeled = false;
   for (UIContext context : overlays) {
     wheeled |= context.mouseWheel(mouseX, mouseY, delta);

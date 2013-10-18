@@ -24,12 +24,12 @@ public class Pong extends DPat {
 		v.z=0;p.z=0;// ignore z dimension
 		switch(pChoose.Cur()) {
 		case 0: vMir.set(mMax); vMir.subtract(p);
-				return color(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
-		case 1: return color(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
+				return lx.hsb(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
+		case 1: return lx.hsb(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
 		case 2: vMir.set(mMax.x/2,0,mMax.z/2);
-				return color(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
+				return lx.hsb(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
 		}
-		return color(0,0,0);
+		return lx.hsb(0,0,0);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ public class Noise extends DPat
 		
 		if (CurAnim == 6 || CurAnim == 7) {
 			P.setNorm();
-			return color(0,0, 100 * (
+			return lx.hsb(0,0, 100 * (
 							constrain(1-50*(1-pDensity.Val())*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
 			(CurAnim == 7 ? constrain(1-50*(1-pDensity.Val())*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
 			);
@@ -303,7 +303,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a1.getX(70),a1.getY(70), mCtr.x, mCtr.y),
 						distToSeg(Px.x, Px.y, a2.getX(40),a2.getY(40), mCtr.x, mCtr.y));
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 8:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -312,7 +312,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a3.getX(r),a3.getY(r), a1.getX(r),a1.getY(r))				// triangle
 						);
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 9:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -322,27 +322,27 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a4.getX(r),a4.getY(r), a1.getX(r),a1.getY(r))				// quad
 					);
 					d = constrain(30*(rad*40-d),0,100);
-					return color(0,max(0,150-d), d); // clock
+					return lx.hsb(0,max(0,150-d), d); // clock
 
 		case 10:
 					r = map(bnc,0,1,a1.r,amp*200*sin(PI*t));
-					return color(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
+					return lx.hsb(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
 
 		case 11:
 					Px.z=mCtr.z; cMid.z=mCtr.z;
-					return color(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
+					return lx.hsb(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
 
-		case 12:	return color(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
+		case 12:	return lx.hsb(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
 
 		case 13:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);
 					V.set(Pn.x, .7+y, Pn.z);
 					break;
 
-		default:	return color(0,0,0);
+		default:	return lx.hsb(0,0,0);
 		}
 
-		return color(0,
+		return lx.hsb(0,
 				150-c1c(1 - V.distance(Pn)/rad),
 				c1c(1 - V.distance(Pn)/rad));
 	}
@@ -354,217 +354,75 @@ public class Play extends DPat
 // 12- TRB, B (r), BRB, R (b)		// Back, Down, Fwd , Up
 // 1->7, 15->9
 
-class dBolt {
-	dStrip v, h;
-	int    vpos, hpos;
-	dBolt(dStrip _v, dStrip _h, int _vpos, int _hpos) {
-		v=_v; h=_h; vpos=_vpos; hpos=_hpos;
-		if (v.b0 == null) { v.b0=this; h.b0=this; } 
-		else 			  { v.b1=this; h.b1=this; }
-	}
-}
-
-class dVertex {
-	dStrip 	s1	, s2	;
-	int 	dir1, dir2	;
-	dVertex(dStrip s, int d) {
-		int _a = (s.iS%4==1)? (d==1? 5: 3) :
-				 (s.iS%4==3)? (d==1? 9:11) :
-				 (d==1)  	? (s.Top()?4:12)   : (s.Top()?12:4);
-		dir1 = d * (s.isVert() ? -1 : 1);
-		dir2 = d;
-		s1 	 = DL_.DS[s.iCube() + ((s.iS+_a) % 16)];
-		s2 	 = DL_.DS[d == 1 ? 	(s.idx == s.iFace()+3 ? s.idx-3 : s.idx+1):
-			   			 		(s.idx == s.iFace()   ? s.idx+3 : s.idx-1)];
-		swapout(1 , 6);
-		swapout(15,-6);
-	}
-	void swapout(int a, int b) {
-		if (s1.iS == a) { s1 = DL_.DS[s1.idx + b]; dir1 = -dir1; }
-		if (s2.iS == a) { s2 = DL_.DS[s2.idx + b]; dir2 = -dir2; }
-	}
-
-}
-
-class dStrip  { // THIS WAS SUCH A PAIN!
-	int row, col, ci, idx, iS, axis;	// 1-y, 2-left, 3-right
-	Strip s; 
-	boolean bTop;	// direction: top ccw, bottom cw.
-
-	boolean Top   (){ 	return axis!=1 &&  bTop ;		}
-	boolean Bottom(){ 	return axis!=1 && !bTop;		}
-	boolean isVert(){ 	return axis==1;					}
-	boolean isHorz(){ 	return axis!=1;					}
-	int 	iCube (){ 	return 16*floor(idx/16);		}
-	int 	iFace (){ 	return iCube() + 4*floor(iS/4);	}
-
-	void 	init(Strip _s, int _i, int _row, int _col)  {
-		idx = _i; row = _row; col = _col; s = _s;
-		iS 	= idx%16; bTop = (iS%4==0);
-		ci  = s.points.get(0).index;
-		DL_.DQ[col][row] = iCube();
-		switch (iS) {
-			case 4:	case 6 : case 12: case 14:	axis=2; break;
-			case 0:	case 2 : case 8 : case 10:	axis=3; break;
-			default:							axis=1; break;
-		}
-	}
-
-	void addBolts() {
-		v0 = new dVertex(this, 1);
-		v1 = new dVertex(this,-1);
-
-
-		if (iS == 7 && col != 0 && row != 0) 									// left bottom
-			new dBolt(this, DL_.GetStrip(row-1,col-1,(col % 2 == 1) ? 8 : 12),  
-							4, (col % 2 == 1) ? 6 : 9);	
-
-		if (iS == 7 && col != 0 && row < MaxCubeHeight*2-2) 					// left top
-			new dBolt(this, DL_.GetStrip(row+1,col-1,(col % 2 == 1) ? 10 : 14), 
-							11, (col % 2 == 1) ? 9 : 6);
-
-		if (iS == 9 && col < NumBackTowers-1 && row < MaxCubeHeight*2-2) 		// right top
-			new dBolt(this, DL_.GetStrip(row+1,col+1,(col % 2 == 1) ? 6 : 2), 
-							4, (col % 2 == 1) ? 6 : 9);
-
-		if (iS == 9 && col < NumBackTowers-1 && row != 0) 						// right bottom
-			new dBolt(this, DL_.GetStrip(row-1,col+1,(col % 2 == 1) ? 4 : 0), 
-							11, (col % 2 == 1) ? 9 : 6);
-	}
-
-	dBolt 	b0, b1;
-	dVertex v0, v1;
-}
-
+int randDir() { return round(random(1))*2-1; }
+//----------------------------------------------------------------------------------------------------------------------------------
+boolean dDebug = true;
 class dCursor {
-	dStrip 	s, sNext;
-	int 	nLast,pos,posNext,end;	// 0 - 65535
-	int 	dir;			// 1 or -1
+	dVertex v, vNext;
+	int 	pos,posNext;	// 0 - 65535
+	int 	stop;			// 0-15
 	color 	clr;
-	
+
 	dCursor(color _c) { clr=_c;}
 
-	boolean isDone() 				 	{ return pos==end; }
-	void 	set(dStrip _s, int _dir) 	{ 
-			s=_s; dir=_dir; pos = 0; end=65536; nLast=-1; sNext=null;
-	}
+	boolean isDone() 					{ return pos==stop<<12; }
+	void 	set(dVertex _v, int _pos) 	{ pos = _pos; v = _v; vNext = null; stop=16; }
 
-	boolean	MakeTurn(dBolt b) {
-		int nEnd=	(s.isVert() ? b.vpos : b.hpos) <<12;
-			nEnd= 	(dir==1 ? nEnd : 65536-nEnd);
-		if (nEnd < pos) return false;
-		if (s.isVert()) { sNext = b.h; posNext = b.hpos<<12; end = nEnd; }
-		else  			{ sNext = b.v; posNext = b.vpos<<12; end = nEnd; }
+	boolean	Turn(dTurn t) {
+		if (t.pos0<<12 < pos) return false;
+		vNext   = t.v;
+		stop 	= t.pos0;
+		posNext = t.pos1<<12;
+		if (randDir()<0) { vNext = t.v.opp; posNext = (16<<12)-posNext; }
 		return true;
 	}
 
 	void 	PickNext() 	{
-		if (sNext != null) {
-			if (end == 65536) exit();
-			end			= 65536;	
-			pos			= posNext;
-			dir			= randDir(); 
-			if (dir<0) pos = end-pos;
-			s			= sNext; sNext = null;
-			nLast 		= -1;
-			return;// could switch again!!
-		} else {
-			dVertex v = (dir == 1 ? s.v0 : s.v1);
-			int r = floor(random(2));
-			set(r==0 ? v.s1 : v.s2,r==0 ? v.dir1 : v.dir2);
-		}
-
+		if (vNext != null) 	{ 	set(vNext, posNext); 					}
+		else 				{ 	set(random(2) < 1 ? v.c0 : v.c1, 0); 	}
 		// plan to turn the corner
-		if (random(6)<1 && s.b0 != null && MakeTurn(s.b0)) return;
-		if (random(6)<1 && s.b1 != null && MakeTurn(s.b1)) return;
+		float r = random(3);
+		if (r<1  && v.t0 != null && Turn(v.t0)) return;
+		if (r<2  && v.t1 != null && Turn(v.t1)) return;
 	}
+	Point p1, p2; int i2;
 }
 
-int randDir() { return round(random(1))*2-1; }
-
-class dLattice {
-	int   		iTowerStrips=-1;
-	dStrip[] 	DS = new dStrip[glucose.model.strips.size()];
-	int[][]  	DQ = new int[NumBackTowers][MaxCubeHeight*2];
-
-	int		nStrips() { return iTowerStrips; }
-	dStrip GetStrip (int row, int col, int off) { return DS[DQ[col][row]+off]; }
-	dLattice() {
-		DL_=this;
-		int   col = 0, row = -2, i=-1;
-		for (Strip strip : glucose.model.strips  ) { i++; 
-			if (i % 16 == 0) row+=2;
-			if (row >= MaxCubeHeight*2-1) { col++; row = (col%2==1)?1:0; }
-			if (col >= NumBackTowers) continue;
-			iTowerStrips++	;
-			dStrip s = DS[iTowerStrips] = new dStrip();
-			s.init(strip, iTowerStrips, row, col);
-		}
-
-		for (int j=0; j<iTowerStrips; j++) DS[j].addBolts();
-	}
-	dStrip 	rand() 				{ return DS[floor(random(iTowerStrips))]; 		}
-	void	setRand(dCursor c) 	{ c.set(rand(),randDir());			}
-}
-
-dLattice DL_;
 //----------------------------------------------------------------------------------------------------------------------------------
 class Worms extends SCPattern {
+	float 	StripsPerSec 	= 10;
+	float	TrailTime		= 1000;
+	int 	Cursors 		= 25;
+	dCursor	cur[] 			= new dCursor[Cursors];
 
-	int draw(dCursor c, int nAmount) {
-		int nFrom	= max(c.nLast+1,c.pos >> 12);
-		int	nTo 	= min(15,(c.pos+nAmount) >> 12); c.nLast=nTo;
-		int	nMv 	= min(nAmount, c.end-c.pos);
-			c.pos 	+= nMv;
-		for (int i = nFrom; i <= nTo; i++) {
-			int n = c.s.ci + (c.dir>0 ? i : 15-i);
-			colors[n] = c.clr;
-		}
-		return nAmount - nMv;
+	int draw(dCursor c, int nAmount) {	
+		int nFrom	= (c.pos    ) >> 12;
+		int	nMv 	= min(nAmount, (c.stop<<12)-c.pos);
+		int	nTo 	= min(15,(c.pos+nMv) >> 12);
+
+		if (dDebug) { 	c.p1 = c.v.getPoint(nFrom); float d = (c.p2 == null ? 0 : PointDist(c.p1,c.p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
+								for (int i = nFrom; i <= nTo; i++) { colors[c.v.ci 		+ c.v.dir*i 	] = c.clr; }
+		if (c.v.same != null)	for (int i = nFrom; i <= nTo; i++) { colors[c.v.same.ci + c.v.same.dir*i] = c.clr; }
+		if (dDebug) { 	c.p2 = c.v.getPoint(nTo); c.i2 = nTo; }
+
+		c.pos += nMv; return nAmount - nMv;
 	}
-
-	float 	StripsPerSec 	= 6;
-	float	TrailTime		= 1500;
-	int 	Cursors 		= 40;
-	dCursor	cur[] = new dCursor[Cursors];
 
 	Worms(GLucose glucose) { 
 		super(glucose); 
 		if (DL_ == null) DL_ = new dLattice();
-		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(color(random(360),50+random(50),50+random(50))); DL_.setRand(cur[i]); }
+		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(lx.hsb(135,100,100)); DL_.setRand(cur[i]); }
 	}
 
 	void run(double deltaMs) {
-			//Test Joints
-		if (false) {
-			for (int j=0; j<DL_.nStrips(); j++) {
-						dStrip s =DL_.DS[j]; dBolt d = s.b0;
-						if (d != null) {for (int i=0;i<16;i++) {
-							if (s == d.v && i <= d.vpos) colors[d.v.ci+i] 	= color(0,0,30);
-							if (s == d.h && i <= d.hpos) colors[d.h.ci+i] 	= color(0,0,30);
-						}}
+		for (int i=0,s=model.points.size(); i<s; i++) {
+			color c = colors[i]; float b = brightness(c); 
+			if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/TrailTime));
+		}
 
-						d = s.b1; 
-						if (d != null) {for (int i=0;i<16;i++) {
-							if (s == d.v && i >= d.vpos) colors[d.v.ci+i] 	= color(0,0,30);
-							if (s == d.h && i >= d.hpos) colors[d.h.ci+i] 	= color(0,0,30);
-						}}
-			}
-		} else {
-			for (int i=0; i<Cursors; i++) {
-				int nLeft = floor((float)deltaMs*.001*StripsPerSec * 65536);
-				while(nLeft > 0) { 	
-					nLeft = draw(cur[i], nLeft);
-					if (cur[i].isDone()) cur[i].PickNext(); 
-				}
-			}
-
-			for (int i=0,s=model.points.size(); i<s; i++) {
-				float b = brightness(colors[i]); 
-				color c = colors[i];
-				if (b>0) colors[i] = color(hue(c), saturation(c), 
-						(float)(b-100*deltaMs/TrailTime));
-			}
+		for (int i=0; i<Cursors; i++) {
+			int nLeft = floor((float)deltaMs*.001*StripsPerSec * 65536);
+			while(nLeft > 0) { nLeft = draw(cur[i], nLeft); if (cur[i].isDone()) cur[i].PickNext(); }
 		}
 	}
 }

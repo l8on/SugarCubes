@@ -84,7 +84,7 @@ class ObjectMuckerEffect extends SCEffect {
       for(int i=0; i<s.points.size(); i++){
          int index = s.points.get(i).index;
          color c = colors[index];
-         colors[index] = color((i*22.5), saturation(c), brightness(c));
+         colors[index] = lx.hsb((i*22.5), saturation(c), brightness(c));
       }
     }*/
   }

@@ -120,7 +120,7 @@ for (StaggeredTower st : scubes) {
     towerList.add(new Tower(tower));
   }
 
- return new Model(towerList, cubes, bassBox, speakers);
+  return new Model(towerList, cubes, bassBox, speakers);
 }
 
 /**

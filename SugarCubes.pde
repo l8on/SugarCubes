@@ -30,6 +30,8 @@ LXPattern[] patterns(GLucose glucose) {
      new CubeCurl(glucose),
 
     // Slee
+    // new MidiMusic(glucose),
+    new Pulley(glucose),
     new Swarm(glucose),
     new ViolinWave(glucose),
     new BouncyBalls(glucose),
@@ -101,6 +103,7 @@ LXPattern[] patterns(GLucose glucose) {
     new TestBassMapping(glucose),
     new TestFloorMapping(glucose),
     new TestSpeakerMapping(glucose),    
+    new TestPerformancePattern(glucose),
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

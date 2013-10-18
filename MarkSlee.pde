@@ -1,3 +1,202 @@
+class MidiMusic extends SCPattern {
+  
+  private final Map<Integer, LightUp> lightMap = new HashMap<Integer, LightUp>();
+  private final List<LightUp> allLights = new ArrayList<LightUp>();
+  
+  private final Stack<LightUp> newLayers = new Stack<LightUp>();
+  
+  MidiMusic(GLucose glucose) {
+    super(glucose);
+  }
+  
+  class LightUp extends LXLayer {
+    
+    private LinearEnvelope brt = new LinearEnvelope(0, 0, 0);
+    private Accelerator yPos = new Accelerator(0, 0, 0);
+    private float xPos;
+    
+    LightUp() {
+      addModulator(brt);
+      addModulator(yPos);
+    }
+    
+    boolean isAvailable() {
+      return brt.getValuef() <= 0;
+    }
+    
+    void noteOn(Note note) {
+      xPos = lerp(0, model.xMax, constrain(0.5 + (note.getPitch() - 64) / 12., 0, 1));
+      yPos.setValue(lerp(20, model.yMax, note.getVelocity() / 127.));
+      brt.setRangeFromHereTo(lerp(40, 100, note.getVelocity() / 127.), 20).start();     
+    }
+
+    void noteOff(Note note) {
+      yPos.setVelocity(0).setAcceleration(-380).start();
+      brt.setRangeFromHereTo(0, 1000).start();
+    }
+    
+    public void run(double deltaMs, color[] colors) {
+      float bVal = brt.getValuef();
+      if (bVal <= 0) {
+        return;
+      }
+      float yVal = yPos.getValuef();
+      for (Point p : model.points) {
+        float b = max(0, bVal - 3*dist(p.x, p.y, xPos, yVal));
+        if (b > 0) {
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
+            (lx.getBaseHuef() + abs(p.x - model.cx) + abs(p.y - model.cy)) % 360,
+            100,
+            b
+          ), ADD);
+        }
+      }
+    }
+  }
+  
+  public synchronized boolean noteOn(Note note) {
+    if (note.getChannel() == 0) {
+      for (LightUp light : allLights) {
+        if (light.isAvailable()) {
+          light.noteOn(note);
+          lightMap.put(note.getPitch(), light);
+          return true;
+        }
+      }
+      LightUp newLight = new LightUp();
+      newLight.noteOn(note);
+      lightMap.put(note.getPitch(), newLight);
+      synchronized(newLayers) {
+        newLayers.push(newLight);
+      }
+    } else if (note.getChannel() == 1) {
+    }
+    return true;
+  }
+  
+  public synchronized boolean noteOff(Note note) {
+    if (note.getChannel() == 0) {
+      LightUp light = lightMap.get(note.getPitch());
+      if (light != null) {
+        light.noteOff(note);
+      }
+    }
+    return true;
+  }
+  
+  public synchronized void run(double deltaMs) {
+    setColors(#000000);
+    if (!newLayers.isEmpty()) {
+      synchronized(newLayers) {
+        while (!newLayers.isEmpty()) {
+          addLayer(newLayers.pop());
+        }
+      }
+    }
+  }
+}
+
+class Pulley extends SCPattern {
+  
+  final int NUM_DIVISIONS = 16;
+  private final Accelerator[] gravity = new Accelerator[NUM_DIVISIONS];
+  private final Click[] delays = new Click[NUM_DIVISIONS];
+  
+  private final Click reset = new Click(9000);
+  private boolean isRising = false;
+  
+  private BasicParameter sz = new BasicParameter("SIZE", 0.5);
+  private BasicParameter beatAmount = new BasicParameter("BEAT", 0);
+  
+  Pulley(GLucose glucose) {
+    super(glucose);
+    for (int i = 0; i < NUM_DIVISIONS; ++i) {
+      addModulator(gravity[i] = new Accelerator(0, 0, 0));
+      addModulator(delays[i] = new Click(0));
+    }
+    addModulator(reset).start();
+    addParameter(sz);
+    addParameter(beatAmount);
+    trigger();
+
+  }
+  
+  private void trigger() {
+    isRising = !isRising;
+    int i = 0;
+    for (Accelerator g : gravity) {
+      if (isRising) {
+        g.setSpeed(random(20, 33), 0).start();
+      } else {
+        g.setVelocity(0).setAcceleration(-420);
+        delays[i].setDuration(random(0, 500)).trigger();
+      }
+      ++i;
+    }
+  }
+  
+  public void run(double deltaMs) {
+    if (reset.click()) {
+      trigger();
+    }
+        
+    if (isRising) {
+      // Fucking A, had to comment this all out because of that bizarre
+      // Processing bug where some simple loop takes an absurd amount of
+      // time, must be some pre-processor bug
+//      for (Accelerator g : gravity) {
+//        if (g.getValuef() > model.yMax) {
+//          g.stop();
+//        } else if (g.getValuef() > model.yMax*.55) {
+//          if (g.getVelocityf() > 10) {
+//            g.setAcceleration(-16);
+//          } else {
+//            g.setAcceleration(0);
+//          }
+//        }
+//      }
+    } else {
+      int j = 0;
+      for (Click d : delays) {
+        if (d.click()) {
+          gravity[j].start();
+          d.stop();
+        }
+        ++j;
+      }
+      for (Accelerator g : gravity) {
+        if (g.getValuef() < 0) {
+          g.setValue(-g.getValuef());
+          g.setVelocity(-g.getVelocityf() * random(0.74, 0.84));
+        }
+      }
+    }
+
+    // A little silliness to test the grid API    
+    for (int i = 0; i < 7; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
+        float b = 1 - 4.*abs((6-i)/7. - gravity[gi].getValuef() / model.yMax);
+        midiEngine.grid.setState(i, j, (b < 0) ? 0 : 1);
+      }
+    }
+    
+    float fPos = 1 - lx.tempo.rampf();
+    if (fPos < .2) {
+      fPos = .2 + 4 * (.2 - fPos);
+    }
+    float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
+    for (Point p : model.points) {
+      int gi = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
+      colors[p.index] = lx.hsb(
+        (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
+        constrain(130 - p.y*.8, 0, 100),
+        max(0, 100 - abs(p.y - gravity[gi].getValuef())*falloff)
+      );
+    }
+  }
+}
+
 class ViolinWave extends SCPattern {
   
   BasicParameter level = new BasicParameter("LVL", 0.45);
@@ -62,7 +261,7 @@ class ViolinWave extends SCPattern {
       for (Point p : model.points) {
         float b = 100 - pFalloff * (abs(p.x - x.getValuef()) + abs(p.y - y.getValuef()));
         if (b > 0) {
-          colors[p.index] = blendColor(colors[p.index], color(
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
             lx.getBaseHuef(), 20, b
           ), ADD);
         }
@@ -113,7 +312,7 @@ class ViolinWave extends SCPattern {
     for (Point p : model.points) {
       int ci = (int) lerp(0, centers.length-1, (p.x - model.xMin) / (model.xMax - model.xMin));
       float rFactor = 1.0 -  0.9 * abs(p.x - model.cx) / (model.xMax - model.cx);
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.x - model.cx)) % 360,
         min(100, 20 + 8*abs(p.y - centers[ci])),
         constrain(edg*(val*rFactor - rng * abs(p.y-centers[ci])), 0, 100)
@@ -170,7 +369,7 @@ class BouncyBalls extends SCPattern {
         float d = sqrt((p.x-xv)*(p.x-xv) + (p.y-yv)*(p.y-yv) + .1*(p.z-zPos)*(p.z-zPos));
         float b = constrain(130 - falloff*d, 0, 100);
         if (b > 0) {
-          colors[p.index] = blendColor(colors[p.index], color(
+          colors[p.index] = blendColor(colors[p.index], lx.hsb(
             (lx.getBaseHuef() + p.y*.5 + abs(model.cx - p.x) * .5) % 360,
             max(0, 100 - .45*(p.y - flrLevel)),
             b
@@ -203,7 +402,7 @@ class BouncyBalls extends SCPattern {
     }
   }
   
-  public boolean noteOnReceived(Note note) {
+  public boolean noteOn(Note note) {
     int pitch = (note.getPitch() + note.getChannel()) % NUM_BALLS;
     balls[pitch].bounce(note.getVelocity());
     return true;
@@ -252,8 +451,8 @@ class SpaceTime extends SCPattern {
     for (Strip strip : model.strips) {
       int i = 0;
       for (Point p : strip.points) {
-        colors[p.index] = color(
-          (lx.getBaseHuef() + 360 - p.fx*.2 + p.fy * .3) % 360, 
+        colors[p.index] = lx.hsb(
+          (lx.getBaseHuef() + 360 - p.x*.2 + p.y * .3) % 360, 
           constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
           max(0, 100 - fVal*abs(i - pVal*(strip.metrics.numPoints - 1)))
         );
@@ -301,9 +500,9 @@ class Swarm extends SCPattern {
     for (Strip strip : model.strips  ) {
       int i = 0;
       for (Point p : strip.points) {
-        float fV = max(-1, 1 - dist(p.fx/2., p.fy, fX.getValuef()/2., fY.getValuef()) / 64.);
-        colors[p.index] = color(
-        (lx.getBaseHuef() + 0.3 * abs(p.fx - hOffX.getValuef())) % 360, 
+        float fV = max(-1, 1 - dist(p.x/2., p.y, fX.getValuef()/2., fY.getValuef()) / 64.);
+        colors[p.index] = lx.hsb(
+        (lx.getBaseHuef() + 0.3 * abs(p.x - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
         constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
           );
@@ -328,7 +527,7 @@ class SwipeTransition extends SCTransition {
     float bleedf = 10 + bleed.getValuef() * 200.;
     float xPos = (float) (-bleedf + progress * (model.xMax + bleedf));
     for (Point p : model.points) {
-      float d = (p.fx - xPos) / bleedf;
+      float d = (p.x - xPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
       } else if (d > 1) {
@@ -444,17 +643,17 @@ class BassPod extends SCPattern {
     float bassLevel = eq.getAverageLevel(0, 5);
     
     for (Point p : model.points) {
-      int avgIndex = (int) constrain(1 + abs(p.fx-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
+      int avgIndex = (int) constrain(1 + abs(p.x-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
       float value = 0;
       for (int i = avgIndex; i < avgIndex + 5; ++i) {
         value += eq.getLevel(i);
       }
       value /= 5.;
 
-      float b = constrain(8 * (value*model.yMax - abs(p.fy-model.yMax/2.)), 0, 100);
-      colors[p.index] = color(
-        (lx.getBaseHuef() + abs(p.fy - model.cy) + abs(p.fx - model.cx)) % 360,
-        constrain(bassLevel*240 - .6*dist(p.fx, p.fy, model.cx, model.cy), 0, 100),
+      float b = constrain(8 * (value*model.yMax - abs(p.y-model.yMax/2.)), 0, 100);
+      colors[p.index] = lx.hsb(
+        (lx.getBaseHuef() + abs(p.y - model.cy) + abs(p.x - model.cx)) % 360,
+        constrain(bassLevel*240 - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
         b
       );
     }
@@ -495,7 +694,7 @@ class CubeEQ extends SCPattern {
     float clrConst = 1.1 + clr.getValuef();
 
     for (Point p : model.points) {
-      float avgIndex = constrain(2 + p.fx / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
+      float avgIndex = constrain(2 + p.x / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
       int avgFloor = (int) avgIndex;
 
       float leftVal = eq.getLevel(avgFloor);
@@ -511,9 +710,9 @@ class CubeEQ extends SCPattern {
       
       float value = lerp(smoothValue, chunkyValue, blockiness.getValuef());
 
-      float b = constrain(edgeConst * (value*model.yMax - p.fy), 0, 100);
-      colors[p.index] = color(
-        (480 + lx.getBaseHuef() - min(clrConst*p.fy, 120)) % 360, 
+      float b = constrain(edgeConst * (value*model.yMax - p.y), 0, 100);
+      colors[p.index] = lx.hsb(
+        (480 + lx.getBaseHuef() - min(clrConst*p.y, 120)) % 360, 
         100, 
         b
       );
@@ -552,7 +751,7 @@ class BoomEffect extends SCEffect {
       for (Point p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
-        color(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.fx, 2*p.fy, 3*p.fz, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
+        lx.hsb(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
         ADD);
       }
     }
@@ -633,13 +832,13 @@ public class PianoKeyPattern extends SCPattern {
     return base[index % base.length];
   }
     
-  public boolean noteOnReceived(Note note) {
+  public boolean noteOn(Note note) {
     LinearEnvelope env = getEnvelope(note.getPitch());
     env.setEndVal(min(1, env.getValuef() + (note.getVelocity() / 127.)), getAttackTime()).start();
     return true;
   }
   
-  public boolean noteOffReceived(Note note) {
+  public boolean noteOff(Note note) {
     getEnvelope(note.getPitch()).setEndVal(0, getReleaseTime()).start();
     return true;
   }
@@ -650,7 +849,7 @@ public class PianoKeyPattern extends SCPattern {
     float levelf = level.getValuef();
     for (Cube c : model.cubes) {
       float v = max(getBase(i).getValuef() * levelf/4., getEnvelope(i++).getValuef());
-      setColor(c, color(
+      setColor(c, lx.hsb(
         (huef + 20*v + abs(c.cx-model.xMax/2.)*.3 + c.cy) % 360,
         min(100, 120*v),
         100*v
@@ -727,20 +926,20 @@ class CrossSections extends SCPattern {
     
     for (Point p : model.points) {
       color c = 0;
-      c = blendColor(c, color(
-      (lx.getBaseHuef() + p.fx/10 + p.fy/3) % 360, 
-      constrain(140 - 1.1*abs(p.fx - model.xMax/2.), 0, 100), 
-      max(0, xlv - xwv*abs(p.fx - xv))
+      c = blendColor(c, lx.hsb(
+      (lx.getBaseHuef() + p.x/10 + p.y/3) % 360, 
+      constrain(140 - 1.1*abs(p.x - model.xMax/2.), 0, 100), 
+      max(0, xlv - xwv*abs(p.x - xv))
         ), ADD);
-      c = blendColor(c, color(
-      (lx.getBaseHuef() + 80 + p.fy/10) % 360, 
-      constrain(140 - 2.2*abs(p.fy - model.yMax/2.), 0, 100), 
-      max(0, ylv - ywv*abs(p.fy - yv))
+      c = blendColor(c, lx.hsb(
+      (lx.getBaseHuef() + 80 + p.y/10) % 360, 
+      constrain(140 - 2.2*abs(p.y - model.yMax/2.), 0, 100), 
+      max(0, ylv - ywv*abs(p.y - yv))
         ), ADD); 
-      c = blendColor(c, color(
-      (lx.getBaseHuef() + 160 + p.fz / 10 + p.fy/2) % 360, 
-      constrain(140 - 2.2*abs(p.fz - model.zMax/2.), 0, 100), 
-      max(0, zlv - zwv*abs(p.fz - zv))
+      c = blendColor(c, lx.hsb(
+      (lx.getBaseHuef() + 160 + p.z / 10 + p.y/2) % 360, 
+      constrain(140 - 2.2*abs(p.z - model.zMax/2.), 0, 100), 
+      max(0, zlv - zwv*abs(p.z - zv))
         ), ADD); 
       colors[p.index] = c;
     }
@@ -773,9 +972,9 @@ class Blinders extends SCPattern {
       int i = 0;
       float mv = m[si % m.length].getValuef();
       for (Point p : strip.points) {
-        colors[p.index] = color(
-          (hv + p.fz + p.fy*hs.getValuef()) % 360, 
-          min(100, abs(p.fx - s.getValuef())/2.), 
+        colors[p.index] = lx.hsb(
+          (hv + p.z + p.y*hs.getValuef()) % 360, 
+          min(100, abs(p.x - s.getValuef())/2.), 
           max(0, 100 - mv/2. - mv * abs(i - (strip.metrics.length-1)/2.))
         );
         ++i;
@@ -809,9 +1008,9 @@ class Psychedelia extends SCPattern {
     int i = 0;
     for (Strip strip : model.strips) {
       for (Point p : strip.points) {
-        colors[p.index] = color(
-          (huev + i*constrain(cv, 0, 2) + p.fz/2. + p.fx/4.) % 360, 
-          min(100, abs(p.fy-sv)), 
+        colors[p.index] = lx.hsb(
+          (huev + i*constrain(cv, 0, 2) + p.z/2. + p.x/4.) % 360, 
+          min(100, abs(p.y-sv)), 
           max(0, 100 - 50*abs((i%NUM) - mv))
         );
       }
@@ -874,12 +1073,12 @@ class AskewPlanes extends SCPattern {
       float d = MAX_FLOAT;
       for (Plane plane : planes) {
         if (plane.denom != 0) {
-          d = min(d, abs(plane.av*(p.fx-model.cx) + plane.bv*(p.fy-model.cy) + plane.cv) / plane.denom);
+          d = min(d, abs(plane.av*(p.x-model.cx) + plane.bv*(p.y-model.cy) + plane.cv) / plane.denom);
         }
       }
-      colors[p.index] = color(
-        (huev + abs(p.fx-model.cx)*.3 + p.fy*.8) % 360,
-        max(0, 100 - .8*abs(p.fx - model.cx)),
+      colors[p.index] = lx.hsb(
+        (huev + abs(p.x-model.cx)*.3 + p.y*.8) % 360,
+        max(0, 100 - .8*abs(p.x - model.cx)),
         constrain(140 - 10.*d, 0, 100)
       );
     }
@@ -909,9 +1108,9 @@ class ShiftingPlane extends SCPattern {
     float dv = d.getValuef();    
     float denom = sqrt(av*av + bv*bv + cv*cv);
     for (Point p : model.points) {
-      float d = abs(av*(p.fx-model.cx) + bv*(p.fy-model.cy) + cv*(p.fz-model.cz) + dv) / denom;
-      colors[p.index] = color(
-        (hv + abs(p.fx-model.cx)*.6 + abs(p.fy-model.cy)*.9 + abs(p.fz - model.cz)) % 360,
+      float d = abs(av*(p.x-model.cx) + bv*(p.y-model.cy) + cv*(p.z-model.cz) + dv) / denom;
+      colors[p.index] = lx.hsb(
+        (hv + abs(p.x-model.cx)*.6 + abs(p.y-model.cy)*.9 + abs(p.z - model.cz)) % 360,
         constrain(110 - d*6, 0, 100),
         constrain(130 - 7*d, 0, 100)
       );
@@ -979,15 +1178,15 @@ class Traktor extends SCPattern {
       int i = (int) constrain((model.xMax - p.x) / model.xMax * FRAME_WIDTH, 0, FRAME_WIDTH-1);
       int pos = (index + FRAME_WIDTH - i) % FRAME_WIDTH;
       
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
         100,
-        constrain(9 * (bass[pos]*model.cy - abs(p.fy - model.cy)), 0, 100)
+        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy)), 0, 100)
       );
-      colors[p.index] = blendColor(colors[p.index], color(
+      colors[p.index] = blendColor(colors[p.index], lx.hsb(
         (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
         60,
-        constrain(5 * (treble[pos]*.6*model.cy - abs(p.fy - model.cy)), 0, 100)
+        constrain(5 * (treble[pos]*.6*model.cy - abs(p.y - model.cy)), 0, 100)
 
       ), ADD);
     }
@@ -999,6 +1198,7 @@ class ColorFuckerEffect extends SCEffect {
   BasicParameter hueShift = new BasicParameter("HSHFT", 0);
   BasicParameter sat = new BasicParameter("SAT", 1);  
   BasicParameter bright = new BasicParameter("BRT", 1);
+  float[] hsb = new float[3];
   
   ColorFuckerEffect(GLucose glucose) {
     super(glucose);
@@ -1016,10 +1216,11 @@ class ColorFuckerEffect extends SCEffect {
     float hMod = hueShift.getValuef();
     if (bMod < 1 || sMod < 1 || hMod > 0) {    
       for (int i = 0; i < colors.length; ++i) {
-        colors[i] = color(
-          (hue(colors[i]) + hueShift.getValuef()*360.) % 360,
-          saturation(colors[i]) * sat.getValuef(),
-          brightness(colors[i]) * bright.getValuef()
+        lx.RGBtoHSB(colors[i], hsb);
+        colors[i] = lx.hsb(
+          (360. * hsb[0] + hueShift.getValuef()*360.) % 360,
+          100. * hsb[1] * sat.getValuef(),
+          100. * hsb[2] * bright.getValuef()
         );
       }
     }

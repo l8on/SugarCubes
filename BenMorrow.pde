@@ -50,7 +50,6 @@ class TowerParams extends SCPattern
 		}
 		towerSize = model.towers.size();
 		colorSpan = 255 / towerSize;
-		println("towers "+towerSize);
 	}
 
 	void run(double deltaMs)
@@ -64,7 +63,7 @@ class TowerParams extends SCPattern
 			{
 				if(p.y<towerParams.get(i).getValuef()*200)
 				{
-					colors[p.index]=color(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i, 255, 255);
+					colors[p.index]=lx.hsb(255 * hueoff.getValuef()+colorSpan * hueSpan.getValuef() * i, 255, 255);
 				}
 			}
 		}
@@ -108,7 +107,7 @@ class Sandbox extends SCPattern
 		{
 			doDraw(c,0);
 			c = (c + 1) % towerrange;
-			long col = color(Math.round(Math.random()*255),255,255) ;
+			long col = lx.hsb(Math.round(Math.random()*255),255,255) ;
 			doDraw(c,col);
 		}
 		counter++;

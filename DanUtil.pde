@@ -65,7 +65,7 @@ public class DParam extends BasicParameter {
 	float 	Val			() 						{ return getValuef();					}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-public class xyz {	float x,y,z;
+public class xyz {	float x,y,z;	// extends pVector; eliminate half of the functions
 			xyz() {x=y=z=0;}
 			xyz(Point p					  ) {x=p.x	; y=p.y; z=p.z;}
 			xyz(xyz p					  ) {set(p);				 }
@@ -371,11 +371,13 @@ class dStrip  {
 	dVertex v0, v1;
 	int 	row, col;
 	Strip 	s;
+	String 	desc() { return "r:" + row + " c:" + col + "i:" + floor(v0.ci/16); }
 	dStrip(Strip _s, int _i, int _row, int _col)  { s = _s; row = _row; col = _col; }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 float PointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); }
 
+class dPixel   { dVertex v; int pos; dPixel(dVertex _v, int _pos) { v=_v; pos=_pos; }}
 class dLattice {
 	private 	int iTowerStrips=0;
 
@@ -387,11 +389,11 @@ class dLattice {
 	}
 
 	void	addTurn(dVertex v0, int pos0, dVertex v1, int pos1) {	dTurn t = new dTurn(pos0, v1, pos1); if (v0.t0 == null) v0.t0=t; else v0.t1=t; }
-	void	setRand(dCursor c) 									{ 	c.set(DS[floor(random(iTowerStrips))].v0,0); }
 	float   Dist2	 (Strip s1, int pos1, Strip s2, int pos2) 	{ 	return PointDist(s1.points.get(pos1), s2.points.get(pos2)); }
 	boolean SameSame (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2, 0), Dist2(s1,15, s2,15)) < 5 ;	}
 	boolean SameOpp  (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2,15), Dist2(s1,15, s2,0 )) < 5 ;	}
 	boolean SameBar  (Strip s1, Strip s2) 						{	return SameSame(s1,s2) || SameOpp(s1,s2);					}
+	float   PD2 	 (Point p1, float x, float y, float z) 		{ 	return dist(p1.x,p1.y,p1.z,x,y,z); }
 	void 	AddJoint (dVertex v1, dVertex v2) {
 		// should probably replace parallel but further with the new one
 		if (v1.c0 != null && SameBar(v2.s.s, v1.c0.s.s)) return;
@@ -400,8 +402,22 @@ class dLattice {
 		else if (v1.c1 == null) v1.c1 = v2; 
 	}
 
+	dPixel getRand() 											{ 	return new dPixel(DS[floor(random(iTowerStrips))].v0,floor(random(15))); }
+	dPixel getClosest(xyz p) {
+		dVertex v = null; int pos=0; float d = 500;
+		for (int j=0; j<iTowerStrips; j++) {
+			dStrip s = DS[j];
+			float nd = PD2(s.s.points.get(0),p.x,p.y,p.z); if (nd < d) { v=s.v0; d=nd; pos=0; }
+			if (nd > 30) continue;
+			for (int k=0; k<=15; k++) {
+				nd = PD2(s.s.points.get(k),p.x,p.y,p.z); if (nd < d) { v = s.v0; d=nd; pos=k; }
+			}
+		}
+		return random(2) < 1 ? new dPixel(v,pos) : new dPixel(v.opp,15-pos);
+	}
+
 	dLattice() {
-		DL_=this;
+		lattice=this;
 		for (int i=0;i<NumBackTowers;i++) for (int j=0;j<MaxCubeHeight*2;j++) DQ[i][j]=-1;
 
 		int   col = 0, row = -2, i=-1;
@@ -447,5 +463,5 @@ class dLattice {
 	}
 }
 
-dLattice DL_;
+dLattice lattice;
 //----------------------------------------------------------------------------------------------------------------------------------

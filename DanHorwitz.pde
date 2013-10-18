@@ -184,9 +184,9 @@ public class Play extends DPat
 	    pRadius		= addParam("Rad" 	, .1  	);
 		pBounce		= addParam("Bnc"	, .2	);
 	    pAmp  		= addParam("Amp" 	, .2	);
-		pTempoMult 	= addPick ("TMult"	, 0 , 5		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
-		pTimePattern= addPick ("TPat"	, 6 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);
-		pShape	 	= addPick ("Shape"	, 3 , 15	, new String[] {"Line", "Tap", "V", "RandV",
+		pTempoMult 	= addPick ("TMult"	, 5 , 5		, new String[] {"1x", "2x", "4x", "8x", "16x", "Rand"	}	);
+		pTimePattern= addPick ("TPat"	, 7 , 7		, new String[] {"Bounce", "Sin", "Roll", "Quant", "Accel", "Deccel", "Slide", "Rand"}	);
+		pShape	 	= addPick ("Shape"	, 7 , 15	, new String[] {"Line", "Tap", "V", "RandV",
 																	"Pyramid", "Wings", "W2", "Clock",
 																	"Triangle", "Quad", "Sphere", "Cone",
 																	"Noise", "Wave", "?", "?"} 						);
@@ -358,72 +358,182 @@ int randDir() { return round(random(1))*2-1; }
 //----------------------------------------------------------------------------------------------------------------------------------
 boolean dDebug = true;
 class dCursor {
-	dVertex v, vNext;
-	int 	pos,posNext;	// 0 - 65535
-	int 	stop;			// 0-15
+	dVertex vCur, vNext, vDest;
+	float 	destSpeed;
+	int 	posStop, pos,posNext;	// 0 - 65535
 	color 	clr;
 
-	dCursor(color _c) { clr=_c;}
+	dCursor() {}
 
-	boolean isDone() 					{ return pos==stop<<12; }
-	void 	set(dVertex _v, int _pos) 	{ pos = _pos; v = _v; vNext = null; stop=16; }
+	boolean isDone	() 									{ return pos==posStop; 										 }
+	boolean atDest  ()									{ return vCur.s==vDest.s || 
+																 PointDist(vCur.getPoint(0), vDest.getPoint(0)) < 12 || 
+																 PointDist(vCur.getPoint(0), vDest.getPoint(15))< 12;}
+	void 	setCur 	(dVertex _v, int _p) 				{ p2=null; vCur=_v; pos=_p; PickNext(); 					 }
+	void 	setCur	(dPixel  _p) 						{ setCur(_p.v, _p.pos); 									 }
+	void	setNext (dVertex _v, int _p, int _s)		{ vNext = _v; posNext = _p<<12; posStop = _s<<12;		 	 }
+	void	setDest (dVertex _v, float _speed)			{ vDest = _v; destSpeed = _speed;							 }
+	void	onDone	()									{ setCur(vNext, posNext); PickNext(); 						 }
 
-	boolean	Turn(dTurn t) {
-		if (t.pos0<<12 < pos) return false;
-		vNext   = t.v;
-		stop 	= t.pos0;
-		posNext = t.pos1<<12;
-		if (randDir()<0) { vNext = t.v.opp; posNext = (16<<12)-posNext; }
-		return true;
+	float  	minDist;
+	int 	nTurns;
+	boolean bRandEval;
+
+	void 	Evaluate(dVertex v, int p, int s) {
+		if (v == null) return; ++nTurns;
+		if (bRandEval) {
+			if (random(nTurns) < 1) setNext(v,p,s); return; }
+		else {
+			float d = PointDist(v.getPoint(15), vDest.getPoint(0));
+			if (d <  minDist)					{ minDist=d; setNext(v,p,s); }
+			if (d == minDist && random(2)<1)  	{ minDist=d; setNext(v,p,s); }
+		}
+	}
+
+	void 	EvalTurn(dTurn t) { 
+		if (t == null || t.pos0<<12 <= pos) return; 
+		Evaluate(t.v 	,    t.pos1, t.pos0);
+		Evaluate(t.v.opp, 16-t.pos1, t.pos0);
 	}
 
 	void 	PickNext() 	{
-		if (vNext != null) 	{ 	set(vNext, posNext); 					}
-		else 				{ 	set(random(2) < 1 ? v.c0 : v.c1, 0); 	}
-		// plan to turn the corner
-		float r = random(3);
-		if (r<1  && v.t0 != null && Turn(v.t0)) return;
-		if (r<2  && v.t1 != null && Turn(v.t1)) return;
+		bRandEval = random(.05+destSpeed) < .05; minDist=500; nTurns=0;
+		Evaluate(vCur.c0, 0, 16);  	Evaluate(vCur.c1, 0, 16);
+		EvalTurn(vCur.t0);			EvalTurn(vCur.t1);
 	}
-	Point p1, p2; int i2;
+
+	Point 	p1, p2; int i2;
+
+	int draw(int nAmount, SCPattern pat) {
+		int nFrom	= (pos    ) >> 12;
+		int	nMv 	= min(nAmount, posStop-pos);
+		int	nTo 	= min(15,(pos+nMv) >> 12);
+		dVertex v 	= vCur;
+
+		if (dDebug) { 	p1 = v.getPoint(nFrom); float d = (p2 == null ? 0 : PointDist(p1,p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
+								for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.ci 	  + v.dir*i 	] = clr; }
+		if (v.same != null)		for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.same.ci + v.same.dir*i] = clr; }
+		if (dDebug) { 	p2 = v.getPoint(nTo); i2 = nTo; }
+
+		pos += nMv; return nAmount - nMv;
+	}	
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
 class Worms extends SCPattern {
 	float 	StripsPerSec 	= 10;
-	float	TrailTime		= 1000;
-	int 	Cursors 		= 25;
-	dCursor	cur[] 			= new dCursor[Cursors];
+	float	TrailTime		= 3000;
+	int 	numCursors		= 50;
+	ArrayList<dCursor> cur  = new ArrayList<dCursor>(30);
 
-	int draw(dCursor c, int nAmount) {	
-		int nFrom	= (c.pos    ) >> 12;
-		int	nMv 	= min(nAmount, (c.stop<<12)-c.pos);
-		int	nTo 	= min(15,(c.pos+nMv) >> 12);
+	private GraphicEQ eq = null;
 
-		if (dDebug) { 	c.p1 = c.v.getPoint(nFrom); float d = (c.p2 == null ? 0 : PointDist(c.p1,c.p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
-								for (int i = nFrom; i <= nTo; i++) { colors[c.v.ci 		+ c.v.dir*i 	] = c.clr; }
-		if (c.v.same != null)	for (int i = nFrom; i <= nTo; i++) { colors[c.v.same.ci + c.v.same.dir*i] = c.clr; }
-		if (dDebug) { 	c.p2 = c.v.getPoint(nTo); c.i2 = nTo; }
+	private BasicParameter pBeat	  = new BasicParameter("BEAT",  0);
+	private BasicParameter pSpeed     = new BasicParameter("FAST", .2);
+	private BasicParameter pBlur      = new BasicParameter("BLUR", .3);
+	private BasicParameter pWorms     = new BasicParameter("WRMS", .3);
+	private BasicParameter pConfusion = new BasicParameter("CONF", .1);
+	private BasicParameter pEQ  	  = new BasicParameter("EQ"  ,  0);
+	private BasicParameter pSpawn  	  = new BasicParameter("DIR" ,  0);
 
-		c.pos += nMv; return nAmount - nMv;
+	// versions of worms
+	// 5. slow worms branching out like a tree
+
+	int 	zMidLat = 82;
+	float 	nConfusion;
+	private final Click moveChase = new Click(1000);
+
+	xyz 	middle;
+	int 	AnimNum() { return floor(pSpawn.getValuef()*(3-.01)); }
+	float   randX() { return random(model.xMax-model.xMin)+model.xMin; }
+	float   randY() { return random(model.yMax-model.yMin)+model.yMin; }
+	xyz 	randEdge() { 
+		return random(2) < 1 ? 	new xyz(random(2)<1 ? model.xMin:model.xMax, randY(), zMidLat) 	:
+				 				new xyz(randX(), random(2)<1 ? model.yMin:model.yMax, zMidLat)	;
 	}
 
-	Worms(GLucose glucose) { 
+	Worms(GLucose glucose) {
 		super(glucose); 
-		if (DL_ == null) DL_ = new dLattice();
-		for (int i=0; i<Cursors; i++) { cur[i] = new dCursor(lx.hsb(135,100,100)); DL_.setRand(cur[i]); }
+	    addModulator(moveChase).start();
+	    addParameter(pBeat);    addParameter(pSpeed);
+	    addParameter(pBlur);    addParameter(pWorms);
+	    addParameter(pEQ);	    addParameter(pConfusion);
+		addParameter(pSpawn);
+	    middle = new xyz(model.cx, model.cy, 71);
+		if (lattice == null) lattice = new dLattice();
+		for (int i=0; i<numCursors; i++) { dCursor c = new dCursor(); reset(c); cur.add(c); }
+		onParameterChanged(pEQ); setNewDest();
 	}
 
-	void run(double deltaMs) {
+	public void onParameterChanged(LXParameter parameter) {
+		nConfusion = 1-pConfusion.getValuef();
+		for (int i=0; i<numCursors; i++) {
+			if (parameter==pSpawn) reset(cur.get(i));
+			cur.get(i).destSpeed = nConfusion;
+		}
+	}
+
+	void reset(dCursor c) {
+		switch(AnimNum()) {
+			case 0:	c.clr = lx.hsb(135,100,100);			// middle to edges
+					c.setDest(lattice.getClosest(randEdge()).v, nConfusion);
+					c.setCur (lattice.getClosest(middle));
+					break;
+
+			case 1:	c.clr = lx.hsb(135,0,100);			// top to bottom
+					float xLin = randX();
+					c.setDest(lattice.getClosest(new xyz(xLin, 0         , zMidLat)).v, nConfusion);
+					c.setCur (lattice.getClosest(new xyz(xLin, model.yMax, zMidLat)));
+					break;
+
+			case 2: c.clr = lx.hsb(300,0,100); break; // chase a point around
+		}
+	}
+
+	void setNewDest() {
+		if (AnimNum() != 2) return;
+		xyz dest = new xyz(randX(), randY(), zMidLat);
+		for (int i=0; i<numCursors; i++) {
+			cur.get(i).setDest(lattice.getClosest(dest).v, nConfusion);
+			cur.get(i).clr = lx.hsb(0,100,100);	// chase a point around
+		}
+	}
+
+	void run(double deltaMs) { 
+		if (deltaMs > 100) return;
+	    if (moveChase.click()) setNewDest();
+
+	    float fBass=0, fTreble=0;
+	    if (pEQ.getValuef()>0) {
+		    eq.run(deltaMs);
+		    fBass 	= eq.getAverageLevel(0, 4);
+		    fTreble = eq.getAverageLevel(eq.numBands-7, 7);
+		}
+
 		for (int i=0,s=model.points.size(); i<s; i++) {
 			color c = colors[i]; float b = brightness(c); 
-			if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/TrailTime));
+			if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/(pBlur.getValuef()*TrailTime)));
 		}
 
-		for (int i=0; i<Cursors; i++) {
-			int nLeft = floor((float)deltaMs*.001*StripsPerSec * 65536);
-			while(nLeft > 0) { nLeft = draw(cur[i], nLeft); if (cur[i].isDone()) cur[i].PickNext(); }
+		int nWorms = floor(pWorms.getValuef() * numCursors * 
+					 map(pEQ.getValuef(),0,1,1,constrain(2*fTreble,0,1)));
+
+		for (int i=0; i<nWorms; i++) {
+			dCursor c = cur.get(i);
+			int nLeft = floor((float)deltaMs*.001*StripsPerSec * 65536 * (5*pSpeed.getValuef()));
+			nLeft *= (1 - lx.tempo.rampf()*pBeat.getValuef());
+			while(nLeft > 0) { 
+				nLeft = c.draw(nLeft,this); if (!c.isDone()) continue;
+				c.onDone(); if (c.atDest()) reset(c);
+			}
 		}
 	}
+
+
+	public void onActive() { if (eq == null) {
+		eq = new GraphicEQ(lx, 16);		eq.slope.setValue(0.6);
+		eq.level.setValue(0.65);		eq.range.setValue(0.35);
+		eq.release.setValue(0.4);
+	}}
 }
 //----------------------------------------------------------------------------------------------------------------------------------

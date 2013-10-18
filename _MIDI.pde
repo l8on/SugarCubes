@@ -332,7 +332,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   private LXEffect releaseEffect = null;
   
   APC40MidiInput(MidiEngine midiEngine, MidiInputDevice d) {
-    super(midiEngine, d);
+    super(midiEngine, d);    
   }
 
   private class GridPosition {
@@ -381,7 +381,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
          EFF_colorFucker.sharp.setValue(value);
          break;
        case 1:
-         EFF_colorFucker.soft.setValue(value);
+         EFF_colorFucker.hueShift.setValue(value);
          break;       
        case 5:
          EFF_blur.amount.setValue(value);
@@ -443,6 +443,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       switch (nChan) {
         case 5:
           EFF_colorFucker.invert.setValue(1);
+          break;
+        case 6:
+          lx.cycleBaseHue(60000);
           break;
       }
       break;
@@ -525,6 +528,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       switch (nChan) {
         case 5:
           EFF_colorFucker.invert.setValue(0);
+          break;
+        case 6:
+          lx.setBaseHue(lx.getBaseHue());
           break;
       }
       break;
@@ -626,6 +632,9 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     }
     resetParameters();
     midiEngine.grid.addOutput(this);
+
+    lx.cycleBaseHue(60000);
+    output.sendNoteOn(6, 49, 127);
   }
 
   private void resetParameters() {

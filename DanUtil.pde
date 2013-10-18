@@ -431,6 +431,7 @@ class dLattice {
 			s.v1 = new dVertex(s,strip.points.get(15));
 			s.v0.setOpp(s.v1); s.v1.setOpp(s.v0);
 			if (col < NumBackTowers) DQ[col][row] = 16*floor((iTowerStrips-1)/16);
+			else s.row=-1;
 		}
 
 		for (int j=0; j<iTowerStrips; j++) { for (int k=j+1; k<iTowerStrips; k++) { 

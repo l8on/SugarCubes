@@ -411,8 +411,9 @@ class dCursor {
 		dVertex v 	= vCur;
 
 		if (dDebug) { 	p1 = v.getPoint(nFrom); float d = (p2 == null ? 0 : PointDist(p1,p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
-								for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.ci 	  + v.dir*i 	] = clr; }
+								for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.ci 	   + v.dir*i 	 ] = clr; }
 		if (v.same != null)		for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.same.ci + v.same.dir*i] = clr; }
+
 		if (dDebug) { 	p2 = v.getPoint(nTo); i2 = nTo; }
 
 		pos += nMv; return nAmount - nMv;
@@ -436,15 +437,12 @@ class Worms extends SCPattern {
 	private BasicParameter pEQ  	  = new BasicParameter("EQ"  ,  0);
 	private BasicParameter pSpawn  	  = new BasicParameter("DIR" ,  0);
 
-	// versions of worms
-	// 5. slow worms branching out like a tree
-
 	int 	zMidLat = 82;
 	float 	nConfusion;
 	private final Click moveChase = new Click(1000);
 
 	xyz 	middle;
-	int 	AnimNum() { return floor(pSpawn.getValuef()*(3-.01)); }
+	int 	AnimNum() { return floor(pSpawn.getValuef()*(4-.01)); }
 	float   randX() { return random(model.xMax-model.xMin)+model.xMin; }
 	float   randY() { return random(model.yMax-model.yMin)+model.yMin; }
 	xyz 	randEdge() { 
@@ -465,7 +463,7 @@ class Worms extends SCPattern {
 		onParameterChanged(pEQ); setNewDest();
 	}
 
-	public void onParameterChanged(LXParameter parameter) {
+	void onParameterChanged(LXParameter parameter) {
 		nConfusion = 1-pConfusion.getValuef();
 		for (int i=0; i<numCursors; i++) {
 			if (parameter==pSpawn) reset(cur.get(i));
@@ -480,14 +478,22 @@ class Worms extends SCPattern {
 					c.setCur (lattice.getClosest(middle));
 					break;
 
-			case 1:	c.clr = lx.hsb(135,0,100);			// top to bottom
+			case 1:	c.clr = lx.hsb(135,0,100);				// top to bottom
 					float xLin = randX();
 					c.setDest(lattice.getClosest(new xyz(xLin, 0         , zMidLat)).v, nConfusion);
 					c.setCur (lattice.getClosest(new xyz(xLin, model.yMax, zMidLat)));
 					break;
 
-			case 2: c.clr = lx.hsb(300,0,100); break; // chase a point around
+			case 2: c.clr = lx.hsb(300,0,100); break; 		// chase a point around
+
+			case 3: boolean bLeft = random(2)<1;
+					c.clr = lx.hsb(135+random(120),100,100);				// sideways
+					float yLin = randX();
+					c.setDest(lattice.getClosest(new xyz(bLeft ? 0 : model.xMax,yLin,zMidLat)).v, nConfusion);
+					c.setCur (lattice.getClosest(new xyz(bLeft ? model.xMax : 0,yLin,zMidLat)));
+					break;
 		}
+		if (pBlur.getValuef() == 1 && random(2)<1) c.clr = lx.hsb(0,0,0);
 	}
 
 	void setNewDest() {
@@ -504,15 +510,17 @@ class Worms extends SCPattern {
 	    if (moveChase.click()) setNewDest();
 
 	    float fBass=0, fTreble=0;
-	    if (pEQ.getValuef()>0) {
+	    if (pEQ.getValuef()>0) {		// EQ
 		    eq.run(deltaMs);
 		    fBass 	= eq.getAverageLevel(0, 4);
 		    fTreble = eq.getAverageLevel(eq.numBands-7, 7);
 		}
 
-		for (int i=0,s=model.points.size(); i<s; i++) {
-			color c = colors[i]; float b = brightness(c); 
-			if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/(pBlur.getValuef()*TrailTime)));
+		if (pBlur.getValuef() < 1) {	// trails
+			for (int i=0,s=model.points.size(); i<s; i++) {
+				color c = colors[i]; float b = brightness(c); 
+				if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/(pBlur.getValuef()*TrailTime)));
+			}
 		}
 
 		int nWorms = floor(pWorms.getValuef() * numCursors * 

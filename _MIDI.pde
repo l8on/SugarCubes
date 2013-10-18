@@ -441,6 +441,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     
     case 49: // SOLO/CUE
       switch (nChan) {
+        case 4:
+          EFF_colorFucker.mono.setValue(1);
+          break;
         case 5:
           EFF_colorFucker.invert.setValue(1);
           break;
@@ -526,6 +529,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       
     case 49: // SOLO/CUE
       switch (nChan) {
+        case 4:
+          EFF_colorFucker.mono.setValue(0);
+          break;
         case 5:
           EFF_colorFucker.invert.setValue(0);
           break;

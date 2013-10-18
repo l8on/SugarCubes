@@ -1199,6 +1199,7 @@ class ColorFuckerEffect extends SCEffect {
   final BasicParameter desat = new BasicParameter("DSAT", 0);
   final BasicParameter sharp = new BasicParameter("SHARP", 0);
   final BasicParameter soft = new BasicParameter("SOFT", 0);
+  final BasicParameter mono = new BasicParameter("MONO", 0);
   final BasicParameter invert = new BasicParameter("INVERT", 0);
   final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
   
@@ -1210,6 +1211,7 @@ class ColorFuckerEffect extends SCEffect {
     addParameter(desat);
     addParameter(sharp);
     addParameter(soft);
+    addParameter(mono);
     addParameter(invert);
     addParameter(hueShift);
   }
@@ -1223,10 +1225,14 @@ class ColorFuckerEffect extends SCEffect {
     float hMod = hueShift.getValuef();
     float fSharp = 1/(1.0001-sharp.getValuef());
     float fSoft = soft.getValuef();
+    boolean mon = mono.getValuef() > 0.5;
     boolean ivt = invert.getValuef() > 0.5;
-    if (bMod < 1 || sMod < 1 || hMod > 0 || fSharp > 0 || ivt || fSoft > 0) {
+    if (bMod < 1 || sMod < 1 || hMod > 0 || fSharp > 0 || ivt || mon || fSoft > 0) {
       for (int i = 0; i < colors.length; ++i) {
         lx.RGBtoHSB(colors[i], hsb);
+        if (mon) {
+          hsb[0] = lx.getBaseHuef() / 360.;
+        }
         if (ivt) {
           hsb[2] = 1 - hsb[2];
         }

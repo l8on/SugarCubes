@@ -370,11 +370,39 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleControllerChange(rwmidi.Controller cc) {
+    int channel = cc.getChannel();
     int number = cc.getCC();
+    float value = cc.getValue() / 127.;
     switch (number) {
+      
+    case 7:
+     switch (channel) {
+       case 0:
+         EFF_colorFucker.sharp.setValue(value);
+         break;
+       case 1:
+         EFF_colorFucker.soft.setValue(value);
+         break;       
+       case 5:
+         EFF_blur.amount.setValue(value);
+         break;
+       case 6:
+         EFF_quantize.amount.setValue(value);
+         break;
+       case 7:
+         EFF_colorFucker.desat.setValue(value);
+         break;
+     }
+     break;
+     
+    // Master bright
+    case 14:
+      EFF_colorFucker.level.setValue(value);
+      break;
+
     // Crossfader
     case 15:
-      lx.engine.getDeck(1).getCrossfader().setValue(cc.getValue() / 127.);
+      lx.engine.getDeck(1).getCrossfader().setValue(value);
       break;
     }
     
@@ -387,7 +415,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     if (parameterIndex >= 0) {
       List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
       if (parameterIndex < parameters.size()) {
-        parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
+        parameters.get(parameterIndex).setValue(value);
       }
     }
     
@@ -395,7 +423,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       int effectIndex = number - 20;
       List<LXParameter> parameters = glucose.getSelectedEffect().getParameters();
       if (effectIndex < parameters.size()) {
-        parameters.get(effectIndex).setValue(cc.getValue() / 127.);
+        parameters.get(effectIndex).setValue(value);
       }
     }
   }
@@ -407,9 +435,18 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleNoteOn(Note note) {
-    int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch();
+    int nChan = note.getChannel();
     switch (nPitch) {
-		
+    
+    case 49: // SOLO/CUE
+      switch (nChan) {
+        case 5:
+          EFF_colorFucker.invert.setValue(1);
+          break;
+      }
+      break;
+      
     case 82: // scene 1
       EFF_boom.trigger();
       break;
@@ -479,8 +516,19 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleNoteOff(Note note) {
-    int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch();
+    int nChan = note.getChannel();
+
     switch (nPitch) {
+      
+    case 49: // SOLO/CUE
+      switch (nChan) {
+        case 5:
+          EFF_colorFucker.invert.setValue(0);
+          break;
+      }
+      break;
+      
     case 90: // SEND C
       long tapDelta = millis() - tap1;
       if (lbtwn(tapDelta,5000,300*1000)) {	// hackish tapping mechanism

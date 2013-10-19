@@ -61,6 +61,12 @@ class PresetManager implements LXParameter.Listener {
     listeners.add(listener);
   }
 
+  public void dirty(LXPattern pattern) {
+    if (loadedPattern == pattern) {
+      onPresetDirty();
+    }
+  }
+
   public void select(int index) {
     presets[index].select();
   }
@@ -161,6 +167,15 @@ class Preset {
     for (LXParameter p : pattern.getParameters()) {
       parameters.put(p.getLabel(), p.getValuef());
     }
+    if (pattern instanceof DPat) {
+      DPat dpattern = (DPat) pattern;
+      for (DBool bool : dpattern.bools) {
+        parameters.put(bool.tag, bool.b ? 1.f : 0.f);
+      }
+      for (Pick pick : dpattern.picks) {
+        parameters.put(pick.tag, pick.CurRow + pick.CurCol/100.f);
+      }
+    }
     manager.write();
   }
   
@@ -174,8 +189,25 @@ class Preset {
               p.setValue(parameters.get(pLabel));
             }
           }
+          if (pattern instanceof DPat) {
+            DPat dpattern = (DPat) pattern;
+            for (DBool bool : dpattern.bools) {
+              if (bool.tag.equals(pLabel)) {
+                bool.set(bool.row, bool.col, parameters.get(pLabel) > 0);
+              }
+            }
+            for (Pick pick : dpattern.picks) {
+              if (pick.tag.equals(pLabel)) {
+                float f = parameters.get(pLabel);
+                pick.set((int) floor(f), (int) round((f%1)*100.));
+              }
+            }
+          }
         }
         deck.goPattern(pattern);
+        if (pattern instanceof DPat) {
+          ((DPat)pattern).updateLights();
+        }
         manager.onPresetLoaded(this, pattern);
         break;
       }

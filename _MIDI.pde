@@ -706,6 +706,9 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     if (focusedPattern instanceof DPat) {
       ((DPat)focusedPattern).updateLights();
     } else {
+      for (int j = 0; j < 8; ++j) {
+        output.sendNoteOn(j, 48, 0);
+      }
       for (int row = 0; row < 7; ++row) {
         for (int col = 0; col < 8; ++col) {
           setGridState(row, col, 0);

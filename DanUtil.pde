@@ -152,14 +152,14 @@ public class DPat extends SCPattern
 
     boolean 	noteOff(Note note) {
 		int row = note.getPitch(), col = note.getChannel();
-		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, false)) return true;
+		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, false)) { presetManager.dirty(this); return true; }
 		updateLights(); return false;
 	}
 
     boolean 	noteOn(Note note) {
 		int row = note.getPitch(), col = note.getChannel();
-		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		return true;
-		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	return true;
+		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		{ presetManager.dirty(this); return true; }
+		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	{ presetManager.dirty(this); return true; }
 		if (row == 84 && col==0) { onReset(); return true; }
 		println("row: " + row + "  col:   " + col); return false;
 	}
@@ -169,6 +169,7 @@ public class DPat extends SCPattern
 		for (int i=0; i<params.size(); i++) params.get(i).reset();
 		for (int i=0; i<bools .size(); i++) bools.get(i).reset();
 		for (int i=0; i<picks .size(); i++) picks.get(i).reset();
+		presetManager.dirty(this); 
 		updateLights(); 
 	}
 

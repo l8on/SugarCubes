@@ -51,8 +51,8 @@ HeronLX lx;
 LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
-MidiEngine midiEngine;
 PresetManager presetManager;
+MidiEngine midiEngine;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -134,13 +134,14 @@ void setup() {
   glucose.lx.addEffects(effects(glucose));
   logTime("Built effects");
 
-  // MIDI devices
-  midiEngine = new MidiEngine();
-  logTime("Setup MIDI devices");
-  
   // Preset manager
   presetManager = new PresetManager();
   logTime("Loaded presets");
+
+  // MIDI devices
+  midiEngine = new MidiEngine();
+  presetManager.setMidiEngine(midiEngine);
+  logTime("Setup MIDI devices");
 
   // Build output driver
   PandaMapping[] pandaMappings = buildPandaList();

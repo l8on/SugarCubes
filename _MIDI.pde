@@ -451,17 +451,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
           break;
       }
       break;
-      
-    case 52: // CLIP STOP
-      if (nChan < PresetManager.NUM_PRESETS) {
-        if (shiftOn) {
-          presetManager.store(nChan);
-        } else {
-          presetManager.select(nChan);
-        }
-      }
-      break;
-      
+            
     case 82: // scene 1
       EFF_boom.trigger();
       break;
@@ -549,7 +539,17 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
           break;
       }
       break;
-      
+
+    case 52: // CLIP STOP
+      if (nChan < PresetManager.NUM_PRESETS) {
+        if (shiftOn) {
+          presetManager.store(nChan);
+        } else {
+          presetManager.select(nChan);
+        }
+      }
+      break;
+
     case 90: // SEND C
       long tapDelta = millis() - tap1;
       if (lbtwn(tapDelta,5000,300*1000)) {	// hackish tapping mechanism
@@ -645,16 +645,37 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     for (Engine.Deck d : lx.engine.getDecks()) {
       d.addListener(deckListener);
     }
+    presetManager.addListener(new PresetListener() {
+      public void onPresetLoaded(Preset preset) {
+        for (int i = 0; i < 8; ++i) {
+          output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
+        }
+      }
+      public void onPresetDirty(Preset preset) {
+        output.sendNoteOn(preset.index, 52, 2);
+      }
+      public void onPresetStored(Preset preset) {
+        onPresetLoaded(preset);
+      }
+      public void onPresetUnloaded() {
+        for (int i = 0; i < 8; ++i) {
+          output.sendNoteOn(i, 52, 0);
+        }
+      }
+    });
     resetParameters();
     midiEngine.grid.addOutput(this);
 
     lx.cycleBaseHue(60000);
     output.sendNoteOn(6, 49, 127);
     
-    // Turn off the track selection lights
+    // Turn off the track selection lights and preset selectors
     for (int i = 0; i < 8; ++i) {
       output.sendNoteOn(i, 51, 0);
+      output.sendNoteOn(i, 52, 0);
     }
+    
+    // Turn off the MASTER selector
     output.sendNoteOn(0, 80, 0);
   }
 

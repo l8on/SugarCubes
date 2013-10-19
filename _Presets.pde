@@ -2,6 +2,7 @@ interface PresetListener {
   public void onPresetLoaded(Preset preset);
   public void onPresetDirty(Preset preset);
   public void onPresetStored(Preset preset);
+  public void onPresetUnloaded();
 }
 
 class PresetManager implements LXParameter.Listener {
@@ -32,6 +33,28 @@ class PresetManager implements LXParameter.Listener {
         }
       }
     }
+    for (Engine.Deck deck : lx.engine.getDecks()) {
+      deck.addListener(new Engine.AbstractListener() {
+        public void patternDidChange(Engine.Deck deck, LXPattern pattern) {
+          if (midiEngine.getFocusedDeck() == deck) {
+            if (pattern != loadedPattern) {
+              onPresetDirty();
+            }
+          }
+        }
+      });
+    }
+  }
+  
+  public void setMidiEngine(MidiEngine midiEngine) {
+    midiEngine.addListener(new MidiEngineListener() {
+      public void onFocusedDeck(int deckIndex) {
+        loadedPreset = null;
+        for (PresetListener listener : listeners) {
+          listener.onPresetUnloaded();
+        }
+      }
+    });
   }
   
   public void addListener(PresetListener listener) {
@@ -44,6 +67,9 @@ class PresetManager implements LXParameter.Listener {
 
   public void store(int index) {
     presets[index].store(midiEngine.getFocusedPattern());
+    for (PresetListener listener : listeners) {
+      listener.onPresetStored(presets[index]);
+    }
     select(index);
   }
   
@@ -65,10 +91,14 @@ class PresetManager implements LXParameter.Listener {
     }
   }
   
-  public void onParameterChanged(LXParameter p) {
+  private void onPresetDirty() {
     for (PresetListener listener : listeners) {
       listener.onPresetDirty(loadedPreset);
     }
+  }
+  
+  public void onParameterChanged(LXParameter p) {
+    onPresetDirty();
   }
   
   public void write() {

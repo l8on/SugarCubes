@@ -202,13 +202,17 @@ public class DPat extends SCPattern
 
 		//println (model.xMin + " " + model.yMin + " " +  model.zMin);
 		//println (model.xMax + " " + model.yMax + " " +  model.zMax);
-	    for (MidiOutputDevice o: RWMidi.getOutputDevices()) { if (o.toString().contains("APC")) { APCOut = o.createOutput(); break;}}
+	  //for (MidiOutputDevice o: RWMidi.getOutputDevices()) { if (o.toString().contains("APC")) { APCOut = o.createOutput(); break;}}
+	}
+	
+	void setAPCOutput(MidiOutput output) {
+	  APCOut = output;
 	}
 
 	void updateLights() { if (APCOut == null) return;
 	    for (int i = 0; i < NumApcRows; ++i) 
-	    	for (int j = 0; j < 8; ++j) 		midiEngine.grid.setState(i, j, 0);
-		for (int i=0; i<picks .size(); i++) 	midiEngine.grid.setState(picks.get(i).CurRow-53, picks.get(i).CurCol, 3);
+	    	for (int j = 0; j < 8; ++j) 		APCOut.sendNoteOn(j, 53+i,  0);
+		for (int i=0; i<picks .size(); i++) 	APCOut.sendNoteOn(picks.get(i).CurCol, picks.get(i).CurRow, 3);
 		for (int i=0; i<bools .size(); i++) 	if (bools.get(i).b) 	APCOut.sendNoteOn	(bools.get(i).col, bools.get(i).row, 1);
 												else					APCOut.sendNoteOff	(bools.get(i).col, bools.get(i).row, 0);
 	}

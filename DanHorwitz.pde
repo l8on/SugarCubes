@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 public class Pong extends DPat {
-	SinLFO x,y,z,dx,dy,dz; 
+	SinLFO x,y,z,dx,dy,dz;
 	float cRad;	DParam pSize;
 	Pick 	pChoose;
 	xyz 	v = new xyz(), vMir =  new xyz();
@@ -24,25 +24,25 @@ public class Pong extends DPat {
 		v.z=0;p.z=0;// ignore z dimension
 		switch(pChoose.Cur()) {
 		case 0: vMir.set(mMax); vMir.subtract(p);
-				return lx.hsb(0,0,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));	// balls
-		case 1: return lx.hsb(0,0,c1c(1 - v.distance(p)*.5/cRad));							// ball
+				return lx.hsb(lxh(),100,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));		// balls
+		case 1: return lx.hsb(lxh(),100,c1c(1 - v.distance(p)*.5/cRad));							// ball
 		case 2: vMir.set(mMax.x/2,0,mMax.z/2);
-				return lx.hsb(0,0,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
+				return lx.hsb(lxh(),100,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
 		}
 		return lx.hsb(0,0,0);
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 public class NDat {
-	float 	xz, yz, zz, hue, sat, speed, angle, den;
+	float 	xz, yz, zz, hue, speed, angle, den;
 	float	xoff,yoff,zoff;
 	float	sinAngle, cosAngle;
 	boolean isActive;
 	NDat 		  () { isActive=false; }
 	boolean	Active() { return isActive; }
-	void	set 	(float _hue, float _sat, float _xz, float _yz, float _zz, float _den, float _speed, float _angle) {
+	void	set 	(float _hue, float _xz, float _yz, float _zz, float _den, float _speed, float _angle) {
 		isActive = true;
-		hue=_hue; sat=_sat; xz=_xz; yz=_yz; zz =_zz; den=_den; speed=_speed; angle=_angle;
+		hue=_hue; xz=_xz; yz=_yz; zz =_zz; den=_den; speed=_speed; angle=_angle;
 		xoff = random(100e3); yoff = random(100e3); zoff = random(100e3);
 	}
 }
@@ -52,7 +52,7 @@ public class Noise extends DPat
 	int			CurAnim, iSymm;
 	int 		XSym=1,YSym=2,RadSym=3;
 	float 		zTime , zTheta=0, zSin, zCos, rtime, ttime, transAdd;
-	DParam 		pSpeed , pDensity;
+	DParam 		pSpeed , pDensity, pSharp;
 	Pick 		pChoose, pSymm;
 	int			_ND = 4;
 	NDat		N[] = new NDat[_ND];
@@ -61,6 +61,7 @@ public class Noise extends DPat
 		super(glucose);
 		pSpeed		= addParam("Fast"	, .55);
 		pDensity	= addParam("Dens" 	 , .5);
+		pSharp		= addParam("Shrp" 	 ,  0);
 		pSymm 		= addPick("Symmetry" , 0, 3, new String[] {"None", "X", "Y", "Radial"}	);
 		pChoose 	= addPick("Animation", 6, 7, new String[] {"Drip", "Cloud", "Rain", "Fire", "Machine", "Spark","VWave", "Wave"}	);
 		for (int i=0; i<_ND; i++) N[i] = new NDat();
@@ -83,20 +84,20 @@ public class Noise extends DPat
 			for (int i=0; i<_ND; i++) { N[i].isActive = false; }
 			
 			switch(CurAnim) {
-			//                          hue sat xz  yz  zz  den mph angle
-			case 0: N[0].set(0  ,0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.set(1 ); break; 	// drip
-			case 1: N[0].set(0  ,0  ,100,100,200,45 ,3  ,180); pSharp.set(0 ); break;	// clouds
-			case 2: N[0].set(0  ,0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.set(.5); break;	// rain
-			case 3: N[0].set(40 ,1  ,100,100,200,10 ,1  ,180); 
-					N[1].set(0  ,1  ,100,100,200,10 ,5  ,180); pSharp.set(0 ); break;	// fire 1
-			case 4: N[0].set(0  ,1  ,40 ,40 ,40 ,15 ,2.5,180);
-					N[1].set(20 ,1  ,40 ,40 ,40 ,15 ,4  ,0  );
-					N[2].set(40 ,1  ,40 ,40 ,40 ,15 ,2  ,90 );
-					N[3].set(60 ,1  ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.set(.5); break; // machine
-			case 5: N[0].set(0  ,1  ,400,100,2  ,15 ,3  ,90 );
-					N[1].set(20 ,1  ,400,100,2  ,15 ,2.5,0  );
-					N[2].set(40 ,1  ,100,100,2  ,15 ,2  ,180);
-					N[3].set(60 ,1  ,100,100,2  ,15 ,1.5,270); pSharp.set(.5); break; // spark
+			//                          hue xz yz zz den mph angle
+			case 0: N[0].set(0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.set(1 ); break; 	// drip
+			case 1: N[0].set(0  ,100,100,200,45 ,3  ,180); pSharp.set(0 ); break;	// clouds
+			case 2: N[0].set(0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.set(.5); break;	// rain
+			case 3: N[0].set(40 ,100,100,200,10 ,1  ,180); 
+					N[1].set(0  ,100,100,200,10 ,5  ,180); pSharp.set(0 ); break;	// fire 1
+			case 4: N[0].set(0  ,40 ,40 ,40 ,15 ,2.5,180);
+					N[1].set(20 ,40 ,40 ,40 ,15 ,4  ,0  );
+					N[2].set(40 ,40 ,40 ,40 ,15 ,2  ,90 );
+					N[3].set(60 ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.set(.5); break; // machine
+			case 5: N[0].set(0  ,400,100,2  ,15 ,3  ,90 );
+					N[1].set(20 ,400,100,2  ,15 ,2.5,0  );
+					N[2].set(40 ,100,100,2  ,15 ,2  ,180);
+					N[3].set(60 ,100,100,2  ,15 ,1.5,270); pSharp.set(.5); break; // spark
 			}
 
 			DG.UpdateLights();
@@ -111,15 +112,15 @@ public class Noise extends DPat
 	color CalcPoint(xyz P) {
 		color c = 0;
 		P.RotateZ(mCtr, zSin, zCos);
-		
+
 		if (CurAnim == 6 || CurAnim == 7) {
 			P.setNorm();
-			return lx.hsb(0,0, 100 * (
+			return lx.hsb(lxh(),100, 100 * (
 							constrain(1-50*(1-pDensity.Val())*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
 			(CurAnim == 7 ? constrain(1-50*(1-pDensity.Val())*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
 			);
 		}			
-			
+
 		if (iSymm == XSym && P.x > mMax.x/2) P.x = mMax.x-P.x;
 		if (iSymm == YSym && P.y > mMax.y/2) P.y = mMax.y-P.y;
 
@@ -127,14 +128,14 @@ public class Noise extends DPat
 			NDat  n     = N[i];
 			float zx    = zTime * n.speed * n.sinAngle,
 				  zy    = zTime * n.speed * n.cosAngle;
-			
+
 			float b     = (iSymm==RadSym ? noise(zTime*n.speed+n.xoff-Dist(P,mCtr)/n.xz)
 										 : noise(P.x/n.xz+zx+n.xoff,P.y/n.yz+zy+n.yoff,P.z/n.zz+n.zoff))
 							*1.8;
 
 			b += 	n.den/100 -.4 + pDensity.Val() -1;
 			b +=	transAdd;
-			c = 	blendColor(c,color(n.hue,100*n.sat,c1c(b)),ADD);
+			c = 	blendColor(c,lx.hsb(lxh()+n.hue,100,c1c(b)),ADD);
 		}
 		return c;
 	}
@@ -166,12 +167,12 @@ public class Play extends DPat
 	float	zTheta=0;
 	ArrayList<rWave> waves = new ArrayList<rWave>(10);
 
-	rAngle	a1 = new rAngle(), a2 = new rAngle(),
-			a3 = new rAngle(), a4 = new rAngle();
-	xyz		cPrev 	= new xyz(), cRand	= new xyz(),
-			cMid 	= new xyz(), V 		= new xyz(),
-			Theta 	= new xyz(), TSin	= new xyz(),
-			TCos	= new xyz(), cMidNorm = new xyz(),
+	rAngle	a1 		= new rAngle(), a2 		= new rAngle(),
+			a3 		= new rAngle(), a4 		= new rAngle();
+	xyz		cPrev 	= new xyz(), cRand		= new xyz(),
+			cMid 	= new xyz(), V 			= new xyz(),
+			Theta 	= new xyz(), TSin		= new xyz(),
+			TCos	= new xyz(), cMidNorm 	= new xyz(),
 			Pn		= new xyz();
 	float	LastBeat=3, LastMeasure=3;
 	int		CurRandTempo = 1, CurRandTPat = 1;
@@ -303,7 +304,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a1.getX(70),a1.getY(70), mCtr.x, mCtr.y),
 						distToSeg(Px.x, Px.y, a2.getX(40),a2.getY(40), mCtr.x, mCtr.y));
 					d = constrain(30*(rad*40-d),0,100);
-					return lx.hsb(0,max(0,150-d), d); // clock
+					return lx.hsb(lxh(),100, d); // clock
 
 		case 8:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -312,7 +313,7 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a3.getX(r),a3.getY(r), a1.getX(r),a1.getY(r))				// triangle
 						);
 					d = constrain(30*(rad*40-d),0,100);
-					return lx.hsb(0,max(0,150-d), d); // clock
+					return lx.hsb(lxh(),100, d); // clock
 
 		case 9:		r = amp*200 * map(bnc,0,1,1,sin(PI*t));
 					d = min(
@@ -322,17 +323,17 @@ public class Play extends DPat
 						distToSeg(Px.x, Px.y, a4.getX(r),a4.getY(r), a1.getX(r),a1.getY(r))				// quad
 					);
 					d = constrain(30*(rad*40-d),0,100);
-					return lx.hsb(0,max(0,150-d), d); // clock
+					return lx.hsb(lxh(),100, d); // clock
 
 		case 10:
 					r = map(bnc,0,1,a1.r,amp*200*sin(PI*t));
-					return lx.hsb(0,0,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
+					return lx.hsb(lxh(),100,c1c(.9+2*rad - dist(Px.x,Px.y,a1.getX(r),a1.getY(r))*.03) );		// sphere
 
 		case 11:
 					Px.z=mCtr.z; cMid.z=mCtr.z;
-					return lx.hsb(0,0,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
+					return lx.hsb(lxh(),100,c1c(1 - CalcCone(Px,cMid,mCtr) * 0.02 > .5?1:0));  				// cone
 
-		case 12:	return lx.hsb(100 + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
+		case 12:	return lx.hsb(lxh() + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
 
 		case 13:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);
@@ -342,9 +343,7 @@ public class Play extends DPat
 		default:	return lx.hsb(0,0,0);
 		}
 
-		return lx.hsb(0,
-				150-c1c(1 - V.distance(Pn)/rad),
-				c1c(1 - V.distance(Pn)/rad));
+		return lx.hsb(lxh(), 100, c1c(1 - V.distance(Pn)/rad));
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -436,13 +435,14 @@ class Worms extends SCPattern {
 	private BasicParameter pConfusion = new BasicParameter("CONF", .1);
 	private BasicParameter pEQ  	  = new BasicParameter("EQ"  ,  0);
 	private BasicParameter pSpawn  	  = new BasicParameter("DIR" ,  0);
+	private BasicParameter pColor  	  = new BasicParameter("CLR" ,  .1);
 
 	int 	zMidLat = 82;
 	float 	nConfusion;
 	private final Click moveChase = new Click(1000);
 
 	xyz 	middle;
-	int 	AnimNum() { return floor(pSpawn.getValuef()*(4-.01)); }
+	int 	AnimNum() { return floor(pSpawn.getValuef()*(4-.01)); 	}
 	float   randX() { return random(model.xMax-model.xMin)+model.xMin; }
 	float   randY() { return random(model.yMax-model.yMin)+model.yMin; }
 	xyz 	randEdge() { 
@@ -456,7 +456,8 @@ class Worms extends SCPattern {
 	    addParameter(pBeat);    addParameter(pSpeed);
 	    addParameter(pBlur);    addParameter(pWorms);
 	    addParameter(pEQ);	    addParameter(pConfusion);
-		addParameter(pSpawn);
+		addParameter(pSpawn);	addParameter(pColor);
+
 	    middle = new xyz(model.cx, model.cy, 71);
 		if (lattice == null) lattice = new dLattice();
 		for (int i=0; i<numCursors; i++) { dCursor c = new dCursor(); reset(c); cur.add(c); }
@@ -471,23 +472,24 @@ class Worms extends SCPattern {
 		}
 	}
 
+	float getClr() { return lx.getBaseHuef() + random(pColor.getValuef()*300); }
 	void reset(dCursor c) {
 		switch(AnimNum()) {
-			case 0:	c.clr = lx.hsb(135,100,100);			// middle to edges
+			case 0:	c.clr = lx.hsb(getClr(),100,100);			// middle to edges
 					c.setDest(lattice.getClosest(randEdge()).v, nConfusion);
 					c.setCur (lattice.getClosest(middle));
 					break;
 
-			case 1:	c.clr = lx.hsb(135,0,100);				// top to bottom
+			case 1:	c.clr = lx.hsb(getClr(),100,100);				// top to bottom
 					float xLin = randX();
 					c.setDest(lattice.getClosest(new xyz(xLin, 0         , zMidLat)).v, nConfusion);
 					c.setCur (lattice.getClosest(new xyz(xLin, model.yMax, zMidLat)));
 					break;
 
-			case 2: c.clr = lx.hsb(300,0,100); break; 		// chase a point around
+			case 2: c.clr = lx.hsb(getClr(),100,100); break; 		// chase a point around
 
 			case 3: boolean bLeft = random(2)<1;
-					c.clr = lx.hsb(135+random(120),100,100);				// sideways
+					c.clr = lx.hsb(getClr()+random(120),100,100);				// sideways
 					float yLin = randX();
 					c.setDest(lattice.getClosest(new xyz(bLeft ? 0 : model.xMax,yLin,zMidLat)).v, nConfusion);
 					c.setCur (lattice.getClosest(new xyz(bLeft ? model.xMax : 0,yLin,zMidLat)));
@@ -501,7 +503,7 @@ class Worms extends SCPattern {
 		xyz dest = new xyz(randX(), randY(), zMidLat);
 		for (int i=0; i<numCursors; i++) {
 			cur.get(i).setDest(lattice.getClosest(dest).v, nConfusion);
-			cur.get(i).clr = lx.hsb(0,100,100);	// chase a point around
+			cur.get(i).clr = lx.hsb(getClr()+75,100,100);	// chase a point around
 		}
 	}
 
@@ -518,8 +520,8 @@ class Worms extends SCPattern {
 
 		if (pBlur.getValuef() < 1) {	// trails
 			for (int i=0,s=model.points.size(); i<s; i++) {
-				color c = colors[i]; float b = brightness(c); 
-				if (b>0) colors[i] = color(hue(c), saturation(c), (float)(b-100*deltaMs/(pBlur.getValuef()*TrailTime)));
+				color c = colors[i]; float b = lx.b(c); 
+				if (b>0) colors[i] = lx.hsb(lx.h(c), lx.s(c), constrain((float)(b-100*deltaMs/(pBlur.getValuef()*TrailTime)),0,100));
 			}
 		}
 

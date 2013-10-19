@@ -118,7 +118,7 @@ public class DGlobals {
 
 	
 	float		Sliders[] 		= new float [] {1,0,0,0,0,0,0,0};
-	String  	SliderText[]	= new String[] {"Level", "SpinHue", "Spark", "Xwave", "Ywave", "Trails", "Quant", "??", "??"};
+	String  	SliderText[]	= new String[] {"Level", "??", "Spark", "Xwave", "Ywave", "??", "??", "??", "??"};
 	
 	void 		SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn		(col, row, clr); 	}
 	void 		SetNoteOff 	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff		(col, row, clr); 	}
@@ -129,12 +129,9 @@ public class DGlobals {
 	DParam 		GetParam(int i) 					{ return (DParam) CurPat.params.get(i); }
 
 	float		_Level		()						{ return Sliders[0]; }
-	float		_SpinHue	()						{ return Sliders[1]; }
 	float		_Spark		()						{ return Sliders[2]; }
 	float		_XWave		()						{ return Sliders[3]; }
 	float		_YWave		()						{ return Sliders[4]; }
-	float		_Trails		()						{ return Sliders[5]; }
-	float		_Quantize	()						{ return Sliders[6]; }
 
 	void		Init		() {
 		if (bInit) return; bInit=true;
@@ -159,7 +156,7 @@ public class DGlobals {
 		String Text1="", Text2="";
 		for (int i=0; i<CurPat.bools.size(); i++) if (GetBool(i).b) Text1 += " " + GetBool(i).tag       + "   ";
 		for (int i=0; i<CurPat.picks.size(); i++) Text1 += GetPick(i).tag + ": " + GetPick(i).CurDesc() + "   ";
-		for (int i=0; i<8; i++) 				  Text2 += SliderText[i]  + ": " + round(100*Sliders[i])  + "   ";
+		for (int i=0; i<5; i++) 				  Text2 += SliderText[i]  + ": " + round(100*Sliders[i])  + "   ";
 		uiDebugText.setText(Text1, Text2);
 	}
 
@@ -205,7 +202,6 @@ public class DPat extends SCPattern
 	ArrayList 	params 		= new ArrayList();
 	ArrayList 	bools		= new ArrayList();
 	int			nMaxRow  	= 53;
-	float		zSpinHue 	= 0;
 	float		LastQuant	= -1, LastJog = -1;
 	float[]		xWaveNz, yWaveNz;
 	int 		nPoint	, nPoints;
@@ -213,9 +209,10 @@ public class DPat extends SCPattern
 	xyz			modmin;
 
 	float		NoiseMove	= random(10000);
-	DParam		pRotX, pRotY, pRotZ, pSpin, pSharp, pSaturate, pTransX, pTransY;
-	
-	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pKey, pInvert;
+	DParam		pBlank, pBlank2, pRotX, pRotY, pRotZ, pSpin, pTransX, pTransY;
+
+	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pKey;
+	float		lxh		() 							{ return lx.getBaseHuef(); 					}
 	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
 	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
@@ -225,7 +222,7 @@ public class DPat extends SCPattern
 
 	void  		StartPattern() 						{								}
 	void  		StartRun(double deltaMs) 			{								}
-	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 			}
+	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 		}
 	boolean		IsActive()							{ return this == DG.CurPat;												}
 	boolean		IsFocused()							{ return midiEngine != null && midiEngine.getFocusedDeck() != null &&
 															 this == midiEngine.getFocusedDeck().getActivePattern();		}
@@ -250,8 +247,8 @@ public class DPat extends SCPattern
 	DPat(GLucose glucose) {
 		super(glucose);
 
-		pSharp		=	addParam("Shrp",  0);
-		pSaturate	=	addParam("Sat" , .5);
+		pBlank		=	addParam("",  0);
+		pBlank2		=	addParam("" , .5);
 		pTransX		=	addParam("TrnX", .5);
 		pTransY		=	addParam("TrnY", .5);
 		pRotX 		= 	addParam("RotX", .5);
@@ -264,9 +261,8 @@ public class DPat extends SCPattern
 		pYsym 		=	new DBool("Y-SYM", false, 49, 1);	bools.add(pYsym	);
 		pRsym 		=	new DBool("R-SYM", false, 49, 2);	bools.add(pRsym );
 		pXdup		=	new DBool("X-DUP", false, 49, 3);	bools.add(pXdup );
-		pJog		=	new DBool("JOG"  ,false, 49,  4);	bools.add(pJog	);
-		pKey		=	new DBool("KBD"	 ,false, 49,  5);	bools.add(pKey	);
-		pInvert		=	new DBool("INVRT",false, 49,  6);	bools.add(pInvert);
+		pJog		=	new DBool("JOG"  , false, 49, 4);	bools.add(pJog	);
+		pKey		=	new DBool("KBD"	 , false, 49, 5);	bools.add(pKey	);
 
 		modmin		=	new xyz(model.xMin, model.yMin, model.zMin);
 		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
@@ -285,21 +281,12 @@ public class DPat extends SCPattern
 		UpdateState();
 		NoiseMove   	+= deltaMs; NoiseMove = NoiseMove % 1e7;
 		StartRun		(deltaMs);
-		zSpinHue 		+= DG._SpinHue ()*deltaMs*.05; zSpinHue = zSpinHue % 5000.;
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
 		xyz pTrans 		= new xyz(pTransX.Val()*200-100, pTransY.Val()*100-50,0);
-		float fSharp 	= 1/(1.0001-pSharp.Val());
-		float fQuant	= DG._Quantize ();
-		float fSaturate	= pSaturate.Val();
 		
 		DG.SetText();
 		nPoint 	= 0;
 
-		if (fQuant > 0) {
-			float tRamp	= (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
-			float f = LastQuant; LastQuant = tRamp; if (tRamp > f) return;
-		}
-	
 		if (pJog.b) {
 			float tRamp	= (lx.tempo.rampf() % .25);
 			if (tRamp < LastJog) xyzJog.set(randctr(mMax.x*.2), randctr(mMax.y*.2), randctr(mMax.z*.2));
@@ -313,7 +300,7 @@ public class DPat extends SCPattern
 
 		if (xWv > 0) for (int i=0; i<ceil(mMax.y)+1; i++)
 			xWaveNz[i] = xWv * (noise(i/(mMax.y*.3)-(1e3+NoiseMove)/1500.) - .5) * (mMax.x/2.);
-			
+
 		for (Point p : model.points) { nPoint++;
 			P.set(p);
 			P.subtract(modmin);
@@ -331,37 +318,29 @@ public class DPat extends SCPattern
 			if (pRsym.b) 	{ tP.set(mMax.x-P.x,mMax.y-P.y,mMax.z-P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 			if (pXdup.b) 	{ tP.set((P.x+mMax.x*.5)%mMax.x,P.y,P.z);		cNew = blendColor(cNew, CalcPoint(tP), ADD);	}
 
-			float 								s =	lx.s(cNew) + 100*(fSaturate*2-1);
+			float 								s =	lx.s(cNew);
 			float 								b = lx.b(cNew)/100.;
- 			if (pSharp.Val()>0) 				b = b < .5 ? pow(b,fSharp) : 1-pow(1-b,fSharp);
-			if (DG._Trails()>0 && fQuant == 0) 	b = max(b, (float) (lx.b(cOld)/100. - (1-DG._Trails()) * deltaMs/200.));
 			if (DG.bSustain == true) 			b = max(b, (float) (lx.b(cOld)/100.));
 
-			if (pInvert.b)	{ b = 1-b; s = 1-s; }
-
-			colors[p.index] = lx.hsb(
-				(lx.h(cNew) + zSpinHue) % 360,
-				s,
-				100 *  b * DG._Level()
-			);
-
-//			colors[p.index] = lx.hsb(0,0, p.x >= modmin.x && p.y >= modmin.y && p.z >= modmin.z &&
-//				p.x <= modmin.x+mMax.x && p.y <= modmin.y+mMax.y && p.z <= modmin.z+mMax.z ? 100 : 0); 
+			colors[p.index] = lx.hsb(lx.h(cNew), s, 100 *  b * DG._Level());
 		}
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 class dTurn { 
 	dVertex v; 
-	int pos0, pos1; 
+	int pos0, pos1;
 	dTurn(int _pos0, dVertex _v, int _pos1) { v = _v; pos0 = _pos0; pos1 = _pos1; }
 }
 
 class dVertex {
-	dVertex c0, c1, opp, same;
+	dVertex c0, c1, 		// connections on the cube
+			opp, same;		// opp - same strip, opp direction
+							// same - same strut, diff strip, dir
 	dTurn 	t0, t1;
 	dStrip  s;
-	int 	dir, ci;
+	int 	dir, ci;	// dir -- 1 or -1.
+						// ci  -- color index
 
 	dVertex(dStrip _s, Point _p) { s = _s; ci  = _p.index; }
 	Point 	getPoint(int i) 	 { return s.s.points.get(dir>0 ? i : 15-i);  }
@@ -378,23 +357,23 @@ class dStrip  {
 //----------------------------------------------------------------------------------------------------------------------------------
 float PointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); }
 
-class dPixel   { dVertex v; int pos; dPixel(dVertex _v, int _pos) { v=_v; pos=_pos; }}
+class dPixel   { dVertex v; int pos; dPixel(dVertex _v, int _pos) { v=_v; pos=_pos; } }
 class dLattice {
 	private 	int iTowerStrips=0;
 
 	dStrip[] 	DS = new dStrip[glucose.model.strips.size()];
-	int[][]  	DQ = new int[NumBackTowers][MaxCubeHeight*2];
-	dStrip  GetStrip (int row, int col, int off) { 
-		return (!btwn(off,0,15) || !btwn(row,0,MaxCubeHeight*2-1) || !btwn(col,0,NumBackTowers-1) || DQ[col][row]<0) ? null : 
-				DS[DQ[col][row]+off]; 
-	}
+	//int[][]  	DQ = new int[NumBackTowers][MaxCubeHeight*2];
+	//dStrip  GetStrip (int row, int col, int off) { 
+	//	return (!btwn(off,0,15) || !btwn(row,0,MaxCubeHeight*2-1) || !btwn(col,0,NumBackTowers-1) || DQ[col][row]<0) ? null : 
+	//			DS[DQ[col][row]+off]; 
+	//}
 
 	void	addTurn(dVertex v0, int pos0, dVertex v1, int pos1) {	dTurn t = new dTurn(pos0, v1, pos1); if (v0.t0 == null) v0.t0=t; else v0.t1=t; }
 	float   Dist2	 (Strip s1, int pos1, Strip s2, int pos2) 	{ 	return PointDist(s1.points.get(pos1), s2.points.get(pos2)); }
-	boolean SameSame (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2, 0), Dist2(s1,15, s2,15)) < 5 ;	}
-	boolean SameOpp  (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2,15), Dist2(s1,15, s2,0 )) < 5 ;	}
-	boolean SameBar  (Strip s1, Strip s2) 						{	return SameSame(s1,s2) || SameOpp(s1,s2);					}
 	float   PD2 	 (Point p1, float x, float y, float z) 		{ 	return dist(p1.x,p1.y,p1.z,x,y,z); }
+	boolean SameSame (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2, 0), Dist2(s1,15, s2,15)) < 5 ;	}	// same strut, same direction
+	boolean SameOpp  (Strip s1, Strip s2) 						{	return max(Dist2(s1, 0, s2,15), Dist2(s1,15, s2,0 )) < 5 ;	}	// same strut, opp direction
+	boolean SameBar  (Strip s1, Strip s2) 						{	return SameSame(s1,s2) || SameOpp(s1,s2);					}	// 2 strips on same strut
 	void 	AddJoint (dVertex v1, dVertex v2) {
 		// should probably replace parallel but further with the new one
 		if (v1.c0 != null && SameBar(v2.s.s, v1.c0.s.s)) return;
@@ -419,7 +398,7 @@ class dLattice {
 
 	dLattice() {
 		lattice=this;
-		for (int i=0;i<NumBackTowers;i++) for (int j=0;j<MaxCubeHeight*2;j++) DQ[i][j]=-1;
+		//for (int i=0;i<NumBackTowers;i++) for (int j=0;j<MaxCubeHeight*2;j++) DQ[i][j]=-1;
 
 		int   col = 0, row = -2, i=-1;
 		for (Strip strip : glucose.model.strips  ) { i++;
@@ -430,8 +409,8 @@ class dLattice {
 			s.v0 = new dVertex(s,strip.points.get(0 ));
 			s.v1 = new dVertex(s,strip.points.get(15));
 			s.v0.setOpp(s.v1); s.v1.setOpp(s.v0);
-			if (col < NumBackTowers) DQ[col][row] = 16*floor((iTowerStrips-1)/16);
-			else s.row=-1;
+			//if (col < NumBackTowers) DQ[col][row] = 16*floor((iTowerStrips-1)/16);
+			//else s.row=-1;
 		}
 
 		for (int j=0; j<iTowerStrips; j++) { for (int k=j+1; k<iTowerStrips; k++) { 

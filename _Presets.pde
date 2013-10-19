@@ -67,16 +67,16 @@ class PresetManager implements LXParameter.Listener {
     }
   }
 
-  public void select(int index) {
-    presets[index].select();
+  public void select(Engine.Deck deck, int index) {
+    presets[index].select(deck);
   }
 
-  public void store(int index) {
+  public void store(Engine.Deck deck, int index) {
     presets[index].store(midiEngine.getFocusedPattern());
     for (PresetListener listener : listeners) {
       listener.onPresetStored(presets[index]);
     }
-    select(index);
+    select(deck, index);
   }
   
   public void onPresetLoaded(Preset preset, LXPattern pattern) {
@@ -179,8 +179,7 @@ class Preset {
     manager.write();
   }
   
-  public void select() {
-    Engine.Deck deck = midiEngine.getFocusedDeck();
+  public void select(Engine.Deck deck) {
     for (LXPattern pattern : deck.getPatterns()) {
       if (pattern.getClass().getName().equals(className)) {
         for (String pLabel : parameters.keySet()) {

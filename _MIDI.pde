@@ -585,9 +585,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 52: // CLIP STOP
       if (nChan < PresetManager.NUM_PRESETS) {
         if (shiftOn) {
-          presetManager.store(nChan);
+          presetManager.store(getTargetDeck(), nChan);
         } else {
-          presetManager.select(nChan);
+          presetManager.select(getTargetDeck(), nChan);
         }
       }
       break;

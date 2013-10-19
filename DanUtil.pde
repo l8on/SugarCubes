@@ -114,7 +114,7 @@ public class DPat extends SCPattern
     boolean noteOff(Note note) { if (!isFocused()) return false;
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, false)) return true;
-		UpdateLights();
+		updateLights(); // may not be needed
 		return false;
 	}
 
@@ -122,7 +122,7 @@ public class DPat extends SCPattern
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		return true;
 		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	return true;
-		if (row == 84 && col==0) { onActive(); StartPattern(); return true; }
+		if (row == 84 && col==0) { onReset(); return true; }
 		println("row: " + row + "  col:   " + col); return false;
 	}
 
@@ -132,15 +132,15 @@ public class DPat extends SCPattern
 	boolean		isFocused()							{ return midiEngine != null && midiEngine.getFocusedDeck() != null &&
 															 this == midiEngine.getFocusedDeck().getActivePattern();		}
 	void 		onInactive() 						{ uiDebugText.setText(""); }
-	void 		onActive  () 						{ 
-		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
+	void 		onTransitionEnd()					{ updateLights(); }
+	void 		onReset() {
 		for (int i=0; i<params.size(); i++) params.get(i).reset();
 		for (int i=0; i<bools .size(); i++) bools.get(i).reset();
 		for (int i=0; i<picks .size(); i++) picks.get(i).reset();
-		UpdateLights();  
+		updateLights(); 
 	}
 
-	void 		UpdateLights() {
+	void updateLights() {
 		if (!isFocused() || APCOut == null) return;
 		for (int i=53;i< 58; i++) for (int j=0; j<NumApcCols; j++) SetNoteOn(i, j, 0);
 		for (int i=0; i<picks .size(); i++) 	SetNoteOn	(picks.get(i).CurRow, picks.get(i).CurCol, 3);
@@ -148,7 +148,7 @@ public class DPat extends SCPattern
 												else				SetNoteOff	(bools.get(i).row, bools.get(i).col, 0);
 	}
 
-	void SetText() { if (!isFocused()) return;
+	void setText() { if (!isFocused()) return;
 		String Text1="", Text2="";
 		for (int i=0; i<bools.size(); i++) if (bools.get(i).b) Text1 += " " + bools.get(i).tag       + "   ";
 		for (int i=0; i<picks.size(); i++) Text1 += picks.get(i).tag + ": " + picks.get(i).CurDesc() + "   ";
@@ -178,7 +178,6 @@ public class DPat extends SCPattern
 	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ vT1.set(v1); vT2.set(v2); vT1.subtract(c); vT2.subtract(c);
 														return degrees( acos ( vT1.dot(vT2) / (sqrt(vT1.dot(vT1)) * sqrt(vT2.dot(vT2)) ) ));	}
 
-	void  		StartPattern() 						{								}
 	void  		StartRun(double deltaMs) 			{								}
 	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 		}
 	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD);						}
@@ -235,8 +234,7 @@ public class DPat extends SCPattern
 		StartRun		(deltaMs);
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
 		xyz pTrans 		= new xyz(pTransX.Val()*200-100, pTransY.Val()*100-50,0);
-		
-		SetText();
+		setText();
 		nPoint 	= 0;
 
 		if (pJog.b) {

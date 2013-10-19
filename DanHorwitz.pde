@@ -67,7 +67,8 @@ public class Noise extends DPat
 		for (int i=0; i<_ND; i++) N[i] = new NDat();
 	}
 
-	void StartPattern() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; transAdd=0; }
+	void onActive() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; transAdd=0; }
+
 	void StartRun(double deltaMs) {
 		zTime 	+= deltaMs*(pSpeed.Val()-.5)*.002	;
 		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01	;
@@ -209,7 +210,10 @@ public class Play extends DPat
 		}
 	}
 
-	void StartPattern() { zTheta=0; }
+	void onActive() { 
+		zTheta=0; 
+		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
+	}
 
 	int KeyPressed = -1;
 	boolean noteOn(Note note) {

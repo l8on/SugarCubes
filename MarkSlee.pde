@@ -173,11 +173,13 @@ class Pulley extends SCPattern {
     }
 
     // A little silliness to test the grid API    
-    for (int i = 0; i < 7; ++i) {
-      for (int j = 0; j < 8; ++j) {
-        int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
-        float b = 1 - 4.*abs((6-i)/7. - gravity[gi].getValuef() / model.yMax);
-        midiEngine.grid.setState(i, j, (b < 0) ? 0 : 1);
+    if (midiEngine != null && midiEngine.getFocusedPattern() == this) {
+	    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 8; ++j) {
+          int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
+          float b = 1 - 4.*abs((6-i)/6. - gravity[gi].getValuef() / model.yMax);
+          midiEngine.grid.setState(i, j, (b < 0) ? 0 : 3);
+        }
       }
     }
     

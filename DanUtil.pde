@@ -129,8 +129,7 @@ public class DPat extends SCPattern
 	void SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn	(col, row, clr); }
 	void SetNoteOff (int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff	(col, row, clr); }
 
-	boolean		isFocused()							{ return midiEngine != null && midiEngine.getFocusedDeck() != null &&
-															 this == midiEngine.getFocusedDeck().getActivePattern();		}
+	boolean		isFocused()							{ return midiEngine != null && midiEngine.getFocusedPattern() == this; }
 	void 		onInactive() 						{ uiDebugText.setText(""); }
 	void 		onTransitionEnd()					{ updateLights(); }
 	void 		onReset() {

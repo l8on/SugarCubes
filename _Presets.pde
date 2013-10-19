@@ -92,8 +92,10 @@ class PresetManager implements LXParameter.Listener {
   }
   
   private void onPresetDirty() {
-    for (PresetListener listener : listeners) {
-      listener.onPresetDirty(loadedPreset);
+    if (loadedPreset != null) {
+      for (PresetListener listener : listeners) {
+        listener.onPresetDirty(loadedPreset);
+      }
     }
   }
   

@@ -641,6 +641,12 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
 
     lx.cycleBaseHue(60000);
     output.sendNoteOn(6, 49, 127);
+    
+    // Turn off the track selection lights
+    for (int i = 0; i < 8; ++i) {
+      output.sendNoteOn(i, 51, 0);
+    }
+    output.sendNoteOn(0, 80, 0);
   }
 
   private void resetParameters() {

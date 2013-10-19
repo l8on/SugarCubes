@@ -52,6 +52,7 @@ LXPattern[] patterns;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 MidiEngine midiEngine;
+PresetManager presetManager;
 
 // Display configuration mode
 boolean mappingMode = false;
@@ -136,6 +137,10 @@ void setup() {
   // MIDI devices
   midiEngine = new MidiEngine();
   logTime("Setup MIDI devices");
+  
+  // Preset manager
+  presetManager = new PresetManager();
+  logTime("Loaded presets");
 
   // Build output driver
   PandaMapping[] pandaMappings = buildPandaList();

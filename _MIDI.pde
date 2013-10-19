@@ -348,7 +348,6 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     int pitch = note.getPitch();
     if (channel < 8) {
       if (pitch >= 53 && pitch <=57) return new GridPosition(pitch-53, channel);
-      else if (pitch == 52) return new GridPosition(5, channel);
     }
     return null;
   }
@@ -450,6 +449,16 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
         case 6:
           lx.cycleBaseHue(60000);
           break;
+      }
+      break;
+      
+    case 52: // CLIP STOP
+      if (nChan < PresetManager.NUM_PRESETS) {
+        if (shiftOn) {
+          presetManager.store(nChan);
+        } else {
+          presetManager.select(nChan);
+        }
       }
       break;
       
@@ -733,9 +742,8 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   }
   
   public void setGridState(int row, int col, int state) {
-    if (col < 8) {
-      if (row < 5) output.sendNoteOn(col, 53+row, state);
-      else if (row == 6) output.sendNoteOn(col, 52, state);
+    if (col < 8 && row < 5) {
+      output.sendNoteOn(col, 53+row, state);
     }
   }
 }

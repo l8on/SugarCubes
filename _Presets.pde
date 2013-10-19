@@ -4,7 +4,7 @@ interface PresetListener {
   public void onPresetStored(Preset preset);
 }
 
-class PresetManager {
+class PresetManager implements LXParameter.Listener {
   
   public static final int NUM_PRESETS = 8;
   public static final String FILENAME = "data/presets.txt";
@@ -13,7 +13,8 @@ class PresetManager {
   private final Preset[] presets = new Preset[NUM_PRESETS];
   private final List<PresetListener> listeners = new ArrayList<PresetListener>();
   
-  private LXPattern loadedPreset = null;
+  private Preset loadedPreset = null;
+  private LXPattern loadedPattern = null;
   
   PresetManager() {
     for (int i = 0; i < presets.length; ++i) {
@@ -43,11 +44,30 @@ class PresetManager {
 
   public void store(int index) {
     presets[index].store(midiEngine.getFocusedPattern());
+    select(index);
   }
   
   public void onPresetLoaded(Preset preset, LXPattern pattern) {
+    if (loadedPattern != pattern) {
+      if (loadedPattern != null) {
+        for (LXParameter p : loadedPattern.getParameters()) {
+          ((LXListenableParameter) p).removeListener(this);
+        }
+      }
+    }
     for (PresetListener listener : listeners) {
       listener.onPresetLoaded(preset);
+    }
+    loadedPreset = preset;
+    loadedPattern = pattern;
+    for (LXParameter p : loadedPattern.getParameters()) {
+      ((LXListenableParameter) p).addListener(this);
+    }
+  }
+  
+  public void onParameterChanged(LXParameter p) {
+    for (PresetListener listener : listeners) {
+      listener.onPresetDirty(loadedPreset);
     }
   }
   

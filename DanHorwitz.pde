@@ -99,8 +99,6 @@ public class Noise extends DPat
 					N[2].set(40 ,100,100,2  ,15 ,2  ,180);
 					N[3].set(60 ,100,100,2  ,15 ,1.5,270); pSharp.set(.5); break; // spark
 			}
-
-			DG.UpdateLights();
 		}
 		
 		for (int i=0; i<_ND; i++) if (N[i].Active()) {
@@ -212,6 +210,14 @@ public class Play extends DPat
 	}
 
 	void StartPattern() { zTheta=0; }
+
+	int KeyPressed = -1;
+	boolean noteOn(Note note) {
+		int row = note.getPitch(), col = note.getChannel();
+		if (row == 57) {KeyPressed = col; return true; }
+		return super.noteOn(note);
+	}
+
 	void StartRun(double deltaMs) {
 		t 	= lx.tempo.rampf();
 		amp = pAmp.Val();
@@ -244,13 +250,13 @@ public class Play extends DPat
 			w.move(deltaMs); if (w.bDone) waves.remove(i); else i++;
 		}
 
-		if ((t<LastBeat && !pKey.b) || DG.KeyPressed>-1) {
+		if ((t<LastBeat && pShape.Cur()!=14) || KeyPressed>-1) {
 			waves.add(new rWave(
-						pKey.b ? map(DG.KeyPressed,0,7,0,1) : random(1),		// location
+						KeyPressed>-1 ? map(KeyPressed,0,7,0,1) : random(1),		// location
 						bnc*10,			// bounciness
 						7,				// velocity
 						2*(1-amp)));	// dampiness
-			DG.KeyPressed=-1;
+			KeyPressed=-1;
 			if (waves.size() > 5) waves.remove(0);
 		}
 		
@@ -336,7 +342,8 @@ public class Play extends DPat
 		case 12:	return lx.hsb(lxh() + noise(Pn.x,Pn.y,Pn.z + (NoiseMove+50000)/1000.)*200,
 						85,c1c(Pn.y < noise(Pn.x + NoiseMove/2000.,Pn.z)*(1+amp)-amp/2.-.1 ? 1 : 0));	// noise
 
-		case 13:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);
+		case 13:	
+		case 14:	float y=0; for (rWave w : waves) y += .5*w.val(Pn.x);	// wave
 					V.set(Pn.x, .7+y, Pn.z);
 					break;
 
@@ -366,39 +373,39 @@ class dCursor {
 
 	boolean isDone	() 									{ return pos==posStop; 										 }
 	boolean atDest  ()									{ return vCur.s==vDest.s || 
-																 PointDist(vCur.getPoint(0), vDest.getPoint(0)) < 12 || 
-																 PointDist(vCur.getPoint(0), vDest.getPoint(15))< 12;}
-	void 	setCur 	(dVertex _v, int _p) 				{ p2=null; vCur=_v; pos=_p; PickNext(); 					 }
+																 pointDist(vCur.getPoint(0), vDest.getPoint(0)) < 12 || 
+																 pointDist(vCur.getPoint(0), vDest.getPoint(15))< 12;}
+	void 	setCur 	(dVertex _v, int _p) 				{ p2=null; vCur=_v; pos=_p; pickNext(); 					 }
 	void 	setCur	(dPixel  _p) 						{ setCur(_p.v, _p.pos); 									 }
 	void	setNext (dVertex _v, int _p, int _s)		{ vNext = _v; posNext = _p<<12; posStop = _s<<12;		 	 }
 	void	setDest (dVertex _v, float _speed)			{ vDest = _v; destSpeed = _speed;							 }
-	void	onDone	()									{ setCur(vNext, posNext); PickNext(); 						 }
+	void	onDone	()									{ setCur(vNext, posNext); pickNext(); 						 }
 
 	float  	minDist;
 	int 	nTurns;
 	boolean bRandEval;
 
-	void 	Evaluate(dVertex v, int p, int s) {
+	void 	evaluate(dVertex v, int p, int s) {
 		if (v == null) return; ++nTurns;
 		if (bRandEval) {
 			if (random(nTurns) < 1) setNext(v,p,s); return; }
 		else {
-			float d = PointDist(v.getPoint(15), vDest.getPoint(0));
+			float d = pointDist(v.getPoint(15), vDest.getPoint(0));
 			if (d <  minDist)					{ minDist=d; setNext(v,p,s); }
 			if (d == minDist && random(2)<1)  	{ minDist=d; setNext(v,p,s); }
 		}
 	}
 
-	void 	EvalTurn(dTurn t) { 
+	void 	evalTurn(dTurn t) { 
 		if (t == null || t.pos0<<12 <= pos) return; 
-		Evaluate(t.v 	,    t.pos1, t.pos0);
-		Evaluate(t.v.opp, 16-t.pos1, t.pos0);
+		evaluate(t.v 	,    t.pos1, t.pos0);
+		evaluate(t.v.opp, 16-t.pos1, t.pos0);
 	}
 
-	void 	PickNext() 	{
+	void 	pickNext() 	{
 		bRandEval = random(.05+destSpeed) < .05; minDist=500; nTurns=0;
-		Evaluate(vCur.c0, 0, 16);  	Evaluate(vCur.c1, 0, 16);
-		EvalTurn(vCur.t0);			EvalTurn(vCur.t1);
+		evaluate(vCur.c0, 0, 16);  	evaluate(vCur.c1, 0, 16);
+		evalTurn(vCur.t0);			evalTurn(vCur.t1);
 	}
 
 	Point 	p1, p2; int i2;
@@ -409,14 +416,14 @@ class dCursor {
 		int	nTo 	= min(15,(pos+nMv) >> 12);
 		dVertex v 	= vCur;
 
-		if (dDebug) { 	p1 = v.getPoint(nFrom); float d = (p2 == null ? 0 : PointDist(p1,p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
+		if (dDebug) { 	p1 = v.getPoint(nFrom); float d = (p2 == null ? 0 : pointDist(p1,p2)); if (d>5) { println("too wide! quitting: " + d); exit(); }}
 								for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.ci 	   + v.dir*i 	 ] = clr; }
 		if (v.same != null)		for (int i = nFrom; i <= nTo; i++) { pat.getColors()[v.same.ci + v.same.dir*i] = clr; }
 
 		if (dDebug) { 	p2 = v.getPoint(nTo); i2 = nTo; }
 
 		pos += nMv; return nAmount - nMv;
-	}	
+			}	
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -175,6 +175,7 @@ class CubeCurl extends SCPattern{
 float CH, CW, diag;
 ArrayList<PVector> cubeorigin = new ArrayList<PVector>();
 ArrayList<PVector> centerlist = new ArrayList<PVector>();
+List pdist = new ArrayList();
 private SinLFO curl = new SinLFO(0, Cube.EDGE_HEIGHT, 5000 ); 
 
 private SinLFO bg = new SinLFO(180, 220, 3000);
@@ -186,32 +187,43 @@ addModulator(bg).trigger();
  this.CH = Cube.EDGE_HEIGHT;
  this.CW = Cube.EDGE_WIDTH;
  this.diag = sqrt(CW*CW + CW*CW);
-
-
-ArrayList<PVector> centerlistrelative = new ArrayList<PVector>();
+ 
+println("Cube.EDGE_HEIGHT" + CH + "Cube.EDGE_WIDTH" + CW);
 for (int i = 0; i < model.cubes.size(); i++){
   Cube a = model.cubes.get(i);
   cubeorigin.add(new PVector(a.x, a.y, a.z));
   centerlist.add(centerofcube(i));
   
 } 
+for (int i = 0; i < model.cubes.size() - 40; i++){
+   int cubenumber = 0; 
+for (int j = 0; j < 256 /* # of points in cube*/; j++) {
+Point p = model.points.get(j);
+//println("p.x  " + p.x + "  p.y  "  + p.y + "  p.z  " + p.z);
+PVector pv = new PVector(p.x, p.y, p.z);
+float pdistf = PVector.dist( pv, centerlist.get(cubenumber));
+//println("pdistf   " + pdistf);
+pdist.add(pdistf);
+  }
+cubenumber++;
+}
+
 
 }
 //there is definitely a better way of doing this!
 PVector centerofcube(int i) { 
 Cube c = model.cubes.get(i);
-
 println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
 PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-println("c.rx" + cubeangle.x + "c.ry" + cubeangle.y + "c.rz" + cubeangle.z);
+println("cubeangle  " +  cubeangle.x + "  " + cubeangle.y + "  " + cubeangle.z);
 PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
 println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
-PVector centerrot = new PVector(cos(c.ry)*CW/2 + sin(c.ry)*CW/2, CH/2, sin(c.ry)*CW/2 - cos(c.ry)*CW/2);
+PVector centerrot = new PVector( (cos(c.ry) - sin(c.ry))*CW/2, CH/2, sin(c.ry)*CW/2 + cos(c.ry)*CW/2);
+println("center rotated raw:  " + centerrot.x + "  " + centerrot.y + "  " +  centerrot.z);
+
  // nCos*(y-o.y) - nSin*(z-o.z) + o.y
 cubecenter = PVector.add(new PVector(c.x, c.y, c.z), centerrot);
-println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
-
-
+println( "cubecenter rotated final :  " +  cubecenter.x +  "  " +   cubecenter.y + "  "   +  cubecenter.z  );
 return cubecenter;
 }
 

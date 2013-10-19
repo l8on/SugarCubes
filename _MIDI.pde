@@ -699,16 +699,22 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
       }
     }
     presetManager.addListener(new PresetListener() {
-      public void onPresetLoaded(Preset preset) {
-        for (int i = 0; i < 8; ++i) {
-          output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
+      public void onPresetLoaded(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          for (int i = 0; i < 8; ++i) {
+            output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
+          }
         }
       }
-      public void onPresetDirty(Preset preset) {
-        output.sendNoteOn(preset.index, 52, 2);
+      public void onPresetDirty(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          output.sendNoteOn(preset.index, 52, 2);
+        }
       }
-      public void onPresetStored(Preset preset) {
-        onPresetLoaded(preset);
+      public void onPresetStored(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          onPresetLoaded(deck, preset);
+        }
       }
       public void onPresetUnloaded() {
         for (int i = 0; i < 8; ++i) {

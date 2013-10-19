@@ -51,7 +51,7 @@ public class Noise extends DPat
 {
 	int			CurAnim, iSymm;
 	int 		XSym=1,YSym=2,RadSym=3;
-	float 		zTime , zTheta=0, zSin, zCos, rtime, ttime, transAdd;
+	float 		zTime , zTheta=0, zSin, zCos, rtime, ttime;
 	DParam 		pSpeed , pDensity, pSharp;
 	Pick 		pChoose, pSymm;
 	int			_ND = 4;
@@ -67,14 +67,13 @@ public class Noise extends DPat
 		for (int i=0; i<_ND; i++) N[i] = new NDat();
 	}
 
-	void onActive() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; transAdd=0; }
+	void onActive() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; }
 
 	void StartRun(double deltaMs) {
 		zTime 	+= deltaMs*(pSpeed.Val()-.5)*.002	;
 		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01	;
 		rtime	+= deltaMs;
 		iSymm	 = pSymm.Cur();
-		transAdd = 1*(1 - constrain(rtime - ttime,0,1000)/1000);
 		zSin	= sin(zTheta);
 		zCos	= cos(zTheta);
 
@@ -110,7 +109,7 @@ public class Noise extends DPat
 
 	color CalcPoint(xyz P) {
 		color c = 0;
-		P.RotateZ(mCtr, zSin, zCos);
+		P.rotateZ(mCtr, zSin, zCos);
 
 		if (CurAnim == 6 || CurAnim == 7) {
 			P.setNorm();
@@ -128,12 +127,11 @@ public class Noise extends DPat
 			float zx    = zTime * n.speed * n.sinAngle,
 				  zy    = zTime * n.speed * n.cosAngle;
 
-			float b     = (iSymm==RadSym ? noise(zTime*n.speed+n.xoff-Dist(P,mCtr)/n.xz)
+			float b     = (iSymm==RadSym ? noise(zTime*n.speed+n.xoff-P.distance(mCtr)/n.xz)
 										 : noise(P.x/n.xz+zx+n.xoff,P.y/n.yz+zy+n.yoff,P.z/n.zz+n.zoff))
 							*1.8;
 
 			b += 	n.den/100 -.4 + pDensity.Val() -1;
-			b +=	transAdd;
 			c = 	blendColor(c,lx.hsb(lxh()+n.hue,100,c1c(b)),ADD);
 		}
 		return c;
@@ -285,9 +283,9 @@ public class Play extends DPat
 	}
 
 	color CalcPoint(xyz Px) {
-		if (Theta.x != 0) Px.RotateX(mCtr, TSin.x, TCos.x);
-		if (Theta.y != 0) Px.RotateY(mCtr, TSin.y, TCos.y);
-		if (Theta.z != 0) Px.RotateZ(mCtr, TSin.z, TCos.z);
+		if (Theta.x != 0) Px.rotateX(mCtr, TSin.x, TCos.x);
+		if (Theta.y != 0) Px.rotateY(mCtr, TSin.y, TCos.y);
+		if (Theta.z != 0) Px.rotateZ(mCtr, TSin.z, TCos.z);
 		
 		Pn.set(Px); Pn.setNorm();
 

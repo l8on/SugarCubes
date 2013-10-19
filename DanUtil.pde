@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 xyz			mMax, mCtr, mHalf;
-int			NumApcRows = 5, NumApcCols = 8;
+int			NumApcRows=4, NumApcCols=8;
 
 boolean btwn  	(int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
@@ -23,10 +23,11 @@ float 	distToSeg(float x, float y, float x1, float y1, float x2, float y2) {
 
 
 public class Pick {
-	int 	NumPicks, Default	,	CurRow	, CurCol	,
+	int 	NumPicks, Default	,	
+			CurRow	, CurCol	,
 			StartRow, EndRow	;
 	String  tag		, Desc[]	;
-	
+
 	Pick	(String label, int _Def, int _Num, 	int nStart, String d[])	{
 		NumPicks 	= _Num; 	Default = _Def; 
 		StartRow 	= nStart;	EndRow	= StartRow + floor((NumPicks-1) / NumApcCols);
@@ -84,19 +85,19 @@ public class xyz {	float x,y,z;	// extends pVector; eliminate half of the functi
 	void	subtract(xyz b)					{x -= b.x; y -= b.y; z -= b.z;			}
 	void	scale	(float b)				{x *= b  ; y *= b  ; z *= b  ;			}
 
-	void	RotateZ	  (xyz o, float nSin, float nCos) {
+	void	rotateZ	  (xyz o, float nSin, float nCos) {
 		float nX = nCos*(x-o.x) - nSin*(y-o.y) + o.x;
 		float nY = nSin*(x-o.x) + nCos*(y-o.y) + o.y;
 		x = nX; y = nY;
 	}
 
-	void	RotateX	  (xyz o, float nSin, float nCos) {
+	void	rotateX	  (xyz o, float nSin, float nCos) {
 		float nY = nCos*(y-o.y) - nSin*(z-o.z) + o.y;
 		float nZ = nSin*(y-o.y) + nCos*(z-o.z) + o.z;
 		y = nY; z = nZ;
 	}
 
-	void	RotateY	  (xyz o, float nSin, float nCos) {
+	void	rotateY	  (xyz o, float nSin, float nCos) {
 		float nZ = nCos*(z-o.z) - nSin*(x-o.x) + o.z;
 		float nX = nSin*(z-o.z) + nCos*(x-o.x) + o.x;
 		z = nZ; x = nX;
@@ -109,55 +110,11 @@ public class xyz {	float x,y,z;	// extends pVector; eliminate half of the functi
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DPat extends SCPattern
 {
-	MidiOutput 	APCOut			= null;
-
-    boolean noteOff(Note note) { if (!isFocused()) return false;
-		int row = note.getPitch(), col = note.getChannel();
-		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, false)) return true;
-		updateLights(); // may not be needed
-		return false;
-	}
-
-    boolean noteOn(Note note) { if (!isFocused()) return false;
-		int row = note.getPitch(), col = note.getChannel();
-		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		return true;
-		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	return true;
-		if (row == 84 && col==0) { onReset(); return true; }
-		println("row: " + row + "  col:   " + col); return false;
-	}
-
-	void SetNoteOn	(int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOn	(col, row, clr); }
-	void SetNoteOff (int row, int col, int clr){ if (APCOut != null) APCOut.sendNoteOff	(col, row, clr); }
-
-	boolean		isFocused()							{ return midiEngine != null && midiEngine.getFocusedPattern() == this; }
-	void 		onInactive() 						{ uiDebugText.setText(""); }
-	void 		onTransitionEnd()					{ updateLights(); }
-	void 		onReset() {
-		for (int i=0; i<params.size(); i++) params.get(i).reset();
-		for (int i=0; i<bools .size(); i++) bools.get(i).reset();
-		for (int i=0; i<picks .size(); i++) picks.get(i).reset();
-		updateLights(); 
-	}
-
-	void updateLights() {
-		if (!isFocused() || APCOut == null) return;
-		for (int i=53;i< 58; i++) for (int j=0; j<NumApcCols; j++) SetNoteOn(i, j, 0);
-		for (int i=0; i<picks .size(); i++) 	SetNoteOn	(picks.get(i).CurRow, picks.get(i).CurCol, 3);
-		for (int i=0; i<bools .size(); i++) 	if (bools.get(i).b) 	SetNoteOn	(bools.get(i).row, bools.get(i).col, 1);
-												else				SetNoteOff	(bools.get(i).row, bools.get(i).col, 0);
-	}
-
-	void setText() { if (!isFocused()) return;
-		String Text1="", Text2="";
-		for (int i=0; i<bools.size(); i++) if (bools.get(i).b) Text1 += " " + bools.get(i).tag       + "   ";
-		for (int i=0; i<picks.size(); i++) Text1 += picks.get(i).tag + ": " + picks.get(i).CurDesc() + "   ";
-		uiDebugText.setText(Text1, Text2);
-	}
-
 	ArrayList<Pick>   picks  = new ArrayList<Pick>  ();
 	ArrayList<DBool>  bools  = new ArrayList<DBool> ();
 	ArrayList<DParam> params = new ArrayList<DParam>();
 
+	MidiOutput  APCOut;
 	int			nMaxRow  	= 53;
 	float		LastQuant	= -1, LastJog = -1;
 	float[]		xWaveNz, yWaveNz;
@@ -167,10 +124,9 @@ public class DPat extends SCPattern
 
 	float		NoiseMove	= random(10000);
 	DParam		pSpark, pWave, pRotX, pRotY, pRotZ, pSpin, pTransX, pTransY;
-
 	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pGrey;
+
 	float		lxh		() 							{ return lx.getBaseHuef(); 					}
-	float		Dist	 (xyz a, xyz b) 			{ return dist(a.x,a.y,a.z,b.x,b.y,b.z); 	}
 	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
 	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
 
@@ -187,11 +143,33 @@ public class DPat extends SCPattern
 		params.add(P); return P;
 	}
 
-	Pick addPick(String name, int def, int _max, String[] desc) {
+	Pick 		addPick(String name, int def, int _max, String[] desc) {
 		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 
 		nMaxRow		= P.EndRow + 1;
 		picks.add(P);
 		return P;
+	}
+
+    boolean 	noteOff(Note note) {
+		int row = note.getPitch(), col = note.getChannel();
+		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, false)) return true;
+		updateLights(); return false;
+	}
+
+    boolean 	noteOn(Note note) {
+		int row = note.getPitch(), col = note.getChannel();
+		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		return true;
+		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	return true;
+		if (row == 84 && col==0) { onReset(); return true; }
+		println("row: " + row + "  col:   " + col); return false;
+	}
+
+	void 		onInactive() 			{ uiDebugText.setText(""); }
+	void 		onReset() 				{
+		for (int i=0; i<params.size(); i++) params.get(i).reset();
+		for (int i=0; i<bools .size(); i++) bools.get(i).reset();
+		for (int i=0; i<picks .size(); i++) picks.get(i).reset();
+		updateLights(); 
 	}
 
 	DPat(GLucose glucose) {
@@ -226,14 +204,29 @@ public class DPat extends SCPattern
 	    for (MidiOutputDevice o: RWMidi.getOutputDevices()) { if (o.toString().contains("APC")) { APCOut = o.createOutput(); break;}}
 	}
 
+	void updateLights() { if (APCOut == null) return;
+	    for (int i = 0; i < NumApcRows; ++i) 
+	    	for (int j = 0; j < 8; ++j) 		midiEngine.grid.setState(i, j, 0);
+		for (int i=0; i<picks .size(); i++) 	midiEngine.grid.setState(picks.get(i).CurRow-53, picks.get(i).CurCol, 3);
+		for (int i=0; i<bools .size(); i++) 	if (bools.get(i).b) 	APCOut.sendNoteOn	(bools.get(i).col, bools.get(i).row, 1);
+												else					APCOut.sendNoteOff	(bools.get(i).col, bools.get(i).row, 0);
+	}
+
 	void run(double deltaMs)
 	{
 		if (deltaMs > 100) return;
+
+		if (this == midiEngine.getFocusedDeck().getActivePattern()) {
+			String Text1="", Text2="";
+			for (int i=0; i<bools.size(); i++) if (bools.get(i).b) Text1 += " " + bools.get(i).tag       + "   ";
+			for (int i=0; i<picks.size(); i++) Text1 += picks.get(i).tag + ": " + picks.get(i).CurDesc() + "   ";
+			uiDebugText.setText(Text1, Text2);
+		}
+
 		NoiseMove   	+= deltaMs; NoiseMove = NoiseMove % 1e7;
 		StartRun		(deltaMs);
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
 		xyz pTrans 		= new xyz(pTransX.Val()*200-100, pTransY.Val()*100-50,0);
-		setText();
 		nPoint 	= 0;
 
 		if (pJog.b) {

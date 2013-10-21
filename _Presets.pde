@@ -36,10 +36,8 @@ class PresetManager implements LXParameter.Listener {
     for (Engine.Deck deck : lx.engine.getDecks()) {
       deck.addListener(new Engine.AbstractListener() {
         public void patternDidChange(Engine.Deck deck, LXPattern pattern) {
-          if (midiEngine.getFocusedDeck() == deck) {
-            if (pattern != loadedPattern) {
-              onPresetDirty(deck);
-            }
+          if (pattern != loadedPattern) {
+            onPresetDirty(deck);
           }
         }
       });

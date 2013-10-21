@@ -364,10 +364,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
   
   protected Engine.Deck getTargetDeck() {
-    if (targetDeck != null) {
-      return targetDeck;
-    }
-    return midiEngine.getFocusedDeck();
+    return (targetDeck != null) ? targetDeck : midiEngine.getFocusedDeck();
   }
   
   protected SCPattern getTargetPattern() {

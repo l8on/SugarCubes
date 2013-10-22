@@ -61,7 +61,6 @@ public class DParam extends BasicParameter {
 	double  dflt;
 	DParam	(String label, double value) 		{ super(label,value); dflt=value;		}
 	void 	set			(double value) 			{ super.setValue(value);				}
-	void 	reset		() 						{ super.setValue(dflt);					}
 	float 	Val			() 						{ return getValuef();					}
 }
 //----------------------------------------------------------------------------------------------------------------------------------

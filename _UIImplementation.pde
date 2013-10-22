@@ -13,9 +13,9 @@
  
 class UIPatternDeck extends UIWindow {
     
-  Engine.Deck deck;
+  LXDeck deck;
   
-  public UIPatternDeck(Engine.Deck deck, String label, float x, float y, float w, float h) {
+  public UIPatternDeck(LXDeck deck, String label, float x, float y, float w, float h) {
     super(label, x, y, w, h);
     this.deck = deck;
     int yp = titleHeight;
@@ -34,11 +34,11 @@ class UIPatternDeck extends UIWindow {
       parameterKnobs[ki].addToContainer(this);
     }
     
-    Engine.Listener lxListener = new Engine.AbstractListener() {
-      public void patternWillChange(Engine.Deck deck, LXPattern pattern, LXPattern nextPattern) {
+    LXDeck.Listener lxListener = new LXDeck.AbstractListener() {
+      public void patternWillChange(LXDeck deck, LXPattern pattern, LXPattern nextPattern) {
         patternList.redraw();
       }
-      public void patternDidChange(Engine.Deck deck, LXPattern pattern) {
+      public void patternDidChange(LXDeck deck, LXPattern pattern) {
         patternList.redraw();
         int pi = 0;
         for (LXParameter parameter : pattern.getParameters()) {
@@ -96,8 +96,8 @@ class UIBlendMode extends UIWindow {
     final UIScrollList tList;
     (tList = new UIScrollList(1, titleHeight, w-2, 60)).setItems(items).addToContainer(this);
 
-    lx.engine.getDeck(1).addListener(new Engine.AbstractListener() {
-      public void blendTransitionDidChange(Engine.Deck deck, LXTransition transition) {
+    lx.engine.getDeck(GLucose.RIGHT_DECK).addListener(new LXDeck.AbstractListener() {
+      public void faderTransitionDidChange(LXDeck deck, LXTransition transition) {
         tList.redraw();
       }
     });
@@ -138,7 +138,7 @@ class UICrossfader extends UIWindow {
   public UICrossfader(float x, float y, float w, float h) {
     super("CROSSFADER", x, y, w, h);
 
-    new UIParameterSlider(4, titleHeight, w-9, 32).setParameter(lx.engine.getDeck(1).getCrossfader()).addToContainer(this);
+    new UIParameterSlider(4, titleHeight, w-9, 32).setParameter(lx.engine.getDeck(GLucose.RIGHT_DECK).getFader()).addToContainer(this);
     (displayMode = new UIToggleSet(4, titleHeight + 36, w-9, 20)).setOptions(new String[] { "A", "COMP", "B" }).setValue("COMP").addToContainer(this);
   }
   
@@ -521,8 +521,8 @@ class UIMidi extends UIWindow {
     return logMode.isActive();
   }
   
-  public Engine.Deck getFocusedDeck() {
-    return lx.engine.getDeck(deckMode.getValue() == "A" ? 0 : 1);
+  public LXDeck getFocusedDeck() {
+    return lx.engine.getDeck(deckMode.getValue() == "A" ? GLucose.LEFT_DECK : GLucose.RIGHT_DECK);
   }
 }
 

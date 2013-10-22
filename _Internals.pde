@@ -125,7 +125,7 @@ void setup() {
   logTime("Built GLucose engine");
   
   // Set the patterns
-  Engine engine = lx.engine;
+  LXEngine engine = lx.engine;
   engine.setPatterns(patterns = _leftPatterns(glucose));
   engine.addDeck(_rightPatterns(glucose));
   logTime("Built patterns");
@@ -156,13 +156,13 @@ void setup() {
   // Build overlay UI
   debugUI = new DebugUI(pandaMappings);
   overlays = new UIContext[] {
-    uiPatternA = new UIPatternDeck(lx.engine.getDeck(0), "PATTERN A", 4, 4, 140, 324),
+    uiPatternA = new UIPatternDeck(lx.engine.getDeck(GLucose.LEFT_DECK), "PATTERN A", 4, 4, 140, 324),
     new UIBlendMode(4, 332, 140, 86),
     new UIEffects(4, 422, 140, 144),
     new UITempo(4, 570, 140, 50),
     new UISpeed(4, 624, 140, 50),
         
-    new UIPatternDeck(lx.engine.getDeck(1), "PATTERN B", width-144, 4, 140, 324),
+    new UIPatternDeck(lx.engine.getDeck(GLucose.RIGHT_DECK), "PATTERN B", width-144, 4, 140, 324),
     uiMidi = new UIMidi(midiEngine, width-144, 332, 140, 158),
     new UIOutput(width-144, 494, 140, 106),
     

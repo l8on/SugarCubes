@@ -84,7 +84,7 @@ class MidiEngine {
     return this.midiControllers;
   }
 
-  public Engine.Deck getFocusedDeck() {
+  public LXDeck getFocusedDeck() {
     return lx.engine.getDeck(activeDeckIndex);
   }
 
@@ -352,7 +352,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
 
   private boolean shiftOn = false;
   private LXEffect releaseEffect = null;
-  final private Engine.Deck targetDeck;
+  final private LXDeck targetDeck;
   
   APC40MidiInput(MidiEngine midiEngine, MidiInputDevice d) {
     this(midiEngine, d, -1);
@@ -363,7 +363,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     targetDeck = (deckIndex < 0) ? null : lx.engine.getDecks().get(deckIndex);
   }
   
-  protected Engine.Deck getTargetDeck() {
+  protected LXDeck getTargetDeck() {
     return (targetDeck != null) ? targetDeck : midiEngine.getFocusedDeck();
   }
   
@@ -440,7 +440,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
 
     // Crossfader
     case 15:
-      lx.engine.getDeck(1).getCrossfader().setValue(value);
+      lx.engine.getDeck(GLucose.RIGHT_DECK).getFader().setValue(value);
       break;
     }
     
@@ -662,7 +662,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   private final MidiOutput output;
   private LXPattern focusedPattern = null;
   private LXEffect focusedEffect = null;
-  private final Engine.Deck targetDeck;
+  private final LXDeck targetDeck;
   
   APC40MidiOutput(MidiEngine midiEngine, MidiOutputDevice device) {
     this(midiEngine, device, -1);
@@ -685,30 +685,30 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
         resetEffectParameters();
       }
     });
-    Engine.Listener deckListener = new Engine.AbstractListener() {
-      public void patternDidChange(Engine.Deck deck, LXPattern pattern) {
+    LXDeck.Listener deckListener = new LXDeck.AbstractListener() {
+      public void patternDidChange(LXDeck deck, LXPattern pattern) {
         resetPatternParameters();
       }
     };
-    for (Engine.Deck d : lx.engine.getDecks()) {
+    for (LXDeck d : lx.engine.getDecks()) {
       if (targetDeck == null || d == targetDeck) {
         d.addListener(deckListener);
       }
     }
     presetManager.addListener(new PresetListener() {
-      public void onPresetLoaded(Engine.Deck deck, Preset preset) {
+      public void onPresetLoaded(LXDeck deck, Preset preset) {
         if (deck == getTargetDeck()) {
           for (int i = 0; i < 8; ++i) {
             output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
           }
         }
       }
-      public void onPresetDirty(Engine.Deck deck, Preset preset) {
+      public void onPresetDirty(LXDeck deck, Preset preset) {
         if (deck == getTargetDeck()) {
           output.sendNoteOn(preset.index, 52, 2);
         }
       }
-      public void onPresetStored(Engine.Deck deck, Preset preset) {
+      public void onPresetStored(LXDeck deck, Preset preset) {
         if (deck == getTargetDeck()) {
           onPresetLoaded(deck, preset);
         }
@@ -736,7 +736,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   }
   
   private void setDPatternOutputs() {
-    for (Engine.Deck deck : lx.engine.getDecks()) {
+    for (LXDeck deck : lx.engine.getDecks()) {
       if (targetDeck == null || deck == targetDeck) {
         for (LXPattern pattern : deck.getPatterns()) {
           if (pattern instanceof DPat) {
@@ -747,7 +747,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     }
   }
   
-  protected Engine.Deck getTargetDeck() {
+  protected LXDeck getTargetDeck() {
     if (targetDeck != null) {
       return targetDeck;
     }

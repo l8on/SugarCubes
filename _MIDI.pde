@@ -186,10 +186,8 @@ public abstract class SCMidiInput extends AbstractScrollItem {
     if (logMidi()) {
       println(getLabel() + " :: Controller :: " + cc.getChannel() + " :: " + cc.getCC() + ":" + cc.getValue());
     }
-    if (!handleGridControllerChange(cc)) {
-      if (!getTargetPattern().controllerChange(cc)) {
-        handleControllerChange(cc);
-      }
+    if (!handleControllerChange(cc)) {
+      getTargetPattern().controllerChange(cc);
     }
   }
 
@@ -200,10 +198,8 @@ public abstract class SCMidiInput extends AbstractScrollItem {
     if (logMidi()) {
       println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
-    if (!handleGridNoteOn(note)) {
-      if (!getTargetPattern().noteOn(note)) {
-        handleNoteOn(note);
-      }
+    if (!handleNoteOn(note)) {
+      getTargetPattern().noteOn(note);
     }
   }
 
@@ -214,21 +210,16 @@ public abstract class SCMidiInput extends AbstractScrollItem {
     if (logMidi()) {
       println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
-    if (!handleGridNoteOff(note)) {
-      if (!getTargetPattern().noteOff(note)) {
-        handleNoteOff(note);
-      }
+    if (!handleNoteOff(note)) {
+      getTargetPattern().noteOff(note);
     }
   }
 
   // Subclasses may implement these to map top-level functionality
-  protected boolean handleGridNoteOn(Note note) { return false; }
-  protected boolean handleGridNoteOff(Note note) { return false; }
-  protected boolean handleGridControllerChange(rwmidi.Controller cc) { return false; }
-  protected void handleProgramChange(ProgramChange pc) {}
-  protected void handleControllerChange(rwmidi.Controller cc) {}
-  protected void handleNoteOn(Note note) {}
-  protected void handleNoteOff(Note note) {}
+  protected boolean handleProgramChange(ProgramChange pc) { return false; }
+  protected boolean handleControllerChange(rwmidi.Controller cc) { return false; }
+  protected boolean handleNoteOn(Note note) { return false; }
+  protected boolean handleNoteOff(Note note) { return false; }
 }
 
 public class VirtualKeyMidiInput extends SCMidiInput {
@@ -391,7 +382,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     return null;
   }
 
-  protected boolean handleGridNoteOn(Note note) {
+  private boolean handleGridNoteOn(Note note) {
     GridPosition p = getGridPosition(note);
     if (p != null) {
       return midiEngine.grid.gridPressed(p.row, p.col);
@@ -399,7 +390,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     return false;
   }
 
-  protected boolean handleGridNoteOff(Note note) {
+  private boolean handleGridNoteOff(Note note) {
     GridPosition p = getGridPosition(note);
     if (p != null) {
       return midiEngine.grid.gridReleased(p.row, p.col);
@@ -407,7 +398,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     return false;
   }
 
-  protected void handleControllerChange(rwmidi.Controller cc) {
+  protected boolean handleControllerChange(rwmidi.Controller cc) {
     int channel = cc.getChannel();
     int number = cc.getCC();
     float value = cc.getValue() / 127.;
@@ -417,31 +408,31 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
      switch (channel) {
        case 0:
          EFF_colorFucker.hueShift.setValue(value);
-         break;
+         return true;
        case 1:
          EFF_colorFucker.desat.setValue(value);
-         break;
+         return true;
        case 2:
          EFF_colorFucker.sharp.setValue(value);
-         break;
+         return true;
        case 3:
          EFF_blur.amount.setValue(value);
-         break;
+         return true;
        case 4:
          EFF_quantize.amount.setValue(value);
-         break;
+         return true;
      }
      break;
      
     // Master bright
     case 14:
       EFF_colorFucker.level.setValue(value);
-      break;
+      return true;
 
     // Crossfader
     case 15:
       lx.engine.getDeck(GLucose.RIGHT_DECK).getFader().setValue(value);
-      break;
+      return true;
     }
     
     int parameterIndex = -1;
@@ -454,6 +445,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       List<LXParameter> parameters = getTargetPattern().getParameters();
       if (parameterIndex < parameters.size()) {
         parameters.get(parameterIndex).setValue(value);
+        return true;
       }
     }
     
@@ -462,8 +454,11 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       List<LXParameter> parameters = glucose.getSelectedEffect().getParameters();
       if (effectIndex < parameters.size()) {
         parameters.get(effectIndex).setValue(value);
+        return true;
       }
     }
+    
+    return false;
   }
 
   private long tap1 = 0;
@@ -472,7 +467,11 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     return a >= b && a <= c;
   }
 
-  protected void handleNoteOn(Note note) {
+  protected boolean handleNoteOn(Note note) {
+    if (handleGridNoteOn(note)) {
+      return true;
+    }
+    
     int nPitch = note.getPitch();
     int nChan = note.getChannel();
     switch (nPitch) {
@@ -481,39 +480,39 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       switch (nChan) {
         case 4:
           EFF_colorFucker.mono.setValue(1);
-          break;
+          return true;
         case 5:
           EFF_colorFucker.invert.setValue(1);
-          break;
+          return true;
         case 6:
           lx.cycleBaseHue(60000);
-          break;
+          return true;
       }
       break;
             
     case 82: // scene 1
       EFF_boom.trigger();
-      break;
+      return true;
       
     case 83: // scene 2
       EFF_flash.trigger();
-      break;
+      return true;
       
     case 90:
       // dan's dirty tapping mechanism
       lx.tempo.trigger();
       tap1 = millis();
-      break;
+      return true;
 
     case 91: // play
     case 97: // left bank
       midiEngine.setFocusedDeck(0);
-      break;
+      return true;
 
     case 93: // rec
     case 96: // right bank
       midiEngine.setFocusedDeck(1);
-      break;
+      return true;
 
     case 94: // up bank
       if (shiftOn) {
@@ -521,28 +520,31 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       } else {
         getTargetDeck().goPrev();
       }
-      break;
+      return true;
+      
     case 95: // down bank
       if (shiftOn) {
         glucose.incrementSelectedEffectBy(1);
       } else {
         getTargetDeck().goNext();
       }
-      break;
+      return true;
 
     case 98: // shift
       shiftOn = true;
-      break;
+      return true;
 
     case 99: // tap tempo
       lx.tempo.tap();
-      break;
+      return true;
+      
     case 100: // nudge+
       lx.tempo.setBpm(lx.tempo.bpm() + (shiftOn ? 1 : .1));
-      break;
+      return true;
+      
     case 101: // nudge-
       lx.tempo.setBpm(lx.tempo.bpm() - (shiftOn ? 1 : .1));
-      break;
+      return true;
 
     case 62: // Detail View / red 5
       releaseEffect = glucose.getSelectedEffect(); 
@@ -551,15 +553,21 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       } else {
         releaseEffect.toggle();
       }
-      break;
+      return true;
 
     case 63: // rec quantize / red 6
       glucose.getSelectedEffect().disable();
-      break;
+      return true;
     }
+
+    return false;
   }
 
-  protected void handleNoteOff(Note note) {
+  protected boolean handleNoteOff(Note note) {
+    if (handleGridNoteOff(note)) {
+      return true;
+    }
+
     int nPitch = note.getPitch();
     int nChan = note.getChannel();
 
@@ -569,13 +577,13 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       switch (nChan) {
         case 4:
           EFF_colorFucker.mono.setValue(0);
-          break;
+          return true;
         case 5:
           EFF_colorFucker.invert.setValue(0);
-          break;
+          return true;
         case 6:
           lx.setBaseHue(lx.getBaseHue());
-          break;
+          return true;
       }
       break;
 
@@ -587,7 +595,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
           presetManager.select(getTargetDeck(), nChan);
         }
       }
-      break;
+      return true;
 
     case 90: // SEND C
       long tapDelta = millis() - tap1;
@@ -600,7 +608,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
         tap1 = 0;
         println("Tap Set - " + bpm + " bpm");
       }
-      break;
+      return true;
 
     case 63: // rec quantize / RED 6
       if (releaseEffect != null) {
@@ -608,12 +616,14 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
           releaseEffect.disable();
         }
       }
-      break;
+      return true;
 
     case 98: // shift
       shiftOn = false;
-      break;
+      return true;
     }
+    
+    return false;
   }
 }
 
@@ -623,36 +633,39 @@ class KorgNanoKontrolMidiInput extends GenericDeviceMidiInput {
     super(midiEngine, d);
   }
   
-  protected void handleControllerChange(rwmidi.Controller cc) {
+  protected boolean handleControllerChange(rwmidi.Controller cc) {
     int number = cc.getCC();
     if (number >= 16 && number <= 23) {
       int parameterIndex = number - 16;
       List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
       if (parameterIndex < parameters.size()) {
         parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
+        return true;
       }
     }
     
     if (cc.getValue() == 127) {
       switch (number) {
-      // Left track
-      case 58:
-        midiEngine.setFocusedDeck(0);
-        break;
-      // Right track
-      case 59:
-        midiEngine.setFocusedDeck(1);
-        break;
-      // Left chevron
-      case 43:
+      
+      case 58: // Left track
+        midiEngine.setFocusedDeck(GLucose.LEFT_DECK);
+        return true;
+      
+      case 59: // Right track
+        midiEngine.setFocusedDeck(GLucose.RIGHT_DECK);
+        return true;
+      
+      case 43: // Left chevron
         midiEngine.getFocusedDeck().goPrev();
-        break;
-      // Right chevron
-      case 44:
+        return true;
+      
+      case 44: // Right chevron
         midiEngine.getFocusedDeck().goNext();
-        break;
+        return true;
       }
     }
+    
+    return false;
   }
 }
 

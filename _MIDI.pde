@@ -677,6 +677,9 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
       midiEngine.addListener(new MidiEngineListener() {
         public void onFocusedDeck(int deckIndex) {
           resetPatternParameters();
+          for (int i = 0; i < 8; ++i) {
+            output.sendNoteOn(i, 52, 0);
+          }
         }
       });
     }
@@ -687,7 +690,9 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     });
     LXDeck.Listener deckListener = new LXDeck.AbstractListener() {
       public void patternDidChange(LXDeck deck, LXPattern pattern) {
-        resetPatternParameters();
+        if (deck == getTargetDeck()) {
+          resetPatternParameters();
+        }
       }
     };
     for (LXDeck d : lx.engine.getDecks()) {
@@ -696,7 +701,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
       }
     }
     presetManager.addListener(new PresetListener() {
-      public void onPresetLoaded(LXDeck deck, Preset preset) {
+      public void onPresetSelected(LXDeck deck, Preset preset) {
         if (deck == getTargetDeck()) {
           for (int i = 0; i < 8; ++i) {
             output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
@@ -710,12 +715,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
       }
       public void onPresetStored(LXDeck deck, Preset preset) {
         if (deck == getTargetDeck()) {
-          onPresetLoaded(deck, preset);
-        }
-      }
-      public void onPresetUnloaded() {
-        for (int i = 0; i < 8; ++i) {
-          output.sendNoteOn(i, 52, 0);
+          onPresetStored(deck, preset);
         }
       }
     });
@@ -748,10 +748,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   }
   
   protected LXDeck getTargetDeck() {
-    if (targetDeck != null) {
-      return targetDeck;
-    }
-    return midiEngine.getFocusedDeck();
+    return (targetDeck != null) ? targetDeck : midiEngine.getFocusedDeck();
   }
 
   private void resetParameters() {

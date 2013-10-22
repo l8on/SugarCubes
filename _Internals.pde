@@ -140,7 +140,6 @@ void setup() {
 
   // MIDI devices
   midiEngine = new MidiEngine();
-  presetManager.setMidiEngine(midiEngine);
   logTime("Setup MIDI devices");
 
   // Build output driver
@@ -425,6 +424,44 @@ void keyPressed() {
     mappingTool.keyPressed(uiMapping);
   }
   switch (key) {
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+      if (!midiEngine.isQwertyEnabled()) {
+        presetManager.select(midiEngine.getFocusedDeck(), key - '1');
+      }
+      break;
+    
+    case '!':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 0);
+      break;
+    case '@':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 1);
+      break;
+    case '#':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 2);
+      break;
+    case '$':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 3);
+      break;
+    case '%':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 4);
+      break;
+    case '^':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 5);
+      break;
+    case '&':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 6);
+      break;
+    case '*':
+      if (!midiEngine.isQwertyEnabled()) presetManager.store(midiEngine.getFocusedDeck(), 7);
+      break;
+      
     case '-':
     case '_':
       frameRate(--targetFramerate);

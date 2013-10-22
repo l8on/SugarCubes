@@ -30,6 +30,7 @@ import ddf.minim.*;
 import ddf.minim.analysis.*;
 import processing.opengl.*;
 import rwmidi.*;
+import java.lang.reflect.*;
 
 final int VIEWPORT_WIDTH = 900;
 final int VIEWPORT_HEIGHT = 700;
@@ -49,6 +50,7 @@ int startMillis, lastMillis;
 GLucose glucose;
 HeronLX lx;
 LXPattern[] patterns;
+Effects effects;
 MappingTool mappingTool;
 PandaDriver[] pandaBoards;
 PresetManager presetManager;
@@ -100,7 +102,19 @@ LXPattern[] _rightPatterns(GLucose glucose) {
   }
   return rightPatterns;
 }
-  
+
+LXEffect[] _effectsArray(Effects effects) {
+  List<LXEffect> effectList = new ArrayList<LXEffect>();
+  for (Field f : effects.getClass().getDeclaredFields()) {
+    try {
+      Object val = f.get(effects);
+      if (val instanceof LXEffect) {
+        effectList.add((LXEffect)val);
+      }
+    } catch (IllegalAccessException iax) {}
+  }
+  return effectList.toArray(new LXEffect[]{});
+} 
 
 void logTime(String evt) {
   int now = millis();
@@ -131,7 +145,7 @@ void setup() {
   logTime("Built patterns");
   glucose.setTransitions(transitions(glucose));
   logTime("Built transitions");
-  glucose.lx.addEffects(effects(glucose));
+  glucose.lx.addEffects(_effectsArray(effects = new Effects()));
   logTime("Built effects");
 
   // Preset manager
@@ -471,7 +485,7 @@ void keyPressed() {
       frameRate(++targetFramerate);
       break; 
     case 'b':
-      EFF_boom.trigger();
+      effects.boom.trigger();
       break;    
     case 'd':
       if (!midiEngine.isQwertyEnabled()) {

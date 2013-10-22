@@ -129,18 +129,17 @@ LXTransition[] transitions(GLucose glucose) {
 }
 
 // Handles to globally triggerable effects 
-BoomEffect EFF_boom;
-FlashEffect EFF_flash;
-ColorFuckerEffect EFF_colorFucker;
-BlurEffect EFF_blur;
-QuantizeEffect EFF_quantize;
-
-LXEffect[] effects(GLucose glucose) {
-  return new LXEffect[] {
-    EFF_flash = new FlashEffect(lx),
-    EFF_boom = new BoomEffect(glucose),
-    (EFF_blur = new BlurEffect(glucose)).enable(),
-    (EFF_quantize = new QuantizeEffect(glucose)).enable(),
-    (EFF_colorFucker =  new ColorFuckerEffect(glucose)).enable(),
-  };
+class Effects {
+  FlashEffect flash = new FlashEffect(lx);
+  BoomEffect boom = new BoomEffect(glucose);
+  BlurEffect blur = new BlurEffect(glucose);
+  QuantizeEffect quantize = new QuantizeEffect(glucose);
+  ColorFuckerEffect colorFucker = new ColorFuckerEffect(glucose);
+  
+  Effects() {
+    blur.enable();
+    quantize.enable();
+    colorFucker.enable();
+  }
 }
+

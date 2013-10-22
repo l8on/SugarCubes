@@ -407,26 +407,26 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 7:
      switch (channel) {
        case 0:
-         EFF_colorFucker.hueShift.setValue(value);
+         effects.colorFucker.hueShift.setValue(value);
          return true;
        case 1:
-         EFF_colorFucker.desat.setValue(value);
+         effects.colorFucker.desat.setValue(value);
          return true;
        case 2:
-         EFF_colorFucker.sharp.setValue(value);
+         effects.colorFucker.sharp.setValue(value);
          return true;
        case 3:
-         EFF_blur.amount.setValue(value);
+         effects.blur.amount.setValue(value);
          return true;
        case 4:
-         EFF_quantize.amount.setValue(value);
+         effects.quantize.amount.setValue(value);
          return true;
      }
      break;
      
     // Master bright
     case 14:
-      EFF_colorFucker.level.setValue(value);
+      effects.colorFucker.level.setValue(value);
       return true;
 
     // Crossfader
@@ -479,10 +479,10 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 49: // SOLO/CUE
       switch (nChan) {
         case 4:
-          EFF_colorFucker.mono.setValue(1);
+          effects.colorFucker.mono.setValue(1);
           return true;
         case 5:
-          EFF_colorFucker.invert.setValue(1);
+          effects.colorFucker.invert.setValue(1);
           return true;
         case 6:
           lx.cycleBaseHue(60000);
@@ -491,11 +491,11 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       break;
             
     case 82: // scene 1
-      EFF_boom.trigger();
+      effects.boom.trigger();
       return true;
       
     case 83: // scene 2
-      EFF_flash.trigger();
+      effects.flash.trigger();
       return true;
       
     case 90:
@@ -576,10 +576,10 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 49: // SOLO/CUE
       switch (nChan) {
         case 4:
-          EFF_colorFucker.mono.setValue(0);
+          effects.colorFucker.mono.setValue(0);
           return true;
         case 5:
-          EFF_colorFucker.invert.setValue(0);
+          effects.colorFucker.invert.setValue(0);
           return true;
         case 6:
           lx.setBaseHue(lx.getBaseHue());

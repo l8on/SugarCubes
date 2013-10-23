@@ -1,5 +1,4 @@
 //----------------------------------------------------------------------------------------------------------------------------------
-xyz			mMax, mCtr, mHalf;
 int			NumApcRows=4, NumApcCols=8;
 
 boolean btwn  	(int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
@@ -21,7 +20,6 @@ float 	distToSeg(float x, float y, float x1, float y1, float x2, float y2) {
 	float dx = x - xx, dy = y - yy;
 	return sqrt(dx * dx + dy * dy);
 }
-
 
 public class Pick {
 	int 	NumPicks, Default	,	
@@ -57,81 +55,47 @@ public class DBool {
 		def = _def; b = _def; tag = _tag; row = _row; col = _col;
 	}
 }
-
-//----------------------------------------------------------------------------------------------------------------------------------
-public class xyz {	float x,y,z;	// extends pVector; eliminate half of the functions
-			xyz() {x=y=z=0;}
-			xyz(Point p					  ) {x=p.x	; y=p.y; z=p.z;}
-			xyz(xyz p					  ) {set(p);				 }
-			xyz(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
-	void	set(Point p					  ) {x=p.x	; y=p.y; z=p.z;}
-	void	set(xyz p					  ) {x=p.x	; y=p.y ; z=p.z ;}
-	void	set(float _x,float _y,float _z) {x=_x	; y=_y	; z=_z	;}
-
-	void	zoomX	(float zx) 				{x = x*zx - mMax.x*(zx-1)/2;				}
-	void	zoomY	(float zy) 				{y = y*zy - mMax.y*(zy-1)/2;				}
-
-	float	distance(xyz b)					{return dist(x,y,z,b.x,b.y,b.z); 	 	}
-	float	distance(float _x, float _y)	{return dist(x,y,_x,_y); 	 			}
-	float	dot     (xyz b)					{return x*b.x + y*b.y + z*b.z; 		 	}
-	void	add		(xyz b)					{x += b.x; y += b.y; z += b.z;			}
-	void	add		(float b)				{x += b  ; y += b  ; z += b  ;			}
-	void	subtract(xyz b)					{x -= b.x; y -= b.y; z -= b.z;			}
-	void	scale	(float b)				{x *= b  ; y *= b  ; z *= b  ;			}
-
-	void	rotateZ	  (xyz o, float nSin, float nCos) {
-		float nX = nCos*(x-o.x) - nSin*(y-o.y) + o.x;
-		float nY = nSin*(x-o.x) + nCos*(y-o.y) + o.y;
-		x = nX; y = nY;
-	}
-
-	void	rotateX	  (xyz o, float nSin, float nCos) {
-		float nY = nCos*(y-o.y) - nSin*(z-o.z) + o.y;
-		float nZ = nSin*(y-o.y) + nCos*(z-o.z) + o.z;
-		y = nY; z = nZ;
-	}
-
-	void	rotateY	  (xyz o, float nSin, float nCos) {
-		float nZ = nCos*(z-o.z) - nSin*(x-o.x) + o.z;
-		float nX = nSin*(z-o.z) + nCos*(x-o.x) + o.x;
-		z = nZ; x = nX;
-	}
-
-	void	setRand	()						{ x = random(mMax.x); y = random(mMax.y); z = random(mMax.z); 	}
-	void	setNorm	() 						{ x /= mMax.x; y /= mMax.y; z /= mMax.z; 						}
-	void	interpolate(float i, xyz d)		{ x = interp(i,x,d.x); y = interp(i,y,d.y); z = interp(i,z,d.z); }
-}
 //----------------------------------------------------------------------------------------------------------------------------------
 public class DPat extends SCPattern
 {
 	ArrayList<Pick>   picks  = new ArrayList<Pick>  ();
 	ArrayList<DBool>  bools  = new ArrayList<DBool> ();
 
+	PVector		mMax, mCtr, mHalf;
+
 	MidiOutput  APCOut;
 	int			nMaxRow  	= 53;
-	float		LastQuant	= -1, LastJog = -1;
+	float		LastJog = -1;
 	float[]		xWaveNz, yWaveNz;
 	int 		nPoint	, nPoints;
-	xyz			xyzJog = new xyz(), vT1 = new xyz(), vT2 = new xyz();
-	xyz			modmin;
+	PVector		xyzJog = new PVector(), modmin;
 
 	float			NoiseMove	= random(10000);
 	BasicParameter	pSpark, pWave, pRotX, pRotY, pRotZ, pSpin, pTransX, pTransY;
 	DBool			pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pGrey;
 
-	float		lxh		() 							{ return lx.getBaseHuef(); 					}
-	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
-	float 		interpWv(float i, float[] vals) 	{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); }
+	float		lxh		() 									{ return lx.getBaseHuef(); 											}
+	int			c1c		 (float a) 							{ return round(100*constrain(a,0,1));								}
+	float 		interpWv(float i, float[] vals) 			{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); 		}
+	void 		setNorm (PVector vec)						{ vec.set(vec.x/mMax.x, vec.y/mMax.y, vec.z/mMax.z); 				}
+	void		setRand	(PVector vec)						{ vec.set(random(mMax.x), random(mMax.y), random(mMax.z)); 			}
+	void		setVec 	(PVector vec, Point p)				{ vec.set(p.x, p.y, p.z);  											}
+	void		interpolate(float i, PVector a, PVector b)	{ a.set(interp(i,a.x,b.x), interp(i,a.y,b.y), interp(i,a.z,b.z)); 	}
+	void  		StartRun(double deltaMs) 					{ }
+	float 		val		(BasicParameter p) 					{ return p.getValuef();												}
+	color		CalcPoint(PVector p) 						{ return lx.hsb(0,0,0); 											}
+	color		blend3(color c1, color c2, color c3)		{ return blendColor(c1,blendColor(c2,c3,ADD),ADD); 					}
 
-	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ vT1.set(v1); vT2.set(v2); vT1.subtract(c); vT2.subtract(c);
-														return degrees( acos ( vT1.dot(vT2) / (sqrt(vT1.dot(vT1)) * sqrt(vT2.dot(vT2)) ) ));	}
+	void	rotateZ (PVector p, PVector o, float nSin, float nCos) { p.set(    nCos*(p.x-o.x) - nSin*(p.y-o.y) + o.x    , nSin*(p.x-o.x) + nCos*(p.y-o.y) + o.y,p.z); }
+	void	rotateX (PVector p, PVector o, float nSin, float nCos) { p.set(p.x,nCos*(p.y-o.y) - nSin*(p.z-o.z) + o.y    , nSin*(p.y-o.y) + nCos*(p.z-o.z) + o.z    ); }
+	void	rotateY (PVector p, PVector o, float nSin, float nCos) { p.set(    nSin*(p.z-o.z) + nCos*(p.x-o.x) + o.x,p.y, nCos*(p.z-o.z) - nSin*(p.x-o.x) + o.z    ); }
 
-	void  		StartRun(double deltaMs) 			{ }
-	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); }
-	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD); }
-	float 		val		(BasicParameter p) 			{ return p.getValuef();	}
+	BasicParameter	addParam(String label, double value) { BasicParameter p = new BasicParameter(label, value); addParameter(p); return p; }
 
-	BasicParameter	addParam(String label, double value) { return new BasicParameter(label, value); }
+	PVector 	vT1 = new PVector(), vT2 = new PVector();
+	float 		calcCone (PVector v1, PVector v2, PVector c) 	{ 	// use vec.angleBetween() for this
+									vT1.set(v1); vT2.set(v2); vT1.sub(c); vT2.sub(c);
+									return degrees(PVector.angleBetween(vT1,vT2)); }
 
 	Pick 		addPick(String name, int def, int _max, String[] desc) {
 		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 
@@ -181,10 +145,10 @@ public class DPat extends SCPattern
 		pJog		=	new DBool("JOG"  , false, 48, 4);	bools.add(pJog	);
 		pGrey		=	new DBool("GREY" , false, 48, 5);	bools.add(pGrey );
 
-		modmin		=	new xyz(model.xMin, model.yMin, model.zMin);
-		mMax		= 	new xyz(model.xMax, model.yMax, model.zMax); mMax.subtract(modmin);
-		mCtr		= 	new xyz(mMax); mCtr.scale(.5);
-		mHalf		= 	new xyz(.5,.5,.5);
+		modmin		=	new PVector(model.xMin, model.yMin, model.zMin);
+		mMax		= 	new PVector(model.xMax, model.yMax, model.zMax); mMax.sub(modmin);
+		mCtr		= 	new PVector(); mCtr.set(mMax); mCtr.mult(.5);
+		mHalf		= 	new PVector(.5,.5,.5);
 		xWaveNz		=	new float[ceil(mMax.y)+1];
 		yWaveNz		=	new float[ceil(mMax.x)+1];
 
@@ -218,8 +182,8 @@ public class DPat extends SCPattern
 
 		NoiseMove   	+= deltaMs; NoiseMove = NoiseMove % 1e7;
 		StartRun		(deltaMs);
-		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
-		xyz pTrans 		= new xyz(val(pTransX)*200-100, val(pTransY)*100-50,0);
+		PVector P 		= new PVector(), tP = new PVector(), pSave = new PVector();
+		PVector pTrans 	= new PVector(val(pTransX)*200-100, val(pTransY)*100-50,0);
 		nPoint 	= 0;
 
 		if (pJog.b) {
@@ -239,9 +203,9 @@ public class DPat extends SCPattern
 		}
 
 		for (Point p : model.points) { nPoint++;
-			P.set(p);
-			P.subtract(modmin);
-			P.subtract(pTrans);
+			setVec(P,p);
+			P.sub(modmin);
+			P.sub(pTrans);
 			if (sprk  > 0) {P.y += sprk*randctr(50); P.x += sprk*randctr(50); P.z += sprk*randctr(50); }
 			if (wvAmp > 0) 	P.y += interpWv(p.x-modmin.x, yWaveNz);
 			if (wvAmp > 0) 	P.x += interpWv(p.y-modmin.y, xWaveNz);
@@ -311,7 +275,7 @@ class dLattice {
 	dVertex v0(Strip s) { return (dVertex)s.obj1; }
 	dVertex v1(Strip s) { return (dVertex)s.obj2; }
 
-	dPixel getClosest(xyz p) {
+	dPixel getClosest(PVector p) {
 		dVertex v = null; int pos=0; float d = 500;
 
 		for (Strip s : glucose.model.strips) {

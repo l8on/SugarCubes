@@ -142,7 +142,7 @@ final Sphery[] spherys;
    //   spheremode++;
    //     }
 
-  color CalcPoint(xyz Px) 
+  color CalcPoint(PVector Px) 
   { 
        // if (spheremode == 0 )
               //{

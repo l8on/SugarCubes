@@ -150,7 +150,6 @@ public class DPat extends SCPattern
 		int row = note.getPitch(), col = note.getChannel();
 		for (int i=0; i<picks.size(); i++) if (picks.get(i).set(row, col)) 	  		{ presetManager.dirty(this); return true; }
 		for (int i=0; i<bools.size(); i++) if (bools.get(i).set(row, col, true)) 	{ presetManager.dirty(this); return true; }
-		if (row == 84 && col==0) { onReset(); return true; }
 		println("row: " + row + "  col:   " + col); return false;
 	}
 

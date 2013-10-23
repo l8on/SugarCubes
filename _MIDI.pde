@@ -498,6 +498,10 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       effects.flash.trigger();
       return true;
       
+    case 84: // scene 3
+      getTargetPattern().reset();
+      return true;
+      
     case 90:
       // dan's dirty tapping mechanism
       lx.tempo.trigger();

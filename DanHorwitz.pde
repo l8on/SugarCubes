@@ -157,12 +157,13 @@ public class Play extends DPat
 									prvR 	= dstR; 	dstR 	= random(mCtr.y);									}
 	}
 
-	int		nBeats	=  	0;
 	BasicParameter 	pAmp, pRadius, pBounce;
+	Pick			pTimePattern, pTempoMult, pShape;
 
-	float 	t,amp,rad,bnc;
-	float	zTheta=0;
 	ArrayList<rWave> waves = new ArrayList<rWave>(10);
+
+	int		nBeats	=  	0;
+	float 	t,amp,rad,bnc,zTheta=0;
 
 	rAngle	a1 		= new rAngle(), a2 			= new rAngle(),
 			a3 		= new rAngle(), a4 			= new rAngle();
@@ -173,7 +174,6 @@ public class Play extends DPat
 			Pn		= new PVector();
 	float	LastBeat=3, LastMeasure=3;
 	int		curRandTempo = 1, curRandTPat = 1;
-	Pick	pTimePattern, pTempoMult, pShape;
 
 	Play(GLucose glucose) {
 		super(glucose);
@@ -206,6 +206,7 @@ public class Play extends DPat
 		}
 	}
 
+	void onReset()  { zTheta=0; super.onReset(); }
 	void onActive() { 
 		zTheta=0; 
 		while (lx.tempo.bpm() > 40) lx.tempo.setBpm(lx.tempo.bpm()/2);
@@ -354,15 +355,7 @@ public class Play extends DPat
 	}
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-// 0 - TLB, L (b), BLB, B (l)		// Fwd , Down, Back, Up
-// 4 - TLF, F (l), BLF, L (f)		// Fwd , Down, Back, Up
-// 8 - TRF, R (f), BRF, F (r)		// Back, Down, Fwd , Up
-// 12- TRB, B (r), BRB, R (b)		// Back, Down, Fwd , Up
-// 1->7, 15->9
-
-int randDir() { return round(random(1))*2-1; }
-//----------------------------------------------------------------------------------------------------------------------------------
-boolean dDebug = true;
+boolean dDebug = false;
 class dCursor {
 	dVertex vCur, vNext, vDest;
 	float 	destSpeed;

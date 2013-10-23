@@ -90,12 +90,11 @@ public class DPat extends SCPattern
 	void	rotateX (PVector p, PVector o, float nSin, float nCos) { p.set(p.x,nCos*(p.y-o.y) - nSin*(p.z-o.z) + o.y    , nSin*(p.y-o.y) + nCos*(p.z-o.z) + o.z    ); }
 	void	rotateY (PVector p, PVector o, float nSin, float nCos) { p.set(    nSin*(p.z-o.z) + nCos*(p.x-o.x) + o.x,p.y, nCos*(p.z-o.z) - nSin*(p.x-o.x) + o.z    ); }
 
-	BasicParameter	addParam(String label, double value) { BasicParameter p = new BasicParameter(label, value); addParameter(p); return p; }
+	BasicParameter	addParam(String label, double value) 	{ BasicParameter p = new BasicParameter(label, value); addParameter(p); return p; }
 
 	PVector 	vT1 = new PVector(), vT2 = new PVector();
-	float 		calcCone (PVector v1, PVector v2, PVector c) 	{ 	// use vec.angleBetween() for this
-									vT1.set(v1); vT2.set(v2); vT1.sub(c); vT2.sub(c);
-									return degrees(PVector.angleBetween(vT1,vT2)); }
+	float 		calcCone (PVector v1, PVector v2, PVector c) 	{	vT1.set(v1); vT2.set(v2); vT1.sub(c); vT2.sub(c);
+																	return degrees(PVector.angleBetween(vT1,vT2)); }
 
 	Pick 		addPick(String name, int def, int _max, String[] desc) {
 		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 

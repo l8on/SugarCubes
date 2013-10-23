@@ -6,8 +6,9 @@ boolean btwn  	(int 		a,int 	 b,int 		c)		{ return a >= b && a <= c; 	}
 boolean btwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
 float	interp 	(float a, float b, float c) { return (1-a)*b + a*c; }
 float	randctr	(float a) { return random(a) - a*.5; }
-float	min		(float a, float b, float c, float d) { return min(min(a,b),min(c,d)); }
-float   pointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); }
+float	min		(float a, float b, float c, float d) { return min(min(a,b),min(c,d)); 	}
+float   pointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); 	}
+float   xyDist   (Point p1, Point p2) { return dist(p1.x,p1.y,p2.x,p2.y); 				}
 float 	distToSeg(float x, float y, float x1, float y1, float x2, float y2) {
 	float A 			= x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
 	float dot 			= A * C + B * D, len_sq	= C * C + D * D;
@@ -57,12 +58,6 @@ public class DBool {
 	}
 }
 
-public class DParam extends BasicParameter {
-	double  dflt;
-	DParam	(String label, double value) 		{ super(label,value); dflt=value;		}
-	void 	set			(double value) 			{ super.setValue(value);				}
-	float 	Val			() 						{ return getValuef();					}
-}
 //----------------------------------------------------------------------------------------------------------------------------------
 public class xyz {	float x,y,z;	// extends pVector; eliminate half of the functions
 			xyz() {x=y=z=0;}
@@ -111,7 +106,6 @@ public class DPat extends SCPattern
 {
 	ArrayList<Pick>   picks  = new ArrayList<Pick>  ();
 	ArrayList<DBool>  bools  = new ArrayList<DBool> ();
-	ArrayList<DParam> params = new ArrayList<DParam>();
 
 	MidiOutput  APCOut;
 	int			nMaxRow  	= 53;
@@ -121,9 +115,9 @@ public class DPat extends SCPattern
 	xyz			xyzJog = new xyz(), vT1 = new xyz(), vT2 = new xyz();
 	xyz			modmin;
 
-	float		NoiseMove	= random(10000);
-	DParam		pSpark, pWave, pRotX, pRotY, pRotZ, pSpin, pTransX, pTransY;
-	DBool		pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pGrey;
+	float			NoiseMove	= random(10000);
+	BasicParameter	pSpark, pWave, pRotX, pRotY, pRotZ, pSpin, pTransX, pTransY;
+	DBool			pXsym, pYsym, pRsym, pXdup, pXtrip, pJog, pGrey;
 
 	float		lxh		() 							{ return lx.getBaseHuef(); 					}
 	int			c1c		 (float a) 					{ return round(100*constrain(a,0,1));		}
@@ -132,15 +126,12 @@ public class DPat extends SCPattern
 	float 		CalcCone (xyz v1, xyz v2, xyz c) 	{ vT1.set(v1); vT2.set(v2); vT1.subtract(c); vT2.subtract(c);
 														return degrees( acos ( vT1.dot(vT2) / (sqrt(vT1.dot(vT1)) * sqrt(vT2.dot(vT2)) ) ));	}
 
-	void  		StartRun(double deltaMs) 			{								}
-	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); 		}
-	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD);						}
+	void  		StartRun(double deltaMs) 			{ }
+	color		CalcPoint(xyz p) 					{ return lx.hsb(0,0,0); }
+	color		blend3(color c1, color c2, color c3){ return blendColor(c1,blendColor(c2,c3,ADD),ADD); }
+	float 		val		(BasicParameter p) 			{ return p.getValuef();	}
 
-	DParam		addParam(String label, double value) {
-		DParam P = new DParam(label, value);
-		super.addParameter(P);
-		params.add(P); return P;
-	}
+	BasicParameter	addParam(String label, double value) { return new BasicParameter(label, value); }
 
 	Pick 		addPick(String name, int def, int _max, String[] desc) {
 		Pick P 		= new Pick(name, def, _max+1, nMaxRow, desc); 
@@ -165,7 +156,6 @@ public class DPat extends SCPattern
 
 	void 		onInactive() 			{ uiDebugText.setText(""); }
 	void 		onReset() 				{
-		for (int i=0; i<params.size(); i++) params.get(i).reset();
 		for (int i=0; i<bools .size(); i++) bools.get(i).reset();
 		for (int i=0; i<picks .size(); i++) picks.get(i).reset();
 		presetManager.dirty(this); 
@@ -230,7 +220,7 @@ public class DPat extends SCPattern
 		NoiseMove   	+= deltaMs; NoiseMove = NoiseMove % 1e7;
 		StartRun		(deltaMs);
 		xyz P 			= new xyz(), tP = new xyz(), pSave = new xyz();
-		xyz pTrans 		= new xyz(pTransX.Val()*200-100, pTransY.Val()*100-50,0);
+		xyz pTrans 		= new xyz(val(pTransX)*200-100, val(pTransY)*100-50,0);
 		nPoint 	= 0;
 
 		if (pJog.b) {
@@ -240,7 +230,7 @@ public class DPat extends SCPattern
 		}
 
 		// precalculate this stuff
-		float wvAmp = pWave.Val(), sprk = pSpark.Val();
+		float wvAmp = val(pWave), sprk = val(pSpark);
 		if (wvAmp > 0) {
 			for (int i=0; i<ceil(mMax.x)+1; i++)
 				yWaveNz[i] = wvAmp * (noise(i/(mMax.x*.3)-(2e3+NoiseMove)/1500.) - .5) * (mMax.y/2.);
@@ -278,10 +268,10 @@ class dTurn {
 }
 
 class dVertex {
-	dVertex c0, c1, 		// connections on the cube
-			opp, same;		// opp - same strip, opp direction
-							// same - same strut, diff strip, dir
-	dTurn 	t0, t1;
+	dVertex c0, c1, c2, c3, 	// connections on the cube
+			opp, same;			// opp - same strip, opp direction
+								// same - same strut, diff strip, dir
+	dTurn 	t0, t1, t2, t3;
 	Strip   s;
 	int 	dir, ci;		// dir -- 1 or -1.
 							// ci  -- color index
@@ -293,18 +283,30 @@ class dVertex {
 //----------------------------------------------------------------------------------------------------------------------------------
 class dPixel   { dVertex v; int pos; dPixel(dVertex _v, int _pos) { v=_v; pos=_pos; } }
 class dLattice {
-	void	addTurn(dVertex v0, int pos0, dVertex v1, int pos1) {	dTurn t = new dTurn(pos0, v1, pos1); if (v0.t0 == null) v0.t0=t; else v0.t1=t; }
+	void	addTurn  (dVertex v0, int pos0, dVertex v1, int pos1) {	dTurn t = new dTurn(pos0, v1, pos1); 
+																	if (v0.t0 == null) { v0.t0=t; return; }
+																	if (v0.t1 == null) { v0.t1=t; return; }
+																	if (v0.t2 == null) { v0.t2=t; return; }
+																	if (v0.t3 == null) { v0.t3=t; return; }
+																}
 	float   dist2	 (Strip s1, int pos1, Strip s2, int pos2) 	{ 	return pointDist(s1.points.get(pos1), s2.points.get(pos2)); }
 	float   pd2 	 (Point p1, float x, float y, float z) 		{ 	return dist(p1.x,p1.y,p1.z,x,y,z); }
 	boolean sameSame (Strip s1, Strip s2) 						{	return max(dist2(s1, 0, s2, 0), dist2(s1,15, s2,15)) < 5 ;	}	// same strut, same direction
 	boolean sameOpp  (Strip s1, Strip s2) 						{	return max(dist2(s1, 0, s2,15), dist2(s1,15, s2,0 )) < 5 ;	}	// same strut, opp direction
 	boolean sameBar  (Strip s1, Strip s2) 						{	return sameSame(s1,s2) || sameOpp(s1,s2);					}	// 2 strips on same strut
+
+
 	void 	addJoint (dVertex v1, dVertex v2) {
 		// should probably replace parallel but further with the new one
 		if (v1.c0 != null && sameBar(v2.s, v1.c0.s)) return;
 		if (v1.c1 != null && sameBar(v2.s, v1.c1.s)) return;
+		if (v1.c2 != null && sameBar(v2.s, v1.c2.s)) return;
+		if (v1.c3 != null && sameBar(v2.s, v1.c3.s)) return;
+
 		if 		(v1.c0 == null) v1.c0 = v2; 
 		else if (v1.c1 == null) v1.c1 = v2; 
+		else if (v1.c2 == null) v1.c2 = v2; 
+		else if (v1.c3 == null) v1.c3 = v2;
 	}
 
 	dVertex v0(Strip s) { return (dVertex)s.obj1; }
@@ -358,7 +360,6 @@ class dLattice {
 			if (d>5) continue;
 			addTurn(v0(s1), pos1, v0(s2), pos2); addTurn(v1(s1), 15-pos1, v0(s2), pos2); 
 			addTurn(v0(s2), pos2, v0(s1), pos1); addTurn(v1(s2), 15-pos2, v0(s1), pos1);
-
 		}}
 	}
 }

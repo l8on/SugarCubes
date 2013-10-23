@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------------------------------------------------------------
 public class Pong extends DPat {
 	SinLFO x,y,z,dx,dy,dz;
-	float cRad;	DParam pSize;
+	float cRad;	BasicParameter pSize;
 	Pick 	pChoose;
 	xyz 	v = new xyz(), vMir =  new xyz();
 
@@ -18,7 +18,7 @@ public class Pong extends DPat {
 	    pChoose = addPick	("Animiation"	, 0, 2, new String[] {"Pong", "Ball", "Cone"}	);
 	}
 
-	void  	StartRun(double deltaMs) 	{ cRad = mMax.x*pSize.Val()/6; }
+	void  	StartRun(double deltaMs) 	{ cRad = mMax.x*val(pSize)/6; }
 	color	CalcPoint(xyz p) 	  	{
 		v.set(x.getValuef(), y.getValuef(), z.getValuef());
 		v.z=0;p.z=0;// ignore z dimension
@@ -27,7 +27,7 @@ public class Pong extends DPat {
 				return lx.hsb(lxh(),100,c1c(1 - min(v.distance(p), v.distance(vMir))*.5/cRad));		// balls
 		case 1: return lx.hsb(lxh(),100,c1c(1 - v.distance(p)*.5/cRad));							// ball
 		case 2: vMir.set(mMax.x/2,0,mMax.z/2);
-				return lx.hsb(lxh(),100,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-pSize.Val())));  	// spot
+				return lx.hsb(lxh(),100,c1c(1 - CalcCone(p,v,vMir) * max(.02,.45-val(pSize))));  	// spot
 		}
 		return lx.hsb(0,0,0);
 	}
@@ -49,13 +49,13 @@ public class NDat {
 
 public class Noise extends DPat
 {
-	int			CurAnim, iSymm;
-	int 		XSym=1,YSym=2,RadSym=3;
-	float 		zTime , zTheta=0, zSin, zCos, rtime, ttime;
-	DParam 		pSpeed , pDensity, pSharp;
-	Pick 		pChoose, pSymm;
-	int			_ND = 4;
-	NDat		N[] = new NDat[_ND];
+	int				CurAnim, iSymm;
+	int 			XSym=1,YSym=2,RadSym=3;
+	float 			zTime , zTheta=0, zSin, zCos, rtime, ttime;
+	BasicParameter	pSpeed , pDensity, pSharp;
+	Pick 			pChoose, pSymm;
+	int				_ND = 4;
+	NDat			N[] = new NDat[_ND];
 
 	Noise(GLucose glucose) {
 		super(glucose);
@@ -70,8 +70,8 @@ public class Noise extends DPat
 	void onActive() { zTime = random(500); zTheta=0; rtime = 0; ttime = 0; }
 
 	void StartRun(double deltaMs) {
-		zTime 	+= deltaMs*(pSpeed.Val()-.5)*.002	;
-		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01	;
+		zTime 	+= deltaMs*(val(pSpeed)-.5)*.002	;
+		zTheta	+= deltaMs*(val(pSpin )-.5)*.01	;
 		rtime	+= deltaMs;
 		iSymm	 = pSymm.Cur();
 		zSin	= sin(zTheta);
@@ -85,19 +85,19 @@ public class Noise extends DPat
 			
 			switch(CurAnim) {
 			//                          hue xz yz zz den mph angle
-			case 0: N[0].set(0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.set(1 ); break; 	// drip
-			case 1: N[0].set(0  ,100,100,200,45 ,3  ,180); pSharp.set(0 ); break;	// clouds
-			case 2: N[0].set(0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.set(.5); break;	// rain
+			case 0: N[0].set(0  ,75 ,75 ,150,45 ,3  ,0  ); pSharp.setValue(1 ); break; 	// drip
+			case 1: N[0].set(0  ,100,100,200,45 ,3  ,180); pSharp.setValue(0 ); break;	// clouds
+			case 2: N[0].set(0  ,2  ,400,2  ,20 ,3  ,0  ); pSharp.setValue(.5); break;	// rain
 			case 3: N[0].set(40 ,100,100,200,10 ,1  ,180); 
-					N[1].set(0  ,100,100,200,10 ,5  ,180); pSharp.set(0 ); break;	// fire 1
+					N[1].set(0  ,100,100,200,10 ,5  ,180); pSharp.setValue(0 ); break;	// fire 1
 			case 4: N[0].set(0  ,40 ,40 ,40 ,15 ,2.5,180);
 					N[1].set(20 ,40 ,40 ,40 ,15 ,4  ,0  );
 					N[2].set(40 ,40 ,40 ,40 ,15 ,2  ,90 );
-					N[3].set(60 ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.set(.5); break; // machine
+					N[3].set(60 ,40 ,40 ,40 ,15 ,3  ,-90); pSharp.setValue(.5); break; // machine
 			case 5: N[0].set(0  ,400,100,2  ,15 ,3  ,90 );
 					N[1].set(20 ,400,100,2  ,15 ,2.5,0  );
 					N[2].set(40 ,100,100,2  ,15 ,2  ,180);
-					N[3].set(60 ,100,100,2  ,15 ,1.5,270); pSharp.set(.5); break; // spark
+					N[3].set(60 ,100,100,2  ,15 ,1.5,270); pSharp.setValue(.5); break; // spark
 			}
 		}
 		
@@ -114,8 +114,8 @@ public class Noise extends DPat
 		if (CurAnim == 6 || CurAnim == 7) {
 			P.setNorm();
 			return lx.hsb(lxh(),100, 100 * (
-							constrain(1-50*(1-pDensity.Val())*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
-			(CurAnim == 7 ? constrain(1-50*(1-pDensity.Val())*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
+							constrain(1-50*(1-val(pDensity))*abs(P.y-sin(zTime*10  + P.x*(300))*.5 - .5),0,1) + 
+			(CurAnim == 7 ? constrain(1-50*(1-val(pDensity))*abs(P.x-sin(zTime*10  + P.y*(300))*.5 - .5),0,1) : 0))
 			);
 		}			
 
@@ -131,7 +131,7 @@ public class Noise extends DPat
 										 : noise(P.x/n.xz+zx+n.xoff,P.y/n.yz+zy+n.yoff,P.z/n.zz+n.zoff))
 							*1.8;
 
-			b += 	n.den/100 -.4 + pDensity.Val() -1;
+			b += 	n.den/100 -.4 + val(pDensity) -1;
 			c = 	blendColor(c,lx.hsb(lxh()+n.hue,100,c1c(b)),ADD);
 		}
 		return c;
@@ -158,7 +158,7 @@ public class Play extends DPat
 	}
 
 	int		nBeats	=  	0;
-	DParam 	pAmp, pRadius, pBounce;
+	BasicParameter 	pAmp, pRadius, pBounce;
 
 	float 	t,amp,rad,bnc;
 	float	zTheta=0;
@@ -222,12 +222,12 @@ public class Play extends DPat
 
 	void StartRun(double deltaMs) {
 		t 	= lx.tempo.rampf();
-		amp = pAmp.Val();
-		rad	= pRadius.getValuef();
-		bnc	= pBounce.getValuef();		
-		zTheta	+= deltaMs*(pSpin .Val()-.5)*.01;
+		amp = pAmp		.getValuef();
+		rad	= pRadius	.getValuef();
+		bnc	= pBounce	.getValuef();		
+		zTheta	+= deltaMs*(val(pSpin)-.5)*.01;
 
-		Theta	.set(pRotX.Val()*PI*2, pRotY.Val()*PI*2, pRotZ.Val()*PI*2 + zTheta);
+		Theta	.set(val(pRotX)*PI*2, val(pRotY)*PI*2, val(pRotZ)*PI*2 + zTheta);
 		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
 		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
 
@@ -375,8 +375,8 @@ class dCursor {
 
 	boolean isDone	() 									{ return pos==posStop; 										 }
 	boolean atDest  ()									{ return vCur.s==vDest.s || 
-																 pointDist(vCur.getPoint(0), vDest.getPoint(0)) < 12 || 
-																 pointDist(vCur.getPoint(0), vDest.getPoint(15))< 12;}
+																 xyDist(vCur.getPoint(0), vDest.getPoint(0)) < 12 || 
+																 xyDist(vCur.getPoint(0), vDest.getPoint(15))< 12;}
 	void 	setCur 	(dVertex _v, int _p) 				{ p2=null; vCur=_v; pos=_p; pickNext(); 					 }
 	void 	setCur	(dPixel  _p) 						{ setCur(_p.v, _p.pos); 									 }
 	void	setNext (dVertex _v, int _p, int _s)		{ vNext = _v; posNext = _p<<12; posStop = _s<<12;		 	 }
@@ -392,7 +392,7 @@ class dCursor {
 		if (bRandEval) {
 			if (random(nTurns) < 1) setNext(v,p,s); return; }
 		else {
-			float d = pointDist(v.getPoint(15), vDest.getPoint(0));
+			float d = xyDist(v.getPoint(15), vDest.getPoint(0));
 			if (d <  minDist)					{ minDist=d; setNext(v,p,s); }
 			if (d == minDist && random(2)<1)  	{ minDist=d; setNext(v,p,s); }
 		}
@@ -407,7 +407,9 @@ class dCursor {
 	void 	pickNext() 	{
 		bRandEval = random(.05+destSpeed) < .05; minDist=500; nTurns=0;
 		evaluate(vCur.c0, 0, 16);  	evaluate(vCur.c1, 0, 16);
+		evaluate(vCur.c2, 0, 16);  	evaluate(vCur.c3, 0, 16);
 		evalTurn(vCur.t0);			evalTurn(vCur.t1);
+		evalTurn(vCur.t2);			evalTurn(vCur.t3);
 	}
 
 	Point 	p1, p2; int i2;

@@ -173,13 +173,15 @@ class Pulley extends SCPattern {
     }
 
     // A little silliness to test the grid API    
-    for (int i = 0; i < 7; ++i) {
-      for (int j = 0; j < 8; ++j) {
-        int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
-        float b = 1 - 4.*abs((6-i)/7. - gravity[gi].getValuef() / model.yMax);
-        midiEngine.grid.setState(i, j, (b < 0) ? 0 : 1);
-      }
-    }
+    // if (midiEngine != null && midiEngine.getFocusedPattern() == this) {
+	   //  for (int i = 0; i < 5; ++i) {
+    //     for (int j = 0; j < 8; ++j) {
+    //       int gi = (int) constrain(j * NUM_DIVISIONS / 8, 0, NUM_DIVISIONS-1);
+    //       float b = 1 - 4.*abs((6-i)/6. - gravity[gi].getValuef() / model.yMax);
+    //       midiEngine.grid.setState(i, j, (b < 0) ? 0 : 3);
+    //     }
+    //   }
+    // }
     
     float fPos = 1 - lx.tempo.rampf();
     if (fPos < .2) {
@@ -1195,34 +1197,94 @@ class Traktor extends SCPattern {
 
 class ColorFuckerEffect extends SCEffect {
   
-  BasicParameter hueShift = new BasicParameter("HSHFT", 0);
-  BasicParameter sat = new BasicParameter("SAT", 1);  
-  BasicParameter bright = new BasicParameter("BRT", 1);
+  final BasicParameter level = new BasicParameter("BRT", 1);
+  final BasicParameter desat = new BasicParameter("DSAT", 0);
+  final BasicParameter sharp = new BasicParameter("SHARP", 0);
+  final BasicParameter soft = new BasicParameter("SOFT", 0);
+  final BasicParameter mono = new BasicParameter("MONO", 0);
+  final BasicParameter invert = new BasicParameter("INVERT", 0);
+  final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
+  
   float[] hsb = new float[3];
   
   ColorFuckerEffect(GLucose glucose) {
     super(glucose);
+    addParameter(level);
+    addParameter(desat);
+    addParameter(sharp);
+    addParameter(soft);
+    addParameter(mono);
+    addParameter(invert);
     addParameter(hueShift);
-    addParameter(bright);
-    addParameter(sat);    
   }
   
   public void doApply(int[] colors) {
     if (!enabled) {
       return;
     }
-    float bMod = bright.getValuef();
-    float sMod = sat.getValuef();
+    float bMod = level.getValuef();
+    float sMod = 1 - desat.getValuef();
     float hMod = hueShift.getValuef();
-    if (bMod < 1 || sMod < 1 || hMod > 0) {    
+    float fSharp = 1/(1.0001-sharp.getValuef());
+    float fSoft = soft.getValuef();
+    boolean mon = mono.getValuef() > 0.5;
+    boolean ivt = invert.getValuef() > 0.5;
+    if (bMod < 1 || sMod < 1 || hMod > 0 || fSharp > 0 || ivt || mon || fSoft > 0) {
       for (int i = 0; i < colors.length; ++i) {
         lx.RGBtoHSB(colors[i], hsb);
+        if (mon) {
+          hsb[0] = lx.getBaseHuef() / 360.;
+        }
+        if (ivt) {
+          hsb[2] = 1 - hsb[2];
+        }
+        if (fSharp > 0) {
+          hsb[2] = hsb[2] < .5 ? pow(hsb[2],fSharp) : 1-pow(1-hsb[2],fSharp);
+        }
+        if (fSoft > 0) {
+          if (hsb[2] > 0.5) {
+            hsb[2] = lerp(hsb[2], 0.5 + 2 * (hsb[2]-0.5)*(hsb[2]-0.5), fSoft);
+          } else {
+            hsb[2] = lerp(hsb[2], 0.5 * sqrt(2*hsb[2]), fSoft);
+          }
+        }
         colors[i] = lx.hsb(
-          (360. * hsb[0] + hueShift.getValuef()*360.) % 360,
-          100. * hsb[1] * sat.getValuef(),
-          100. * hsb[2] * bright.getValuef()
+          (360. * hsb[0] + hMod*360.) % 360,
+          100. * hsb[1] * sMod,
+          100. * hsb[2] * bMod
         );
       }
+    }
+  }
+}
+
+class QuantizeEffect extends SCEffect {
+  
+  color[] quantizedFrame;
+  float lastQuant;
+  final BasicParameter amount = new BasicParameter("AMT", 0);
+  
+  QuantizeEffect(GLucose glucose) {
+    super(glucose);
+    quantizedFrame = new color[glucose.lx.total];
+    lastQuant = 0;
+  } 
+  
+  public void doApply(int[] colors) {
+    float fQuant = amount.getValuef();
+    if (fQuant > 0) {
+      float tRamp = (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
+      float f = lastQuant;
+      lastQuant = tRamp;
+      if (tRamp > f) {
+        for (int i = 0; i < colors.length; ++i) {
+          colors[i] = quantizedFrame[i];
+        }
+        return;
+      }
+    }
+    for (int i = 0; i < colors.length; ++i) {
+      quantizedFrame[i] = colors[i];
     }
   }
 }

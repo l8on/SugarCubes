@@ -88,66 +88,66 @@ public Model buildModel() {
 	// 			 dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR));	
 	// }
 
-scubes.add(new StaggeredTower(
-      14,               // x
+scubes.add(new StaggeredTower(//tower 1
+      17.5,               // x
        0   ,   // y
-       60  ,   // z
-     225,  5)  );  
-scubes.add(new StaggeredTower(
-      19,               // x
+       62.5  ,   // z
+     225,  5, new Cube.Wiring[]{ WFL, WRR, WFL, WRR, WFL}));  
+scubes.add(new StaggeredTower(// tower 2
+      22,               // x
        15   ,   // y
-       87   ,   // z
-     225,  5)  );  
-scubes.add(new StaggeredTower(
-      47,               // x
+       89.5   ,   // z
+     225,  5, new Cube.Wiring[]{ WFL, WRR, WFL, WRR, WFL})  );  
+scubes.add(new StaggeredTower(//tower 3
+      51,               // x
        0   ,   // y
-       76  ,   // z
-     225,  5)  );  
-scubes.add(new StaggeredTower(
-    75,               // x
+       79.5  ,   // z
+     225,  5, new Cube.Wiring[]{ WFL, WRR, WFL, WRR, WFL})  );  
+scubes.add(new StaggeredTower(//tower 4
+    79.5,               // x
        14,   // y
-       69   ,   // z
-     225,  5)  );  
+       71   ,   // z
+     225,  5, new Cube.Wiring[]{ WFL, WRR, WFL, WRR, WFL})  );  
 
-scubes.add(new StaggeredTower(
-      86,               // x
+scubes.add(new StaggeredTower(//tower 5
+      90.5,               // x
        0   ,   // y
-       93   ,   // z
-     225,  6)  );
+       95  ,   // z
+     225,  6, new Cube.Wiring[]{ WFL, WFL, WFL, WRR, WFL, WRR})  );
  
-scubes.add(new StaggeredTower(
-      115,               // x
+scubes.add(new StaggeredTower(//tower 6
+      120,               // x
        14  ,   // y
-       83,   // z
-     225, 5)  );  
-scubes.add(new StaggeredTower(
-      141,               // x
+       85,   // z
+     225, 5, new Cube.Wiring[]{ WFL, WRR, WFL, WRR, WFL})  );  
+scubes.add(new StaggeredTower(// tower 7
+      146,               // x
        0   ,   // y
-      93  ,   // z
-     225,  6)  ); 
+      95 ,   // z
+     225,  6, new Cube.Wiring[]{ WFL, WFL, WRR, WFL, WRR, WFL})  ); 
      
-scubes.add(new StaggeredTower(
-      157,               // x
+scubes.add(new StaggeredTower(//tower 8
+      156,               // x
        14   ,   // y
-       63   ,   // z
-     225,  5)  );  
+       70   ,   // z
+     225,  5, new Cube.Wiring[]{ WRR, WFL, WRR, WFR, WRL})  );  
   
-scubes.add(new StaggeredTower(
+scubes.add(new StaggeredTower(//tower 9
       183,               // x
        0   ,   // y
-       75   ,   // z
-     225,  5)  );  
-//mapped to here
-scubes.add(new StaggeredTower(
+       76.5   ,   // z
+     225,  5, new Cube.Wiring[]{ WRR, WFL, WRR, WFL, WFR})  );  
+//mapped to here(i dont think this comment is true- keegan)
+scubes.add(new StaggeredTower(//tower 10
       212,               // x
        14   ,   // y
-       83  ,   // z
-     225,  5)  );  
-scubes.add(new StaggeredTower(
-      218,               // x
+       83.75  ,   // z
+     225,  5, new Cube.Wiring[]{ WRR, WFL, WRR, WFL, WRR})  );  
+scubes.add(new StaggeredTower(// tower 11
+      216.5,               // x
        0   ,   // y
-       56  ,   // z
-     225,  5)  );  
+       57.5  ,   // z
+     225,  5, new Cube.Wiring[]{ WFR, WFL, WRR, WFL, WRR})  );  
 
 
 
@@ -182,8 +182,10 @@ scubes.add(new StaggeredTower(
   for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
 for (StaggeredTower st : scubes) {
     tower = new ArrayList<Cube>();
-    for (int i=0; i < st.n; i++)
-      tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, WRR));
+    for (int i=0; i < st.n; i++) {
+      Cube.Wiring w = (i < st.wiring.length) ? st.wiring[i] : WRR;
+      tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, w));
+    }
     towerList.add(new Tower(tower));
   }
 
@@ -236,12 +238,12 @@ public PandaMapping[] buildPandaList() {
    }),    
     new PandaMapping(
       "10.200.1.31", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 49, 50, 51, 52}),                // 31 J3
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 54, 55, 56, 57}),                // 31 J3
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 31 J4
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 54, 55, 56, 57}),                // 31 J7
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 49, 50, 51, 52}),                // 31 J7
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 23, 24, 25, 26}),  // 31 J8
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 34, 35, 36, 37}),                // 31 J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 53, 48, 43, 38}),  // 31 J14
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 48, 53, 43, 38}),  // 31 J14
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 6, 11, 16}),  // 31 J15
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 32, 33, 21, 22}),                // 31 J16
     }),
@@ -282,7 +284,9 @@ class CubeMapping {
 class StaggeredTower {
   public final float x, y, z, r;
   public final int n;
-  StaggeredTower(float _x, float _y, float _z, float _r, int _n) { x=_x; y=_y; z=_z; r=_r; n=_n;}
+  public final Cube.Wiring[] wiring;
+  StaggeredTower(float _x, float _y, float _z, float _r, int _n) { this(_x, _y, _z, _r, _n, new Cube.Wiring[]{}); }
+  StaggeredTower(float _x, float _y, float _z, float _r, int _n, Cube.Wiring[] _wiring) { x=_x; y=_y; z=_z; r=_r; n=_n; wiring=_wiring;}
 }
 
 /**

@@ -1,0 +1,8 @@
+SugarCubes$Swarm	
+SugarCubes$Play	X-DUP	0.0	Rad	0.1	GREY	0.0	TrnX	0.5	Spin	0.5	TrnY	0.5	Amp	0.72440946	Sprk	0.0	TPat	54.07	R-SYM	0.0	Shape	56.05	JOG	0.0	Y-SYM	1.0	X-SYM	0.0	Wave	0.0	TMult	53.01	Bnc	0.2	RotX	0.5	RotY	0.5	RotZ	0.48031497	
+SugarCubes$Play	X-DUP	0.0	Rad	0.1	GREY	0.0	TrnX	0.5	TrnY	0.5	Spin	0.5	Sprk	0.0	Amp	0.2	TPat	54.01	R-SYM	0.0	Shape	55.04	JOG	0.0	Y-SYM	1.0	X-SYM	1.0	Wave	0.0	TMult	53.04	Bnc	0.2	RotX	0.5	RotY	0.5	RotZ	0.5	
+SugarCubes$SpaceTime	RATE	0.5	SIZE	0.5	
+SugarCubes$SoundRain	GAIN	0.13999997	
+SugarCubes$Traktor	LVL	0.7322835	RNGE	0.062992126	REL	0.4	SLOP	0.6	SPD	0.9133858	ATK	0.5	
+SugarCubes$ViolinWave	PDENS	0.25	PSPD	0.5	LVL	0.51968503	PSIZE	0.5	WAVE	0.5	RLS	0.5	EDG	0.53543305	SPD	0.5	AMP	0.25	RNG	0.5	
+SugarCubes$BassPod	LVL	0.39370078	REL	0.36220473	RNGE	0.5	SLOP	0.6	ATK	0.5	

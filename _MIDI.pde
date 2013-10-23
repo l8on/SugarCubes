@@ -45,9 +45,21 @@ class MidiEngine {
     grid = new GridController(this);
     midiControllers.add(midiQwertyKeys = new VirtualKeyMidiInput(this, VirtualKeyMidiInput.KEYS));
     midiControllers.add(midiQwertyAPC = new VirtualKeyMidiInput(this, VirtualKeyMidiInput.APC));
+    int apcCount = 0;
     for (MidiInputDevice device : RWMidi.getInputDevices()) {
       if (device.getName().contains("APC")) {
-        midiControllers.add(new APC40MidiInput(this, device).setEnabled(true));
+        ++apcCount;
+      }
+    }    
+    
+    int apcIndex = 0;
+    for (MidiInputDevice device : RWMidi.getInputDevices()) {
+      if (device.getName().contains("APC")) {
+        int apcDeck = -1;
+        if (apcCount > 1 && apcIndex < 2) {
+          apcDeck = apcIndex++;
+        }
+        midiControllers.add(new APC40MidiInput(this, device, apcDeck).setEnabled(true));
       } else if (device.getName().contains("SLIDER/KNOB KORG")) {
         midiControllers.add(new KorgNanoKontrolMidiInput(this, device).setEnabled(true));
       } else {
@@ -55,9 +67,15 @@ class MidiEngine {
         midiControllers.add(new GenericDeviceMidiInput(this, device).setEnabled(enabled));
       }
     }
+    
+    apcIndex = 0;
     for (MidiOutputDevice device : RWMidi.getOutputDevices()) {
       if (device.getName().contains("APC")) {
-        new APC40MidiOutput(this, device);
+        int apcDeck = -1;
+        if (apcCount > 1 && apcIndex < 2) {
+          apcDeck = apcIndex++;
+        }
+        new APC40MidiOutput(this, device, apcDeck);
       }
     }
   }
@@ -146,6 +164,10 @@ public abstract class SCMidiInput extends AbstractScrollItem {
   private boolean logMidi() {
     return (uiMidi != null) && uiMidi.logMidi();
   }
+  
+  protected SCPattern getTargetPattern() {
+    return midiEngine.getFocusedPattern();
+  }
 
   final void programChangeReceived(ProgramChange pc) {
     if (!enabled) {
@@ -165,7 +187,7 @@ public abstract class SCMidiInput extends AbstractScrollItem {
       println(getLabel() + " :: Controller :: " + cc.getChannel() + " :: " + cc.getCC() + ":" + cc.getValue());
     }
     if (!handleGridControllerChange(cc)) {
-      if (!midiEngine.getFocusedPattern().controllerChange(cc)) {
+      if (!getTargetPattern().controllerChange(cc)) {
         handleControllerChange(cc);
       }
     }
@@ -179,7 +201,7 @@ public abstract class SCMidiInput extends AbstractScrollItem {
       println(getLabel() + " :: Note On  :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
     if (!handleGridNoteOn(note)) {
-      if (!midiEngine.getFocusedPattern().noteOn(note)) {
+      if (!getTargetPattern().noteOn(note)) {
         handleNoteOn(note);
       }
     }
@@ -193,7 +215,7 @@ public abstract class SCMidiInput extends AbstractScrollItem {
       println(getLabel() + " :: Note Off :: " + note.getChannel() + ":" + note.getPitch() + ":" + note.getVelocity());
     }
     if (!handleGridNoteOff(note)) {
-      if (!midiEngine.getFocusedPattern().noteOff(note)) {
+      if (!getTargetPattern().noteOff(note)) {
         handleNoteOff(note);
       }
     }
@@ -330,9 +352,29 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
 
   private boolean shiftOn = false;
   private LXEffect releaseEffect = null;
+  final private Engine.Deck targetDeck;
   
   APC40MidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    this(midiEngine, d, -1);
+  }
+  
+  APC40MidiInput(MidiEngine midiEngine, MidiInputDevice d, int deckIndex) {
     super(midiEngine, d);
+    targetDeck = (deckIndex < 0) ? null : lx.engine.getDecks().get(deckIndex);
+  }
+  
+  protected Engine.Deck getTargetDeck() {
+    if (targetDeck != null) {
+      return targetDeck;
+    }
+    return midiEngine.getFocusedDeck();
+  }
+  
+  protected SCPattern getTargetPattern() {
+    if (targetDeck != null) {
+      return (SCPattern) (targetDeck.getActivePattern());
+    }
+    return super.getTargetPattern();
   }
 
   private class GridPosition {
@@ -348,7 +390,6 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     int pitch = note.getPitch();
     if (channel < 8) {
       if (pitch >= 53 && pitch <=57) return new GridPosition(pitch-53, channel);
-      else if (pitch == 52) return new GridPosition(5, channel);
     }
     return null;
   }
@@ -370,11 +411,39 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleControllerChange(rwmidi.Controller cc) {
+    int channel = cc.getChannel();
     int number = cc.getCC();
+    float value = cc.getValue() / 127.;
     switch (number) {
+      
+    case 7:
+     switch (channel) {
+       case 0:
+         EFF_colorFucker.hueShift.setValue(value);
+         break;
+       case 1:
+         EFF_colorFucker.desat.setValue(value);
+         break;
+       case 2:
+         EFF_colorFucker.sharp.setValue(value);
+         break;
+       case 3:
+         EFF_blur.amount.setValue(value);
+         break;
+       case 4:
+         EFF_quantize.amount.setValue(value);
+         break;
+     }
+     break;
+     
+    // Master bright
+    case 14:
+      EFF_colorFucker.level.setValue(value);
+      break;
+
     // Crossfader
     case 15:
-      lx.engine.getDeck(1).getCrossfader().setValue(cc.getValue() / 127.);
+      lx.engine.getDeck(1).getCrossfader().setValue(value);
       break;
     }
     
@@ -385,9 +454,9 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       parameterIndex = 8 + (number-16);
     }
     if (parameterIndex >= 0) {
-      List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
+      List<LXParameter> parameters = getTargetPattern().getParameters();
       if (parameterIndex < parameters.size()) {
-        parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
+        parameters.get(parameterIndex).setValue(value);
       }
     }
     
@@ -395,7 +464,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       int effectIndex = number - 20;
       List<LXParameter> parameters = glucose.getSelectedEffect().getParameters();
       if (effectIndex < parameters.size()) {
-        parameters.get(effectIndex).setValue(cc.getValue() / 127.);
+        parameters.get(effectIndex).setValue(value);
       }
     }
   }
@@ -407,9 +476,24 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleNoteOn(Note note) {
-    int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch();
+    int nChan = note.getChannel();
     switch (nPitch) {
-		
+    
+    case 49: // SOLO/CUE
+      switch (nChan) {
+        case 4:
+          EFF_colorFucker.mono.setValue(1);
+          break;
+        case 5:
+          EFF_colorFucker.invert.setValue(1);
+          break;
+        case 6:
+          lx.cycleBaseHue(60000);
+          break;
+      }
+      break;
+            
     case 82: // scene 1
       EFF_boom.trigger();
       break;
@@ -438,19 +522,20 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       if (shiftOn) {
         glucose.incrementSelectedEffectBy(-1);
       } else {
-        midiEngine.getFocusedDeck().goPrev();
+        getTargetDeck().goPrev();
       }
       break;
     case 95: // down bank
       if (shiftOn) {
         glucose.incrementSelectedEffectBy(1);
       } else {
-        midiEngine.getFocusedDeck().goNext();
+        getTargetDeck().goNext();
       }
       break;
 
     case 98: // shift
       shiftOn = true;
+      println("shiftOn:" + shiftOn);
       break;
 
     case 99: // tap tempo
@@ -479,8 +564,36 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
   }
 
   protected void handleNoteOff(Note note) {
-    int nPitch = note.getPitch(), nChan = note.getChannel();
+    int nPitch = note.getPitch();
+    int nChan = note.getChannel();
+
     switch (nPitch) {
+      
+    case 49: // SOLO/CUE
+      switch (nChan) {
+        case 4:
+          EFF_colorFucker.mono.setValue(0);
+          break;
+        case 5:
+          EFF_colorFucker.invert.setValue(0);
+          break;
+        case 6:
+          lx.setBaseHue(lx.getBaseHue());
+          break;
+      }
+      break;
+
+    case 52: // CLIP STOP
+      if (nChan < PresetManager.NUM_PRESETS) {
+        println("shiftOn:" + shiftOn);
+        if (shiftOn) {
+          presetManager.store(getTargetDeck(), nChan);
+        } else {
+          presetManager.select(getTargetDeck(), nChan);
+        }
+      }
+      break;
+
     case 90: // SEND C
       long tapDelta = millis() - tap1;
       if (lbtwn(tapDelta,5000,300*1000)) {	// hackish tapping mechanism
@@ -504,6 +617,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
 
     case 98: // shift
       shiftOn = false;
+      println("shiftOn:" + shiftOn);
       break;
     }
   }
@@ -554,15 +668,24 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   private final MidiOutput output;
   private LXPattern focusedPattern = null;
   private LXEffect focusedEffect = null;
+  private final Engine.Deck targetDeck;
   
   APC40MidiOutput(MidiEngine midiEngine, MidiOutputDevice device) {
+    this(midiEngine, device, -1);
+  }
+  
+  APC40MidiOutput(MidiEngine midiEngine, MidiOutputDevice device, int deckIndex) {
     this.midiEngine = midiEngine;
     output = device.createOutput();
-    midiEngine.addListener(new MidiEngineListener() {
-      public void onFocusedDeck(int deckIndex) {
-        resetPatternParameters();
-      }
-    });
+    targetDeck = (deckIndex < 0) ? null : lx.engine.getDecks().get(deckIndex);
+    setDPatternOutputs();
+    if (targetDeck != null) {
+      midiEngine.addListener(new MidiEngineListener() {
+        public void onFocusedDeck(int deckIndex) {
+          resetPatternParameters();
+        }
+      });
+    }
     glucose.addEffectListener(new GLucose.EffectListener() {
       public void effectSelected(LXEffect effect) {
         resetEffectParameters();
@@ -574,10 +697,67 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
       }
     };
     for (Engine.Deck d : lx.engine.getDecks()) {
-      d.addListener(deckListener);
+      if (targetDeck == null || d == targetDeck) {
+        d.addListener(deckListener);
+      }
     }
+    presetManager.addListener(new PresetListener() {
+      public void onPresetLoaded(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          for (int i = 0; i < 8; ++i) {
+            output.sendNoteOn(i, 52, (preset.index == i) ? 1 : 0);
+          }
+        }
+      }
+      public void onPresetDirty(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          output.sendNoteOn(preset.index, 52, 2);
+        }
+      }
+      public void onPresetStored(Engine.Deck deck, Preset preset) {
+        if (deck == getTargetDeck()) {
+          onPresetLoaded(deck, preset);
+        }
+      }
+      public void onPresetUnloaded() {
+        for (int i = 0; i < 8; ++i) {
+          output.sendNoteOn(i, 52, 0);
+        }
+      }
+    });
     resetParameters();
     midiEngine.grid.addOutput(this);
+
+    lx.cycleBaseHue(60000);
+    output.sendNoteOn(6, 49, 127);
+    
+    // Turn off the track selection lights and preset selectors
+    for (int i = 0; i < 8; ++i) {
+      output.sendNoteOn(i, 51, 0);
+      output.sendNoteOn(i, 52, 0);
+    }
+    
+    // Turn off the MASTER selector
+    output.sendNoteOn(0, 80, 0);
+  }
+  
+  private void setDPatternOutputs() {
+    for (Engine.Deck deck : lx.engine.getDecks()) {
+      if (targetDeck == null || deck == targetDeck) {
+        for (LXPattern pattern : deck.getPatterns()) {
+          if (pattern instanceof DPat) {
+            ((DPat)pattern).setAPCOutput(output);
+          }
+        }
+      }
+    }
+  }
+  
+  protected Engine.Deck getTargetDeck() {
+    if (targetDeck != null) {
+      return targetDeck;
+    }
+    return midiEngine.getFocusedDeck();
   }
 
   private void resetParameters() {
@@ -586,7 +766,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   }
   
   private void resetPatternParameters() {
-    LXPattern newPattern = midiEngine.getFocusedDeck().getActivePattern();
+    LXPattern newPattern = getTargetDeck().getActivePattern();
     if (newPattern == focusedPattern) {
       return;
     }
@@ -604,9 +784,16 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     while (i < 12) {
       sendKnob(i++, 0);
     }
-    for (int row = 0; row < 7; ++row) {
-      for (int col = 0; col < 8; ++col) {
-        setGridState(row, col, 0);
+    if (focusedPattern instanceof DPat) {
+      ((DPat)focusedPattern).updateLights();
+    } else {
+      for (int j = 0; j < 8; ++j) {
+        output.sendNoteOn(j, 48, 0);
+      }
+      for (int row = 0; row < 7; ++row) {
+        for (int col = 0; col < 8; ++col) {
+          setGridState(row, col, 0);
+        }
       }
     }
   }
@@ -664,9 +851,8 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
   }
   
   public void setGridState(int row, int col, int state) {
-    if (col < 8) {
-      if (row < 5) output.sendNoteOn(col, 53+row, state);
-      else if (row == 6) output.sendNoteOn(col, 52, state);
+    if (col < 8 && row < 5) {
+      output.sendNoteOn(col, 53+row, state);
     }
   }
 }

@@ -168,14 +168,12 @@ public class Play extends DPat
 			a3 		= new rAngle(), a4 		= new rAngle();
 	xyz		cPrev 	= new xyz(), cRand		= new xyz(),
 			cMid 	= new xyz(), V 			= new xyz(),
-			Theta 	= new xyz(), TSin		= new xyz(),
-			TCos	= new xyz(), cMidNorm 	= new xyz(),
+			theta 	= new xyz(), tSin		= new xyz(),
+			tCos	= new xyz(), cMidNorm 	= new xyz(),
 			Pn		= new xyz();
 	float	LastBeat=3, LastMeasure=3;
-	int		CurRandTempo = 1, CurRandTPat = 1;
-
+	int		curRandTempo = 1, curRandTPat = 1;
 	Pick	pTimePattern, pTempoMult, pShape;
-	int		RandCube;
 
 	Play(GLucose glucose) {
 		super(glucose);
@@ -227,17 +225,17 @@ public class Play extends DPat
 		bnc	= pBounce	.getValuef();		
 		zTheta	+= deltaMs*(val(pSpin)-.5)*.01;
 
-		Theta	.set(val(pRotX)*PI*2, val(pRotY)*PI*2, val(pRotZ)*PI*2 + zTheta);
-		TSin	.set(sin(Theta.x), sin(Theta.y), sin(Theta.z));
-		TCos	.set(cos(Theta.x), cos(Theta.y), cos(Theta.z));
+		theta	.set(val(pRotX)*PI*2, val(pRotY)*PI*2, val(pRotZ)*PI*2 + zTheta);
+		tSin	.set(sin(theta.x), sin(theta.y), sin(theta.z));
+		tCos	.set(cos(theta.x), cos(theta.y), cos(theta.z));
 
 		if (t<LastMeasure) {
-			if (random(3) < 1) { CurRandTempo = int(random(4)); if (CurRandTempo == 3) CurRandTempo = int(random(4));	}
-			if (random(3) < 1) { CurRandTPat  = pShape.Cur() > 6 ? 2+int(random(5)) : int(random(7)); 					}
+			if (random(3) < 1) { curRandTempo = int(random(4)); if (curRandTempo == 3) curRandTempo = int(random(4));	}
+			if (random(3) < 1) { curRandTPat  = pShape.Cur() > 6 ? 2+int(random(5)) : int(random(7)); 					}
 		} LastMeasure = t;
 			
-		int nTempo = pTempoMult	 .Cur(); if (nTempo == 5) nTempo = CurRandTempo;
-		int nTPat  = pTimePattern.Cur(); if (nTPat  == 7) nTPat  = CurRandTPat ;
+		int nTempo = pTempoMult	 .Cur(); if (nTempo == 5) nTempo = curRandTempo;
+		int nTPat  = pTimePattern.Cur(); if (nTPat  == 7) nTPat  = curRandTPat ;
 
 		switch (nTempo) {
 			case 0: 	t = t;								break;
@@ -283,9 +281,9 @@ public class Play extends DPat
 	}
 
 	color CalcPoint(xyz Px) {
-		if (Theta.x != 0) Px.rotateX(mCtr, TSin.x, TCos.x);
-		if (Theta.y != 0) Px.rotateY(mCtr, TSin.y, TCos.y);
-		if (Theta.z != 0) Px.rotateZ(mCtr, TSin.z, TCos.z);
+		if (theta.x != 0) Px.rotateX(mCtr, tSin.x, tCos.x);
+		if (theta.y != 0) Px.rotateY(mCtr, tSin.y, tCos.y);
+		if (theta.z != 0) Px.rotateZ(mCtr, tSin.z, tCos.z);
 		
 		Pn.set(Px); Pn.setNorm();
 

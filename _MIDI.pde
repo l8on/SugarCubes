@@ -731,9 +731,7 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
         }
       }
       public void onPresetStored(LXDeck deck, Preset preset) {
-        if (deck == getTargetDeck()) {
-          onPresetStored(deck, preset);
-        }
+        onPresetSelected(deck, preset);
       }
     });
     resetParameters();

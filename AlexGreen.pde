@@ -2,7 +2,7 @@ class SineSphere extends DPat {
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
  //PVector modelcenter = new PVector(model.xMax, model.yMax, model.zMax);
   Pick Sshape; 
-
+ float zTheta = 0,  zSin, zCos; 
   class Sphery {
   float f1xcenter, f1ycenter, f1zcenter, f2xcenter , f2ycenter, f2zcenter; //second three are for an ellipse with two foci
   private  SinLFO vibration; 
@@ -98,9 +98,9 @@ final Sphery[] spherys;
     super(glucose);
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {
-      new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000),
-      new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
-      new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
+      new Sphery(mCtr.x/2, mCtr.y, mCtr.z, modelrad/16, modelrad/8, 3000),
+      new Sphery(1.5*mCtr.x, mCtr.z, mCtr.z, modelrad/20, modelrad/10, 2000),
+      new Sphery(mCtr.x, mCtr.y, mCtr.z,  modelrad/4, modelrad/8, 2300),
     };
   
   }
@@ -128,6 +128,9 @@ final Sphery[] spherys;
      void StartRun(int deltaMs) {
      float t = lx.tempo.rampf();
      float bpm = lx.tempo.bpmf();
+     zTheta += deltaMs*(pSpin .Val()-.5)*.002  ;
+     zSin = sin(zTheta);
+     zCos = cos(zTheta);
      //spherys[1].run(deltaMs);
      //spherys[2].run(deltaMs);
      //spherys[3].run(deltaMs);
@@ -142,14 +145,17 @@ final Sphery[] spherys;
    //   spheremode++;
    //     }
 
-  color CalcPoint(xyz Px) 
+  color CalcPoint(xyz P) 
   { 
+    color c = 0; 
+     //P.rotateY(mCtr, zSin, zCos);
+     P.rotateZ(mCtr, zSin, zCos); 
        // if (spheremode == 0 )
               //{
-             color c = 0;
-             c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-             c = blendColor(c, spherys[0].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-             c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+             
+             c = blendColor(c, spherys[1].spheryvalue(P.x, P.y, P.z, 1.5*mCtr.x, mCtr.y, mCtr.z), ADD);
+             c = blendColor(c, spherys[0].spheryvalue(P.x, P.y, P.z, mCtr.x/2, mCtr.y/2, mCtr.z/2), ADD);
+             c = blendColor(c, spherys[2].spheryvalue(P.x, P.y, P.z, mCtr.x, mCtr.y, mCtr.z),ADD);
              return c;
              //}
       //   else if (spheremode == 1)
@@ -203,13 +209,14 @@ Cube c = model.cubes.get(i);
 
 println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
 PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-//println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
+println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
 PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
 println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
 PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, 0, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
+println("centerrot    :"  + centerrot.x +"  " + centerrot.y + "  "  + centerrot.z);
  // nCos*(y-o.y) - nSin*(z-o.z) + o.y
 cubecenter = PVector.add(cubecenter, centerrot);
-println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
+println( "cubecenter final " + cubecenter.x  + "  " +  cubecenter.y + "  "   +  cubecenter.z  + "   ");
 
 
 return cubecenter;

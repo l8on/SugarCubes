@@ -52,11 +52,11 @@ LXPattern[] patterns(GLucose glucose) {
     new Worms(glucose),
 
     // Alex G
-     new SineSphere(glucose),
-//     new CubeCurl(glucose),
+    new SineSphere(glucose),
+    //new CubeCurl(glucose),
 
     // Shaheen
-    new HelixPattern(glucose).setEligible(false),
+    //new HelixPattern(glucose).setEligible(false),
     
     // Toby
     new GlitchPlasma(glucose),
@@ -85,7 +85,7 @@ LXPattern[] patterns(GLucose glucose) {
     new GranimTestPattern2(glucose),
     
     //JR
-    new Gimbal(glucose),
+   // new Gimbal(glucose),
     
     // Sam
     new JazzRainbow(glucose),
@@ -93,18 +93,18 @@ LXPattern[] patterns(GLucose glucose) {
     // Arjun
     new TelevisionStatic(glucose),
     new AbstractPainting(glucose),
-    new Spirality(glucose),
+   // new Spirality(glucose),
 
     // Basic test patterns for reference, not art    
-    new TestCubePattern(glucose),
-    new TestTowerPattern(glucose),
-    new TestProjectionPattern(glucose),
-    new TestStripPattern(glucose),
-    new TestBassMapping(glucose),
-    new TestFloorMapping(glucose),
-    new TestSpeakerMapping(glucose),    
-    new TestPerformancePattern(glucose),
-    // new TestHuePattern(glucose),
+    // new TestCubePattern(glucose),
+    // new TestTowerPattern(glucose),
+    // new TestProjectionPattern(glucose),
+    // new TestStripPattern(glucose),
+    // new TestBassMapping(glucose),
+    // new TestFloorMapping(glucose),
+    // new TestSpeakerMapping(glucose),    
+    // new TestPerformancePattern(glucose),
+    // // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),
     // new TestZPattern(glucose),

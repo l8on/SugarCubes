@@ -21,6 +21,8 @@ final PFont defaultTitleFont = createFont("Myriad Pro", 10);
 
 public abstract class UIObject {
   
+  protected final static int DOUBLE_CLICK_THRESHOLD = 300;
+  
   protected final List<UIObject> children = new ArrayList<UIObject>();  
 
   protected boolean needsRedraw = true;
@@ -602,6 +604,18 @@ public class UIParameterKnob extends UIParameterControl {
     pg.text(knobLabel, knobSize/2, knobSize + knobLabelHeight - 2);
   }
   
+  private long lastMousePress = 0;
+  public void onMousePressed(float mx, float my) {
+    super.onMousePressed(mx, my);
+    long now = millis();
+    if (now - lastMousePress < DOUBLE_CLICK_THRESHOLD) {
+      parameter.reset();
+      lastMousePress = 0;
+    } else {
+      lastMousePress = now;
+    }
+  }
+  
   public void onMouseDragged(float mx, float my, float dx, float dy) {
     if (parameter != null) {
       float value = constrain(parameter.getValuef() - dy / 100., 0, 1);
@@ -639,7 +653,7 @@ public class UIParameterSlider extends UIParameterControl {
     if (mx >= handleLeft && mx < handleLeft + handleWidth) {
       editing = true;
     } else {
-      if ((now - lastClick) < 300 && abs(mx - doubleClickX) < 3) {
+      if ((now - lastClick) < DOUBLE_CLICK_THRESHOLD && abs(mx - doubleClickX) < 3) {
         parameter.setValue(doubleClickMode);  
       }
       doubleClickX = mx;

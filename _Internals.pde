@@ -222,9 +222,9 @@ void draw() {
   simulationColors = sendColors = glucose.getColors();
   String displayMode = uiCrossfader.getDisplayMode();
   if (displayMode == "A") {
-    simulationColors = lx.engine.getDeck(0).getColors();
+    simulationColors = lx.engine.getDeck(GLucose.LEFT_DECK).getColors();
   } else if (displayMode == "B") {
-    simulationColors = lx.engine.getDeck(1).getColors();
+    simulationColors = lx.engine.getDeck(GLucose.RIGHT_DECK).getColors();
   }
   if (debugMode) {
     debugUI.maskColors(simulationColors);

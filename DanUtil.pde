@@ -155,6 +155,16 @@ public class DPat extends SCPattern
 		//println (model.xMax + " " + model.yMax + " " +  model.zMax);
 	  //for (MidiOutputDevice o: RWMidi.getOutputDevices()) { if (o.toString().contains("APC")) { APCOut = o.createOutput(); break;}}
 	}
+
+	float spin() {
+	  float raw = val(pSpin);
+	  if (raw <= 0.45) {
+	    return raw + 0.05;
+	  } else if (raw >= 0.55) {
+	    return raw - 0.05;
+    }
+    return 0.5;
+	}
 	
 	void setAPCOutput(MidiOutput output) {
 	  APCOut = output;

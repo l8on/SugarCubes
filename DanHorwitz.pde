@@ -71,7 +71,7 @@ public class Noise extends DPat
 
 	void StartRun(double deltaMs) {
 		zTime 	+= deltaMs*(val(pSpeed)-.5)*.002	;
-		zTheta	+= deltaMs*(val(pSpin )-.5)*.01	;
+		zTheta	+= deltaMs*(spin()-.5)*.01	;
 		rtime	+= deltaMs;
 		iSymm	 = pSymm.Cur();
 		zSin	= sin(zTheta);
@@ -467,6 +467,7 @@ class Worms extends SCPattern {
 	}
 
 	void onParameterChanged(LXParameter parameter) {
+		super.onParameterChanged(parameter);
 		nConfusion = 1-pConfusion.getValuef();
 		for (int i=0; i<numCursors; i++) {
 			if (parameter==pSpawn) reset(cur.get(i));

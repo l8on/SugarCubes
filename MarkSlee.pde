@@ -1,18 +1,55 @@
 class MidiMusic extends SCPattern {
   
-  private final Map<Integer, LightUp> lightMap = new HashMap<Integer, LightUp>();
-  private final List<LightUp> allLights = new ArrayList<LightUp>();
+  private final Stack<LXLayer> newLayers = new Stack<LXLayer>();
   
-  private final Stack<LightUp> newLayers = new Stack<LightUp>();
+  private final Map<Integer, LightUp> lightMap = new HashMap<Integer, LightUp>();
+  private final List<LightUp> lights = new ArrayList<LightUp>();
+  private final BasicParameter lightSize = new BasicParameter("SIZE", 0.5);
+
+  private final List<Sweep> sweeps = new ArrayList<Sweep>();
+
+  private final LinearEnvelope sparkle = new LinearEnvelope(0, 1, 500);
+  private boolean sparkleDirection = true;
+  private float sparkleBright = 100;
+  
+  private final BasicParameter wave = new BasicParameter("WAVE", 0);
   
   MidiMusic(GLucose glucose) {
     super(glucose);
+    addParameter(lightSize);
+    addParameter(wave);
+    addModulator(sparkle).setValue(1);
+  }
+  
+  class Sweep extends LXLayer {
+    
+    final LinearEnvelope position = new LinearEnvelope(0, 1, 1000);
+    float bright = 100;
+    float falloff = 10;
+    
+    Sweep() {
+      addModulator(position);
+    }
+    
+    public void run(double deltaMs, color[] colors) {
+      if (!position.isRunning()) {
+        return;
+      }
+      float posf = position.getValuef();
+      for (Point p : model.points) {
+        colors[p.index] = blendColor(colors[p.index], color(
+          (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
+          100,
+          max(0, bright - posf*100 - falloff*abs(p.y - posf*model.yMax))
+        ), ADD);
+      }
+    }
   }
   
   class LightUp extends LXLayer {
     
-    private LinearEnvelope brt = new LinearEnvelope(0, 0, 0);
-    private Accelerator yPos = new Accelerator(0, 0, 0);
+    private final LinearEnvelope brt = new LinearEnvelope(0, 0, 0);
+    private final Accelerator yPos = new Accelerator(0, 0, 0);
     private float xPos;
     
     LightUp() {
@@ -25,8 +62,8 @@ class MidiMusic extends SCPattern {
     }
     
     void noteOn(Note note) {
-      xPos = lerp(0, model.xMax, constrain(0.5 + (note.getPitch() - 64) / 12., 0, 1));
-      yPos.setValue(lerp(20, model.yMax, note.getVelocity() / 127.));
+      xPos = lerp(0, model.xMax, constrain(0.5 + (note.getPitch() - 60) / 28., 0, 1));
+      yPos.setValue(lerp(20, model.yMax*.72, note.getVelocity() / 127.)).stop();
       brt.setRangeFromHereTo(lerp(40, 100, note.getVelocity() / 127.), 20).start();     
     }
 
@@ -42,10 +79,11 @@ class MidiMusic extends SCPattern {
       }
       float yVal = yPos.getValuef();
       for (Point p : model.points) {
-        float b = max(0, bVal - 3*dist(p.x, p.y, xPos, yVal));
+        float falloff = 6 - 5*lightSize.getValuef();
+        float b = max(0, bVal - falloff*dist(p.x, p.y, xPos, yVal));
         if (b > 0) {
           colors[p.index] = blendColor(colors[p.index], lx.hsb(
-            (lx.getBaseHuef() + abs(p.x - model.cx) + abs(p.y - model.cy)) % 360,
+            (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
             100,
             b
           ), ADD);
@@ -54,22 +92,61 @@ class MidiMusic extends SCPattern {
     }
   }
   
+  private LightUp getLight() {
+    for (LightUp light : lights) {
+      if (light.isAvailable()) {
+        return light;
+      }
+    }
+    LightUp newLight = new LightUp();
+    lights.add(newLight);
+    synchronized(newLayers) {
+      newLayers.push(newLight);
+    }
+    return newLight;
+  }
+  
+  private Sweep getSweep() {
+    for (Sweep s : sweeps) {
+      if (!s.position.isRunning()) {
+        return s;
+      }
+    }
+    Sweep newSweep = new Sweep();
+    sweeps.add(newSweep);
+    synchronized(newLayers) {
+      newLayers.push(newSweep);
+    }
+    return newSweep;
+  }
+  
   public synchronized boolean noteOn(Note note) {
     if (note.getChannel() == 0) {
-      for (LightUp light : allLights) {
-        if (light.isAvailable()) {
-          light.noteOn(note);
-          lightMap.put(note.getPitch(), light);
-          return true;
+      LightUp light = getLight();
+      lightMap.put(note.getPitch(), light);
+      light.noteOn(note);
+    } else if (note.getChannel() == 1) {
+    } else if (note.getChannel() == 9) {
+      if (note.getVelocity() > 0) {
+        switch (note.getPitch()) {
+          case 36:
+            Sweep s = getSweep();
+            s.bright = 50 + note.getVelocity() / 127. * 50;
+            s.falloff = 20 - note.getVelocity() / 127. * 17;
+            s.position.trigger();
+            break;
+          case 37:
+            sparkleBright = note.getVelocity() / 127. * 100;
+            sparkleDirection = true;
+            sparkle.trigger();
+            break;
+          case 38:
+            sparkleBright = note.getVelocity() / 127. * 100;
+            sparkleDirection = false;
+            sparkle.trigger();       
+            break;
         }
       }
-      LightUp newLight = new LightUp();
-      newLight.noteOn(note);
-      lightMap.put(note.getPitch(), newLight);
-      synchronized(newLayers) {
-        newLayers.push(newLight);
-      }
-    } else if (note.getChannel() == 1) {
     }
     return true;
   }
@@ -84,8 +161,30 @@ class MidiMusic extends SCPattern {
     return true;
   }
   
+  final float[] wval = new float[16];
+  float wavoff = 0;
+  
   public synchronized void run(double deltaMs) {
-    setColors(#000000);
+    wavoff += deltaMs * .001;
+    for (int i = 0; i < wval.length; ++i) {
+      wval[i] = model.cy + 0.2 * model.yMax/2. * sin(wavoff + i / 1.9);
+    }
+    float sparklePos = (sparkleDirection ? sparkle.getValuef() : (1 - sparkle.getValuef())) * (Cube.POINTS_PER_STRIP)/2.;
+    float maxBright = sparkleBright * (1 - sparkle.getValuef());
+    for (Strip s : model.strips) {
+      int i = 0;
+      for (Point p : s.points) {
+        int wavi = (int) constrain(p.x / model.xMax * wval.length, 0, wval.length-1);
+        float wavb = max(0, wave.getValuef()*100. - 8.*abs(p.y - wval[wavi]));
+        colors[p.index] = color(
+          (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
+          100,
+          constrain(wavb + max(0, maxBright - 40.*abs(sparklePos - abs(i - (Cube.POINTS_PER_STRIP-1)/2.))), 0, 100)
+        );
+        ++i;
+      }
+    }
+        
     if (!newLayers.isEmpty()) {
       synchronized(newLayers) {
         while (!newLayers.isEmpty()) {

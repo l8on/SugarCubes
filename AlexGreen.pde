@@ -1,6 +1,7 @@
-class SineSphere extends DPat {
+class SineSphere extends SCPattern {
+  private SinLFO yrot = new SinLFO(0, TWO_PI, 2000);
+  public final Projection sinespin; 
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
- //PVector modelcenter = new PVector(model.xMax, model.yMax, model.zMax);
   Pick Sshape; 
 
   class Sphery {
@@ -31,7 +32,7 @@ class SineSphere extends DPat {
    addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
    addParameter(widthparameter = new BasicParameter("Width", .1));
    addParameter(huespread = new BasicParameter("Hue", .2));
-  
+   
    addModulator( vx = new SinLFO(-4000, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
    addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //ybounce.modulateDurationBy
@@ -86,8 +87,11 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
       - 1.2*vibration.getValuef() ) ) ) ; 
   }
 
-
-   void run(int deltaMS) { };
+void run(double deltaMs) {
+      float vv = vibration.getValuef();
+      float ybv = ybounce.getValuef();
+      
+    }
   
 }  
 
@@ -96,6 +100,8 @@ final Sphery[] spherys;
   SineSphere(GLucose glucose) 
   {
     super(glucose);
+    sinespin = new Projection(model);
+    addModulator(yrot).trigger();
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {
       new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000),
@@ -125,14 +131,32 @@ final Sphery[] spherys;
 //     }
 //   }
 
-     void StartRun(int deltaMs) {
+     void run( double deltaMs) {
      float t = lx.tempo.rampf();
      float bpm = lx.tempo.bpmf();
      //spherys[1].run(deltaMs);
      //spherys[2].run(deltaMs);
-     //spherys[3].run(deltaMs);
-  
-       
+     //spherys[3].run(deltaMs);]
+     sinespin.reset(model)
+
+     // Translate so the center of the car is the origin, offset by yPos
+      .translateCenter(model, 0, 0, 0)
+
+      // Rotate around the origin (now the center of the car) about an X-vector
+      .rotate(yrot.getValuef(), 0, 1, 0);
+
+
+
+     for (Point p: model.points){
+    color c = 0;
+    c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+    c = blendColor(c, spherys[0].spheryvalue(p.x, p.y, p.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+    c = blendColor(c, spherys[2].spheryvalue(p.x, p.y, p.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+     
+      colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+
+               }
+      
 
 
   }
@@ -142,15 +166,11 @@ final Sphery[] spherys;
    //   spheremode++;
    //     }
 
-  color CalcPoint(PVector Px) 
-  { 
-       // if (spheremode == 0 )
+  // color CalcPoint(PVector Px) 
+  // { 
+  //      // if (spheremode == 0 )
               //{
-             color c = 0;
-             c = blendColor(c, spherys[1].spheryvalue(Px.x, Px.y, Px.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-             c = blendColor(c, spherys[0].spheryvalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-             c = blendColor(c, spherys[2].spheryvalue(Px.x, Px.y, Px.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
-             return c;
+            
              //}
       //   else if (spheremode == 1)
       // {
@@ -167,7 +187,7 @@ final Sphery[] spherys;
        // }
 
   
-          } 
+       //   } 
         
   }
 

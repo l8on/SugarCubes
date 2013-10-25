@@ -21,6 +21,12 @@ class MidiMusic extends SCPattern {
     addModulator(sparkle).setValue(1);
   }
   
+  void onReset() {
+    for (LightUp light : lights) {
+      light.noteOff(null);
+    }
+  }
+  
   class Sweep extends LXLayer {
     
     final LinearEnvelope position = new LinearEnvelope(0, 1, 1000);
@@ -144,6 +150,12 @@ class MidiMusic extends SCPattern {
             sparkleBright = note.getVelocity() / 127. * 100;
             sparkleDirection = false;
             sparkle.trigger();       
+            break;
+          case 39:
+            effects.boom.trigger();
+            break;
+          case 40:
+            effects.flash.trigger();
             break;
         }
       }
@@ -1282,7 +1294,7 @@ class Traktor extends SCPattern {
       colors[p.index] = lx.hsb(
         (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
         100,
-        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy)), 0, 100)
+        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy + 5)), 0, 100)
       );
       colors[p.index] = blendColor(colors[p.index], lx.hsb(
         (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
@@ -1298,11 +1310,12 @@ class ColorFuckerEffect extends SCEffect {
   
   final BasicParameter level = new BasicParameter("BRT", 1);
   final BasicParameter desat = new BasicParameter("DSAT", 0);
+  final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
   final BasicParameter sharp = new BasicParameter("SHARP", 0);
   final BasicParameter soft = new BasicParameter("SOFT", 0);
   final BasicParameter mono = new BasicParameter("MONO", 0);
   final BasicParameter invert = new BasicParameter("INVERT", 0);
-  final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
+
   
   float[] hsb = new float[3];
   
@@ -1311,10 +1324,10 @@ class ColorFuckerEffect extends SCEffect {
     addParameter(level);
     addParameter(desat);
     addParameter(sharp);
+    addParameter(hueShift);
     addParameter(soft);
     addParameter(mono);
     addParameter(invert);
-    addParameter(hueShift);
   }
   
   public void doApply(int[] colors) {

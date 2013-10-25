@@ -411,7 +411,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 7:
      switch (channel) {
        case 0:
-         effects.colorFucker.hueShift.setValue(value);
+         // effects.colorFucker.hueShift.setValue(value);
          return true;
        case 1:
          effects.colorFucker.desat.setValue(value);
@@ -436,6 +436,19 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     // Crossfader
     case 15:
       lx.engine.getDeck(GLucose.RIGHT_DECK).getFader().setValue(value);
+      return true;
+      
+    // Cue level
+    case 47:
+      float val = effects.colorFucker.hueShift.getValuef();
+      int cv = cc.getValue();
+      if (cv < 64) {
+        cv = 64 + cv;
+      } else {
+        cv = cv - 64;
+      }
+      val += (cv - 64) / 300.;
+      effects.colorFucker.hueShift.setValue((val+1) % 1);
       return true;
     }
     
@@ -893,6 +906,12 @@ class ArturiaMinilabMidiInput extends GenericDeviceMidiInput {
       case 18:  parameterIndex = 5; break;
       case 19:  parameterIndex = 6; break;
       case 16:  parameterIndex = 7; break;
+      
+      case 75:
+        float val = effects.colorFucker.hueShift.getValuef();
+        val += (cc.getValue() - 64) / 256.;
+        effects.colorFucker.hueShift.setValue((val+1) % 1);
+        break;
     }
     if (parameterIndex >= 0) {
       List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();

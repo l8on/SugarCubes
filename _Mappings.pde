@@ -51,31 +51,13 @@ public Model buildModel() {
   //  We can do better than this.  The raw object index should be obvious from the code-- looking through the
   //  rendered simulation and counting through cubes in mapping mode is grossly inefficient. 
 
-
-  ////////////////////////////////////////////////////////////////////////
-  // dan's proposed lattice
-  ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
-  // if (NumBackTowers != 9) exit();
-  for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
-      (i+1)*CW,               // x
-      (i % 2 == 0) ? 0 : CH * 2./3.   ,   // y
-     - ((i % 2 == 0) ? 0 : 11) + 97   ,   // z
-     -135, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );  // num cubes
-  
-  ArrayList<Cube> dcubes = new ArrayList<Cube>();
-  for (int i=1; i<6; i++) {
-    if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));  
-         dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR)); 
-  }
-
-
   TowerMapping[] towerCubes = new TowerMapping[] {};
   
   // Single cubes can be constructed directly here if you need them
   Cube[] singleCubes = new Cube[] {
-     //new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL),     // Back left channel behind speaker
+    // new Cube(15, int( Cube.EDGE_HEIGHT), 39, 0, 10, 0,  WRL),     // Back left channel behind speaker
      //new Cube(x, y, z, rx, ry, rz, wiring),
-     //new Cube(0,0,0,0,-135,0, WRR),
+   //new Cube(0,0,0,0,225,0, WRR),
   };
 
   // The bass box!
@@ -88,6 +70,104 @@ public Model buildModel() {
      // Each speaker parameter is x, y, z, rotation, the left speaker comes first
      // new Speaker(TRAILER_WIDTH - Speaker.EDGE_WIDTH + 8, 6, 3, -15)
   });
+
+
+  ////////////////////////////////////////////////////////////////////////
+  // dan's proposed lattice
+        ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
+        if (NumBackTowers != 11) exit();
+        // for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
+        //           (i+1)*CW,                                                                 // x
+        //           (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
+        //          - ((i % 2 == 0) ? 0 : 11) + 97          ,   // z
+        //          225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );         // num cubes
+        
+        ArrayList<Cube> dcubes = new ArrayList<Cube>();
+        // for (int i=1; i<6; i++) {
+        //         if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));        
+        //                          dcubes.add(new Cube(-6+CW*4/3*i+CW*2/3., CH*.5, 0, 0, 0, 0, WRR));        
+        // }
+
+scubes.add(new StaggeredTower(//tower 1
+      0,               // x
+       0   ,   // y
+       0  ,   // z
+     0,  3, new Cube.Wiring[]{ WFR, WRL, WFR}));  
+scubes.add(new StaggeredTower(// tower 2
+      22,               // x
+       0  ,   // y
+       26   ,   // z
+     0,  3, new Cube.Wiring[]{ WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(//tower 3
+      27,               // x
+       0   ,   // y
+       64,   // z
+     0,  4, new Cube.Wiring[]{ WFR, WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(//tower 4
+    54,               // x
+       7,   // y
+       75.5  ,   // z
+     0,  4, new Cube.Wiring[]{ WFR, WRL, WFR, WRL})  );  
+
+scubes.add(new StaggeredTower(//tower 5
+      75.5,               // x
+       0   ,   // y
+       100.5 ,   // z
+     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  );
+ 
+scubes.add(new StaggeredTower(//tower 6
+      93.5,               // x
+       7 ,   // y
+       75.5,   // z
+     0, 4, new Cube.Wiring[]{ WFR, WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(// tower 7
+      119,               // x
+       0   ,   // y
+      56.5,   // z
+     0,  4, new Cube.Wiring[]{ WRL, WFR, WRL, WFR})  ); 
+     
+scubes.add(new StaggeredTower(//tower 8
+      136.5,               // x
+       7  ,   // y
+       31.5  ,   // z
+     0,  4, new Cube.Wiring[]{ WFR, WRL, WFR, WRL})  );  
+  
+scubes.add(new StaggeredTower(//tower 9
+      161.5,               // x
+       0   ,   // y
+       20  ,   // z
+     0,  4, new Cube.Wiring[]{ WFR, WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(//tower 10
+      176,               // x
+       7   ,   // y
+       -6.5  ,   // z
+     0,  3, new Cube.Wiring[]{ WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(// tower 11
+      202.5,               // x
+       0   ,   // y
+         -26.5,   // z
+     0,  3, new Cube.Wiring[]{ WRL, WFR, WRL})  );  
+scubes.add(new StaggeredTower(// tower 12 CENTER TOWER AT 45degrees
+      73,               // x
+       0   ,   // y
+         58,   // z
+     -45,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  );  
+scubes.add(new StaggeredTower(// Single cube on top of tower 3
+      22,               // x
+       81.5  ,   // y
+         39,   // z
+     -45,  1, new Cube.Wiring[]{ WFR})  );  
+scubes.add(new StaggeredTower(// Single cube on top of tower 4
+      42,               // x
+       112   ,   // y
+         72,   // z
+     -10,  1, new Cube.Wiring[]{ WRL})  );  
+
+
+
+
+
+
 
   //////////////////////////////////////////////////////////////////////
   //      BENEATH HERE SHOULD NOT REQUIRE ANY MODIFICATION!!!!        //
@@ -113,11 +193,13 @@ public Model buildModel() {
 
   
   for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
-  for (Cube cube : dcubes) 		cubes[cubeIndex++] = cube;
+  for (Cube cube : dcubes)                 cubes[cubeIndex++] = cube;
 for (StaggeredTower st : scubes) {
     tower = new ArrayList<Cube>();
-    for (int i=0; i < st.n; i++)
-      tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, WRR));
+    for (int i=0; i < st.n; i++) {
+      Cube.Wiring w = (i < st.wiring.length) ? st.wiring[i] : WRR;
+      tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, w));
+    }
     towerList.add(new Tower(tower));
   }
 
@@ -134,49 +216,50 @@ public PandaMapping[] buildPandaList() {
   
   // 8 channels map to:  3, 4, 7, 8, 13, 14, 15, 16.
   return new PandaMapping[] {
-    // new PandaMapping(
-    //   "10.200.1.30", new ChannelMapping[] {
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 39, 40, 41, 42 }), // 30 J3 *
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 38, 36, 35}),  // 30 J4 //ORIG *
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J7 *
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 16, 17, 18, 19}),  // 30 J8 *
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J13 (not working)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J14 (unplugged)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J15 (unplugged)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 53, 54, 55, 72 }), // 30 J16
-    // }),
-    // new PandaMapping(
-    //   "10.200.1.29", new ChannelMapping[] {
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),                // 29 J3  (not connected)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4 }),                // 29 J4  (not connected)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),  // 29 J7
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1,2,3,4}),  // 29 J8  //XXX   
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 8,9,10}),                // 29 J13 //XX //bassbox  (not working)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 8,9,10 }),                // 29 J14 (not working)
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 14,15,16,17 }), // 29 J15
-    //     new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] {  14,15,16,17 }), // 29 J16
-    // }),    
+    new PandaMapping(
+      "10.200.1.28", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // 30 J3 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),  // 30 J4 //ORIG *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 41, 42}),                // 30 J7 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 43, 44}),  // 30 J8 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 6, 3}),                // 30 J13 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 45, 46}),                // 30 J14 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2}),                // 30 J15 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 4, 5}), // 30 J16
+    }),
+    new PandaMapping(
+      "10.200.1.29", new ChannelMapping[] {
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // 30 J3 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),  // 30 J4 //ORIG *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 7, 8}),                // 30 J7 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 9, 10}),  // 30 J8 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 11, 12}),                // 30 J13 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 13, 14}),                // 30 J14 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 15, 16}),                // 30 J15 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 17, 18}), // 30 J16
+    }),    
     new PandaMapping(
       "10.200.1.30", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 11, 12, 13, 14}), // J3
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // J4
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 20, 21, 22, 23}), // J7
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 29 ,30, 31, 32}), // J8
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 38, 39, 40, 41}), // J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 47, 48, 49, 50}), // J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 56, 57, 58, 59}), // J15
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 55, 46, 37}), // J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 38, 39}), // 30 J3 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),  // 30 J4 //ORIG *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 23, 24}),                // 30 J7 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 25, 26}),  // 30 J8 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 19, 20}),                // 30 J13 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 21, 22}),                // 30 J14 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J15 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // 30 J16
+
    }),    
     new PandaMapping(
       "10.200.1.31", new ChannelMapping[] {
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 15, 16, 17, 18}), // J3
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // J4
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 24, 25, 26, 27}), // J7
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33, 34, 35, 36}), // J8
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 42, 43, 44, 45}), // J13
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 51, 52, 53, 54}), // J14
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 28, 19, 10}), // J15
-        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 11, 12, 13, 14}), // J16
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 37, 40}), // 30 J3 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),  // 30 J4 //ORIG *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 27, 28}),                // 30 J7 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 29, 30}),  // 30 J8 *
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 31, 32}),                // 30 J13 (not working)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 33, 34}),                // 30 J14 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 35, 36}),                // 30 J15 (unplugged)
+        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), // 30 J16               // 31 J16
     }),
   };
 }
@@ -215,7 +298,9 @@ class CubeMapping {
 class StaggeredTower {
   public final float x, y, z, r;
   public final int n;
-  StaggeredTower(float _x, float _y, float _z, float _r, int _n) { x=_x; y=_y; z=_z; r=_r; n=_n;}
+  public final Cube.Wiring[] wiring;
+  StaggeredTower(float _x, float _y, float _z, float _r, int _n) { this(_x, _y, _z, _r, _n, new Cube.Wiring[]{}); }
+  StaggeredTower(float _x, float _y, float _z, float _r, int _n, Cube.Wiring[] _wiring) { x=_x; y=_y; z=_z; r=_r; n=_n; wiring=_wiring;}
 }
 
 /**

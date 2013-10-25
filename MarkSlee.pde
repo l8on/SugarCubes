@@ -5,13 +5,17 @@ class MidiMusic extends SCPattern {
   
   private final Stack<LightUp> newLayers = new Stack<LightUp>();
   private final BasicParameter lightSize = new BasicParameter("SIZE", 0.5);
+
   private final LinearEnvelope sparkle = new LinearEnvelope(0, 1, 500);
   private float sparkleBright = 100;
+
+  private final LinearEnvelope sweep = new LinearEnvelope(0, 1, 1000);
   
   MidiMusic(GLucose glucose) {
     super(glucose);
     addParameter(lightSize);
     addModulator(sparkle).setValue(1);
+    addModulator(sweep);
   }
   
   class LightUp extends LXLayer {
@@ -77,15 +81,16 @@ class MidiMusic extends SCPattern {
       }
     } else if (note.getChannel() == 1) {
     } else if (note.getChannel() == 9) {
-      switch (note.getPitch()) {
-        case 36:
-          if (note.getVelocity() > 0) {
+      if (note.getVelocity() > 0) {
+        switch (note.getPitch()) {
+          case 36:
             sparkleBright = note.getVelocity() / 127. * 100;
-            if (sparkleBright > 0) {
-              sparkle.trigger();
-            }
-          }
-          break;
+            sparkle.trigger();
+            break;
+          case 37:
+            sweep.trigger();
+            break;
+        }
       }
     }
     return true;
@@ -115,6 +120,17 @@ class MidiMusic extends SCPattern {
         ++i;
       }
     }
+    
+    if (sweep.isRunning()) {
+      for (Point p : model.points) {
+        colors[p.index] = blendColor(colors[p.index], color(
+          (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
+          100 - 100.*sweep.getValuef(),
+          100 - 15.*abs(p.y - sweep.getValuef()*model.yMax)
+        ), ADD);
+      }
+    }
+    
     if (!newLayers.isEmpty()) {
       synchronized(newLayers) {
         while (!newLayers.isEmpty()) {

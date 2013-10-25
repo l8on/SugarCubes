@@ -142,6 +142,11 @@ class UICrossfader extends UIWindow {
     (displayMode = new UIToggleSet(4, titleHeight + 36, w-9, 20)).setOptions(new String[] { "A", "COMP", "B" }).setValue("COMP").addToContainer(this);
   }
   
+  public UICrossfader setDisplayMode(String value) {
+    displayMode.setValue(value);
+    return this;
+  }
+  
   public String getDisplayMode() {
     return displayMode.getValue();
   }

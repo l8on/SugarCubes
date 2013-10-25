@@ -513,13 +513,23 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       return true;
 
     case 91: // play
-    case 97: // left bank
-      midiEngine.setFocusedDeck(0);
+      if (shiftOn) {
+        midiEngine.setFocusedDeck(GLucose.LEFT_DECK);
+      } else {
+        uiCrossfader.setDisplayMode("A");
+      }
       return true;
-
+      
+    case 92: // stop
+      uiCrossfader.setDisplayMode("COMP");
+      return true;
+      
     case 93: // rec
-    case 96: // right bank
-      midiEngine.setFocusedDeck(1);
+      if (shiftOn) {
+        midiEngine.setFocusedDeck(GLucose.RIGHT_DECK);
+      } else {
+        uiCrossfader.setDisplayMode("B");
+      }
       return true;
 
     case 94: // up bank

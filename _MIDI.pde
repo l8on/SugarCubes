@@ -62,8 +62,12 @@ class MidiEngine {
         midiControllers.add(new APC40MidiInput(this, device, apcDeck).setEnabled(true));
       } else if (device.getName().contains("SLIDER/KNOB KORG")) {
         midiControllers.add(new KorgNanoKontrolMidiInput(this, device).setEnabled(true));
+      } else if (device.getName().contains("Arturia MINILAB")) {
+        midiControllers.add(new ArturiaMinilabMidiInput(this, device).setEnabled(true));
       } else {
-        boolean enabled = device.getName().contains("KEYBOARD KORG") || device.getName().contains("Bus 1 Apple");
+        boolean enabled =
+          device.getName().contains("KEYBOARD KORG") ||
+          device.getName().contains("Bus 1 Apple");
         midiControllers.add(new GenericDeviceMidiInput(this, device).setEnabled(enabled));
       }
     }
@@ -860,6 +864,36 @@ class APC40MidiOutput implements LXParameter.Listener, GridOutput {
     if (col < 8 && row < 5) {
       output.sendNoteOn(col, 53+row, state);
     }
+  }
+}
+
+class ArturiaMinilabMidiInput extends GenericDeviceMidiInput {
+  ArturiaMinilabMidiInput(MidiEngine midiEngine, MidiInputDevice d) {
+    super(midiEngine, d);
+  }
+  
+  protected boolean handleControllerChange(rwmidi.Controller cc) {
+    int parameterIndex = -1;
+    switch (cc.getCC()) {
+      case 7:   parameterIndex = 0; break;
+      case 74:  parameterIndex = 1; break;
+      case 71:  parameterIndex = 2; break;
+      case 76:  parameterIndex = 3; break;
+      case 114: parameterIndex = 4; break;
+      case 18:  parameterIndex = 5; break;
+      case 19:  parameterIndex = 6; break;
+      case 16:  parameterIndex = 7; break;
+    }
+    if (parameterIndex >= 0) {
+      List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
+      if (parameterIndex < parameters.size()) {
+        LXParameter p = parameters.get(parameterIndex);
+        float curVal = p.getValuef();
+        curVal += (cc.getValue() - 64) / 127.;
+        p.setValue(constrain(curVal, 0, 1));
+      }
+    }
+    return false;
   }
 }
 

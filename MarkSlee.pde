@@ -801,13 +801,18 @@ class BassPod extends SCPattern {
 
   private GraphicEQ eq = null;
   
+  private final BasicParameter clr = new BasicParameter("CLR", 0.5);
+  
   public BassPod(GLucose glucose) {
     super(glucose);
+    addParameter(clr);
   }
   
   protected void onActive() {
     if (eq == null) {
       eq = new GraphicEQ(lx, 16);
+      eq.range.setValue(0.4);
+      eq.level.setValue(0.4);
       eq.slope.setValue(0.6);
       addParameter(eq.level);
       addParameter(eq.range);
@@ -822,8 +827,10 @@ class BassPod extends SCPattern {
     
     float bassLevel = eq.getAverageLevel(0, 5);
     
+    float satBase = bassLevel*480*clr.getValuef();
+    
     for (Point p : model.points) {
-      int avgIndex = (int) constrain(1 + abs(p.x-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
+      int avgIndex = (int) constrain(1 + abs(p.x-model.cx)/(model.cx)*(eq.numBands-5), 0, eq.numBands-5);
       float value = 0;
       for (int i = avgIndex; i < avgIndex + 5; ++i) {
         value += eq.getLevel(i);
@@ -833,7 +840,7 @@ class BassPod extends SCPattern {
       float b = constrain(8 * (value*model.yMax - abs(p.y-model.yMax/2.)), 0, 100);
       colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.y - model.cy) + abs(p.x - model.cx)) % 360,
-        constrain(bassLevel*240 - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
+        constrain(satBase - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
         b
       );
     }

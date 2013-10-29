@@ -28,6 +28,7 @@ LXPattern[] patterns(GLucose glucose) {
 
     
     // Slee
+    new Cathedrals(glucose),
     new MidiMusic(glucose),
     new Pulley(glucose),
     new Swarm(glucose),

@@ -1,3 +1,70 @@
+class Cathedrals extends SCPattern {
+  
+  private final BasicParameter xpos = new BasicParameter("XPOS", 0.5);
+  private final BasicParameter wid = new BasicParameter("WID", 0.5);
+  private final BasicParameter arms = new BasicParameter("ARMS", 0.5);
+  private final BasicParameter sat = new BasicParameter("SAT", 0.5);
+  private GraphicEQ eq;
+  
+  Cathedrals(GLucose glucose) {
+    super(glucose);
+    addParameter(xpos);
+    addParameter(wid);
+    addParameter(arms);
+    addParameter(sat);
+  }
+ 
+  protected void onActive() {
+    if (eq == null) {
+      eq = new GraphicEQ(lx, 16);
+      eq.slope.setValue(0.7);
+      eq.range.setValue(0.4);
+      eq.attack.setValue(0.4);
+      eq.release.setValue(0.4);
+      addParameter(eq.level);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
+    }
+  }
+
+ 
+  public void run(double deltaMs) {
+    eq.run(deltaMs);
+    float bassLevel = eq.getAverageLevel(0, 4);
+    float trebleLevel = eq.getAverageLevel(8, 6);
+    
+    float falloff = 100 / (2 + 14*wid.getValuef());
+    float cx = model.xMin + (model.xMax-model.xMin) * xpos.getValuef();
+    float barm = 12 + 60*arms.getValuef()*max(0, 2*(bassLevel-0.1));
+    float tarm = 12 + 60*arms.getValuef()*max(0, 2*(trebleLevel-0.1));
+    
+    float arm = 0;
+    float middle = 0;
+    
+    float sf = 100. / (70 - 69.9*sat.getValuef());
+
+    for (Point p : model.points) {
+      float d = MAX_FLOAT;
+      if (p.y > model.cy) {
+        arm = tarm;
+        middle = model.yMax * 3/5.;
+      } else {
+        arm = barm;
+        middle = model.yMax * 1/5.;
+      }
+      if (abs(p.x - cx) < arm) {
+        d = min(abs(p.x - cx), abs(p.y - middle));
+      }
+      colors[p.index] = color(
+        (lx.getBaseHuef() + .2*abs(p.y - model.cy)) % 360,
+        min(100, sf*dist(abs(p.x - cx), p.y, arm, middle)),
+        max(0, 120 - d*falloff));
+    }
+  } 
+}
+  
 class MidiMusic extends SCPattern {
   
   private final Stack<LXLayer> newLayers = new Stack<LXLayer>();
@@ -404,7 +471,7 @@ class ViolinWave extends SCPattern {
     }
     
     float zeroDBReference = pow(10, (50 - 190*level.getValuef())/20.);
-    float dB = 20*GraphicEQ.log10(lx.audioInput().mix.level() / zeroDBReference);    
+    float dB = 20*GraphicEQ.log10(lx.audioInput().mix.level() / zeroDBReference);
     if (dB > dbValue.getValuef()) {
       rising = true;
       dbValue.setRangeFromHereTo(dB, 10).trigger();

@@ -149,22 +149,22 @@ scubes.add(new StaggeredTower(//tower 10
       83.75+39+43-124.5,   // x
       0,   // y
        -47.5-43,   // z
-     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
+     45,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
 scubes.add(new StaggeredTower(//tower 11
       83.75,   // x
        0,   // y
        -47.5,   // z
-     0,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  );  
+     45,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  );  
 scubes.add(new StaggeredTower(//tower 12
       83.75+39,   // x
        0,   // y
        -47.5,   // z
-     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
+     45,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
 scubes.add(new StaggeredTower(//tower 13
        83.75+39+43,   // x
        0,   // y
        -47.5-43,   // z
-     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
+     45,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
 
 // scubes.add(new StaggeredTower(// Single cube on top of tower 4
 //       42,               // x

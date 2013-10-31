@@ -1,6 +1,11 @@
 class Cathedrals extends SCPattern {
-  
+  private Projection projection;
+  private SinLFO angle = new SinLFO(0, TWO_PI, 3000);
+  private BasicParameter rotateY = new BasicParameter("rotateY", .0);
+  //private final BasicParameter transx = new BasicParameter("TX", 0.5);
+  //private final BasicParameter transy = new BasicParameter("TY", 0.5);
   private final BasicParameter xpos = new BasicParameter("XPOS", 0.5);
+  private final BasicParameter ypos = new BasicParameter("YPOS", 0.5);
   private final BasicParameter wid = new BasicParameter("WID", 0.5);
   private final BasicParameter arms = new BasicParameter("ARMS", 0.5);
   private final BasicParameter sat = new BasicParameter("SAT", 0.5);
@@ -8,7 +13,11 @@ class Cathedrals extends SCPattern {
   
   Cathedrals(GLucose glucose) {
     super(glucose);
+    projection = new Projection(model);
+    addModulator(angle).trigger();
+    addParameter(rotateY);
     addParameter(xpos);
+    addParameter(ypos);
     addParameter(wid);
     addParameter(arms);
     addParameter(sat);
@@ -31,12 +40,16 @@ class Cathedrals extends SCPattern {
 
  
   public void run(double deltaMs) {
+    projection.reset(model)
+    //.translateCenter(model, constrain(20*xpos.getValuef(), 0, model.xMax), constrain(20*ypos.getValuef(), 0, model.xMax), 0)
+    .rotate(rotateY.getValuef()*360, model.cx,0,1);
     eq.run(deltaMs);
     float bassLevel = eq.getAverageLevel(0, 4);
     float trebleLevel = eq.getAverageLevel(8, 6);
     
     float falloff = 100 / (2 + 14*wid.getValuef());
     float cx = model.xMin + (model.xMax-model.xMin) * xpos.getValuef();
+    float cy = model.yMin + (model.yMax-model.yMin) * ypos.getValuef();
     float barm = 12 + 60*arms.getValuef()*max(0, 2*(bassLevel-0.1));
     float tarm = 12 + 60*arms.getValuef()*max(0, 2*(trebleLevel-0.1));
     
@@ -45,14 +58,16 @@ class Cathedrals extends SCPattern {
     
     float sf = 100. / (70 - 69.9*sat.getValuef());
 
-    for (Point p : model.points) {
+    for (Coord p : projection) 
+    //for (Point p: model.points)
+                     {
       float d = MAX_FLOAT;
       if (p.y > model.cy) {
         arm = tarm;
-        middle = model.yMax * 3/5.;
+        middle = model.yMax * 3/4.;
       } else {
         arm = barm;
-        middle = model.yMax * 1/5.;
+        middle = model.yMax * 1/4.;
       }
       if (abs(p.x - cx) < arm) {
         d = min(abs(p.x - cx), abs(p.y - middle));

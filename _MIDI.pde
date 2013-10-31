@@ -411,7 +411,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 7:
      switch (channel) {
        case 0:
-         // effects.colorFucker.hueShift.setValue(value);
+         uiSpeed.speed.setValue(0.5 - value*0.5);
          return true;
        case 1:
          effects.colorFucker.desat.setValue(value);

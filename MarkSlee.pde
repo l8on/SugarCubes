@@ -1,3 +1,70 @@
+class Cathedrals extends SCPattern {
+  
+  private final BasicParameter xpos = new BasicParameter("XPOS", 0.5);
+  private final BasicParameter wid = new BasicParameter("WID", 0.5);
+  private final BasicParameter arms = new BasicParameter("ARMS", 0.5);
+  private final BasicParameter sat = new BasicParameter("SAT", 0.5);
+  private GraphicEQ eq;
+  
+  Cathedrals(GLucose glucose) {
+    super(glucose);
+    addParameter(xpos);
+    addParameter(wid);
+    addParameter(arms);
+    addParameter(sat);
+  }
+ 
+  protected void onActive() {
+    if (eq == null) {
+      eq = new GraphicEQ(lx, 16);
+      eq.slope.setValue(0.7);
+      eq.range.setValue(0.4);
+      eq.attack.setValue(0.4);
+      eq.release.setValue(0.4);
+      addParameter(eq.level);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
+    }
+  }
+
+ 
+  public void run(double deltaMs) {
+    eq.run(deltaMs);
+    float bassLevel = eq.getAverageLevel(0, 4);
+    float trebleLevel = eq.getAverageLevel(8, 6);
+    
+    float falloff = 100 / (2 + 14*wid.getValuef());
+    float cx = model.xMin + (model.xMax-model.xMin) * xpos.getValuef();
+    float barm = 12 + 60*arms.getValuef()*max(0, 2*(bassLevel-0.1));
+    float tarm = 12 + 60*arms.getValuef()*max(0, 2*(trebleLevel-0.1));
+    
+    float arm = 0;
+    float middle = 0;
+    
+    float sf = 100. / (70 - 69.9*sat.getValuef());
+
+    for (Point p : model.points) {
+      float d = MAX_FLOAT;
+      if (p.y > model.cy) {
+        arm = tarm;
+        middle = model.yMax * 3/5.;
+      } else {
+        arm = barm;
+        middle = model.yMax * 1/5.;
+      }
+      if (abs(p.x - cx) < arm) {
+        d = min(abs(p.x - cx), abs(p.y - middle));
+      }
+      colors[p.index] = color(
+        (lx.getBaseHuef() + .2*abs(p.y - model.cy)) % 360,
+        min(100, sf*dist(abs(p.x - cx), p.y, arm, middle)),
+        max(0, 120 - d*falloff));
+    }
+  } 
+}
+  
 class MidiMusic extends SCPattern {
   
   private final Stack<LXLayer> newLayers = new Stack<LXLayer>();
@@ -19,6 +86,12 @@ class MidiMusic extends SCPattern {
     addParameter(lightSize);
     addParameter(wave);
     addModulator(sparkle).setValue(1);
+  }
+  
+  void onReset() {
+    for (LightUp light : lights) {
+      light.noteOff(null);
+    }
   }
   
   class Sweep extends LXLayer {
@@ -144,6 +217,12 @@ class MidiMusic extends SCPattern {
             sparkleBright = note.getVelocity() / 127. * 100;
             sparkleDirection = false;
             sparkle.trigger();       
+            break;
+          case 39:
+            effects.boom.trigger();
+            break;
+          case 40:
+            effects.flash.trigger();
             break;
         }
       }
@@ -392,7 +471,7 @@ class ViolinWave extends SCPattern {
     }
     
     float zeroDBReference = pow(10, (50 - 190*level.getValuef())/20.);
-    float dB = 20*GraphicEQ.log10(lx.audioInput().mix.level() / zeroDBReference);    
+    float dB = 20*GraphicEQ.log10(lx.audioInput().mix.level() / zeroDBReference);
     if (dB > dbValue.getValuef()) {
       rising = true;
       dbValue.setRangeFromHereTo(dB, 10).trigger();
@@ -722,13 +801,18 @@ class BassPod extends SCPattern {
 
   private GraphicEQ eq = null;
   
+  private final BasicParameter clr = new BasicParameter("CLR", 0.5);
+  
   public BassPod(GLucose glucose) {
     super(glucose);
+    addParameter(clr);
   }
   
   protected void onActive() {
     if (eq == null) {
       eq = new GraphicEQ(lx, 16);
+      eq.range.setValue(0.4);
+      eq.level.setValue(0.4);
       eq.slope.setValue(0.6);
       addParameter(eq.level);
       addParameter(eq.range);
@@ -743,8 +827,10 @@ class BassPod extends SCPattern {
     
     float bassLevel = eq.getAverageLevel(0, 5);
     
+    float satBase = bassLevel*480*clr.getValuef();
+    
     for (Point p : model.points) {
-      int avgIndex = (int) constrain(1 + abs(p.x-model.xMax/2.)/(model.xMax/2.)*(eq.numBands-5), 0, eq.numBands-5);
+      int avgIndex = (int) constrain(1 + abs(p.x-model.cx)/(model.cx)*(eq.numBands-5), 0, eq.numBands-5);
       float value = 0;
       for (int i = avgIndex; i < avgIndex + 5; ++i) {
         value += eq.getLevel(i);
@@ -754,7 +840,7 @@ class BassPod extends SCPattern {
       float b = constrain(8 * (value*model.yMax - abs(p.y-model.yMax/2.)), 0, 100);
       colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.y - model.cy) + abs(p.x - model.cx)) % 360,
-        constrain(bassLevel*240 - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
+        constrain(satBase - .6*dist(p.x, p.y, model.cx, model.cy), 0, 100),
         b
       );
     }
@@ -1282,7 +1368,7 @@ class Traktor extends SCPattern {
       colors[p.index] = lx.hsb(
         (360 + lx.getBaseHuef() + .8*abs(p.x-model.cx)) % 360,
         100,
-        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy)), 0, 100)
+        constrain(9 * (bass[pos]*model.cy - abs(p.y - model.cy + 5)), 0, 100)
       );
       colors[p.index] = blendColor(colors[p.index], lx.hsb(
         (400 + lx.getBaseHuef() + .5*abs(p.x-model.cx)) % 360,
@@ -1298,11 +1384,12 @@ class ColorFuckerEffect extends SCEffect {
   
   final BasicParameter level = new BasicParameter("BRT", 1);
   final BasicParameter desat = new BasicParameter("DSAT", 0);
+  final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
   final BasicParameter sharp = new BasicParameter("SHARP", 0);
   final BasicParameter soft = new BasicParameter("SOFT", 0);
   final BasicParameter mono = new BasicParameter("MONO", 0);
   final BasicParameter invert = new BasicParameter("INVERT", 0);
-  final BasicParameter hueShift = new BasicParameter("HSHFT", 0);
+
   
   float[] hsb = new float[3];
   
@@ -1311,10 +1398,10 @@ class ColorFuckerEffect extends SCEffect {
     addParameter(level);
     addParameter(desat);
     addParameter(sharp);
+    addParameter(hueShift);
     addParameter(soft);
     addParameter(mono);
     addParameter(invert);
-    addParameter(hueShift);
   }
   
   public void doApply(int[] colors) {

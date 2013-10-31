@@ -260,14 +260,14 @@ public PandaMapping[] buildPandaList() {
    }),    
      new PandaMapping(
        "10.200.1.31", new ChannelMapping[] {
-         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J3 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 65, 66}),       // J3 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J4
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 55, 56}), // 30 J7 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 57, 58}), //  J8 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 59, 60}),           // J13 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 61, 62}),                // 30 J14 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 63, 64}),                //  J15
-         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 65, 66}),              //  J16
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),              //  J16
      }),
      new PandaMapping(
        "10.200.1.32", new ChannelMapping[] {

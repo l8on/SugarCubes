@@ -460,7 +460,7 @@ class Worms extends SCPattern {
 	    addParameter(pEQ);	    addParameter(pConfusion);
 		addParameter(pSpawn);	addParameter(pColor);
 
-	    middle = new PVector(model.cx, model.cy, 71);
+	    middle = new PVector(1.5*model.cx, 1.5*model.cy, 71);
 		if (lattice == null) lattice = new dLattice();
 		for (int i=0; i<numCursors; i++) { dCursor c = new dCursor(); reset(c); cur.add(c); }
 		onParameterChanged(pEQ); setNewDest();

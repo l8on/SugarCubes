@@ -91,7 +91,7 @@ public Model buildModel() {
 float current_x_position = 0;
 scubes.add(new StaggeredTower(//tower 1
       current_x_position,               // x
-       6   ,   // y
+       15   ,   // y
        0  ,   // z
      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
 current_x_position += 25.25;
@@ -103,7 +103,7 @@ scubes.add(new StaggeredTower(// tower 2
 current_x_position += 25.25;
 scubes.add(new StaggeredTower(//tower 3
       current_x_position,               // x
-       6   ,   // y
+       15   ,   // y
        0,   // z
      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WRR, WFL, WRR}) );
 current_x_position += 25.25;
@@ -112,13 +112,13 @@ scubes.add(new StaggeredTower(//tower 4
        0,   // y
        -10.5  ,   // z
      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 25.25;
+current_x_position += 28;
 scubes.add(new StaggeredTower(//tower 5
       current_x_position,               // x
-       6   ,   // y
-       0 ,   // z
+       15   ,   // y
+       -4.5 ,   // z
      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
-current_x_position += 25.25;
+current_x_position += 28;
 scubes.add(new StaggeredTower(//tower 6
       current_x_position,               // x
        0 ,   // y
@@ -127,7 +127,7 @@ scubes.add(new StaggeredTower(//tower 6
 current_x_position += 25.25;
 scubes.add(new StaggeredTower(// tower 7
       current_x_position,               // x
-       6   ,   // y
+       15   ,   // y
       0,   // z
      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
 current_x_position += 25.25;     
@@ -139,34 +139,33 @@ scubes.add(new StaggeredTower(//tower 8
 current_x_position += 25.25;
 scubes.add(new StaggeredTower(//tower 9
       current_x_position,               // x
-       6   ,   // y
+       15   ,   // y
        0,   // z
      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
 current_x_position += 25.25;
 
-
-
-//Cubes for Nitrogen Shoot
-scubes.add(new StaggeredTower(//tower 10 
-      120,   // x
-       36,   // y
-       0,   // z
-     0,  2, new Cube.Wiring[]{ WRL, WFR})  );  
+//TOWERS ON DANCE FLOOR
+scubes.add(new StaggeredTower(//tower 10
+      83.75+39+43-124.5,   // x
+      0,   // y
+       -47.5-43,   // z
+     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
 scubes.add(new StaggeredTower(//tower 11
-      120,               // x
-       36  ,   // y
-       0,   // z
-     0,  2, new Cube.Wiring[]{ WRL, WFR})  );  
+      83.75,   // x
+       0,   // y
+       -47.5,   // z
+     0,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  );  
 scubes.add(new StaggeredTower(//tower 12
-      120,               // x
-       36  ,   // y
-       0,   // z
-     0,  2, new Cube.Wiring[]{ WFL, WRR})  );  
+      83.75+39,   // x
+       0,   // y
+       -47.5,   // z
+     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
 scubes.add(new StaggeredTower(//tower 13
-      120,               // x
-       36,   // y
-       0,   // z
-     0, 4, new Cube.Wiring[]{ WFR, WRL})  );  
+       83.75+39+43,   // x
+       0,   // y
+       -47.5-43,   // z
+     0,  4, new Cube.Wiring[]{ WRR, WFL, WRR, WFL})  ); 
+
 // scubes.add(new StaggeredTower(// Single cube on top of tower 4
 //       42,               // x
 //        112   ,   // y
@@ -264,9 +263,20 @@ public PandaMapping[] buildPandaList() {
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J3 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J4
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 55, 56}), // 30 J7 
-         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }), //  J8 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 57, 58}), //  J8 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 59, 60}),           // J13 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 61, 62}),                // 30 J14 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 63, 64}),                //  J15
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 65, 66}),              //  J16
+     }),
+     new PandaMapping(
+       "10.200.1.32", new ChannelMapping[] {
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J3 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),       // J4
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 67, 68}), // 30 J7 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 69, 70}), //  J8 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),           // J13 
+         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                // 30 J14 
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),                //  J15
          new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { }),              //  J16
      }),

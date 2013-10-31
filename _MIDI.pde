@@ -447,7 +447,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       } else {
         cv = cv - 64;
       }
-      val += (cv - 64) / 300.;
+      val += (cv - 64) / 500.;
       effects.colorFucker.hueShift.setValue((val+1) % 1);
       return true;
     }

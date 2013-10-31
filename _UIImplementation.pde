@@ -472,10 +472,14 @@ class UIDebugText extends UIContext {
 }
 
 class UISpeed extends UIWindow {
+  
+  final BasicParameter speed;
+  
   UISpeed(float x, float y, float w, float h) {
     super("SPEED", x, y, w, h);
+    speed = new BasicParameter("SPEED", 0.5);
     new UIParameterSlider(4, titleHeight, w-10, 20)
-    .setParameter(new BasicParameter("SPEED", 0.5).addListener(new LXParameter.Listener() {
+    .setParameter(speed.addListener(new LXParameter.Listener() {
       public void onParameterChanged(LXParameter parameter) {
         lx.setSpeed(parameter.getValuef() * 2);
       }

@@ -72,6 +72,7 @@ UICrossfader uiCrossfader;
 UIMidi uiMidi;
 UIMapping uiMapping;
 UIDebugText uiDebugText;
+UISpeed uiSpeed;
 
 // Camera variables
 float eyeR, eyeA, eyeX, eyeY, eyeZ, midX, midY, midZ;
@@ -173,7 +174,7 @@ void setup() {
     new UIBlendMode(4, 332, 140, 86),
     new UIEffects(4, 422, 140, 144),
     new UITempo(4, 570, 140, 50),
-    new UISpeed(4, 624, 140, 50),
+    uiSpeed = new UISpeed(4, 624, 140, 50),
         
     new UIPatternDeck(lx.engine.getDeck(GLucose.RIGHT_DECK), "PATTERN B", width-144, 4, 140, 324),
     uiMidi = new UIMidi(midiEngine, width-144, 332, 140, 158),

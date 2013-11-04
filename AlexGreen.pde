@@ -1,6 +1,7 @@
-class SineSphere extends SCPattern {
-  private SinLFO yrot = new SinLFO(0, TWO_PI, 2000);
+class SineSphere extends DPat {
+  private SinLFO yrot = new SinLFO(0, TWO_PI, 3000);
   public final Projection sinespin; 
+  private BasicParameter rotation = new BasicParameter("rotation", 0);
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
 
@@ -28,8 +29,8 @@ class SineSphere extends SCPattern {
    this.vibration_min = vibration_min;
    this.vibration_max = vibration_max;
    this.vperiod = vperiod;
-   addParameter(bounceamp = new BasicParameter("Amp", .5));
-   addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
+   //addParameter(bounceamp = new BasicParameter("Amp", .5));
+   //addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
    addParameter(widthparameter = new BasicParameter("Width", .1));
    addParameter(huespread = new BasicParameter("Hue", .2));
    
@@ -97,11 +98,13 @@ void run(double deltaMs) {
 
 
 final Sphery[] spherys;
+ 
   SineSphere(GLucose glucose) 
   {
     super(glucose);
     sinespin = new Projection(model);
     addModulator(yrot).trigger();
+    addParameter(rotation);
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {
       new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000),
@@ -131,7 +134,7 @@ final Sphery[] spherys;
 //     }
 //   }
 
-     void run( double deltaMs) {
+    public void run( double deltaMs) {
      float t = lx.tempo.rampf();
      float bpm = lx.tempo.bpmf();
      //spherys[1].run(deltaMs);
@@ -139,15 +142,20 @@ final Sphery[] spherys;
      //spherys[3].run(deltaMs);]
      sinespin.reset(model)
 
-     // Translate so the center of the car is the origin, offset by yPos
-      .translateCenter(model, 0, 0, 0)
+     // Translate so the center of the car is the origin, offset 
+      .translateCenter(model, 0, model.cx, 0)
+      .scale(1.3,1.3,1.3)
+      // Rotate around the origin (now the center of the car) about an y-vector
+      .rotate(yrot.getValuef(), 0, 1 , 0);
 
-      // Rotate around the origin (now the center of the car) about an X-vector
-      .rotate(yrot.getValuef(), 0, 1, 0);
+      
 
+      //.translateCenter(model, model.cx, , model.cz);
+   
 
-
-     for (Point p: model.points){
+     for (Coord p: sinespin)
+    // for (Point p: model.points)
+     {
     color c = 0;
     c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
     c = blendColor(c, spherys[0].spheryvalue(p.x, p.y, p.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
@@ -222,13 +230,13 @@ PVector centerofcube(int i) {
 Cube c = model.cubes.get(i);
 
 println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
-PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-//println("raw x" + cubeangle.x + "raw y" + cubeangle.y + "raw z" + cubeangle.z);
+// PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
+println("raw x angle:  " + c.rx + "raw y angle:  " + c.ry + "raw z angle:  " + c.rz);
 PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
 println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
-PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, 0, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
+PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, cubecenter.y, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
  // nCos*(y-o.y) - nSin*(z-o.z) + o.y
-cubecenter = PVector.add(cubecenter, centerrot);
+cubecenter = PVector.add(new PVector(c.x, c.y, c.z), centerrot);
 println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
 
 

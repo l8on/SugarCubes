@@ -684,10 +684,11 @@ class Swarm extends SCPattern {
         colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + 0.3 * abs(p.x - hOffX.getValuef())) % 360, 
         constrain(80 + 40 * fV, 0, 100), 
-        constrain(100 - (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
+        constrain(100 - 
+          (30 - fV * falloff.getValuef()) * modDist(i + (s*63)%61, offset.getValuef() * strip.metrics.numPoints, strip.metrics.numPoints), 0, 100)
           );
         ++i;
-      }
+      } 
       ++s;
     }
   }

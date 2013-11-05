@@ -1,5 +1,5 @@
 class SineSphere extends DPat {
-  private SinLFO yrot = new SinLFO(0, TWO_PI, 3000);
+  private SawLFO yrot = new SawLFO(0, TWO_PI, 3000);
   public final Projection sinespin; 
   private BasicParameter rotation = new BasicParameter("rotation", 0);
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
@@ -18,6 +18,7 @@ class SineSphere extends DPat {
   public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
+  public PVector circlecenter; 
   
   
  
@@ -44,6 +45,7 @@ class SineSphere extends DPat {
   }
  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
   float vibration_min, float vibration_max, float vperiod)  
+ 
  {
     this.f1xcenter = f1xcenter;
    this.f1ycenter = f1ycenter;
@@ -72,19 +74,20 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
     }
  //void updatespherey(deltaMs, )
 
- int quadrant(Point p) { 
-  if (p.x > f1xcenter ) {return 140;}
+ int quadrant(PVector q) {
+   //float theta =  
+  if (q.x > f1xcenter ) {return 140;}
     else  {return 250;}
 
 
 
  }
- color spheryvalue (float px, float py, float pz , float f1xc, float f1yc, float f1zc) 
- {
+ color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) 
+ {  circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
 //switch(sShpape.cur() ) {}  
-   return lx.hsb(constrain( huespread.getValuef()*5*px, 0, 360) ,
-    dist(px, py, pz, f1xc, f1yc, f1zc) , 
-    max(0, 100 - 100*widthparameter.getValuef()*abs(dist(px, py, pz, f1xcenter, ybounce.getValuef(), f1zcenter)
+   return lx.hsb(constrain( huespread.getValuef()*5*quadrant(p), 0, 360) ,
+    PVector.dist(p,circlecenter) , 
+    max(0, 100 - 100*widthparameter.getValuef()*abs(PVector.dist(p, circlecenter)
       - vibration.getValuef() ) ) ); 
  }
  color ellipsevalue(float px, float py, float pz , float f1xc, float f1yc, float f1zc, float f2xc, float f2yc, float f2zc)
@@ -152,23 +155,24 @@ final Sphery[] spherys;
      sinespin.reset(model)
 
      // Translate so the center of the car is the origin, offset 
-      .translateCenter(model, 0, model.cx, 0)
-      .scale(1.3,1.3,1.3)
+      .translateCenter(model, 0, 0, 0)
+     // .scale(1.3,1.3,1.3)
       // Rotate around the origin (now the center of the car) about an y-vector
-      .rotate(yrot.getValuef(), 0, 1 , 0);
-
+      .rotate(yrot.getValuef(), 0, 1 , 0)
+      .translate(model.cx, model.cy, model.cz);
       
 
       //.translateCenter(model, model.cx, , model.cz);
    
 
-     //for (Coord p: sinespin)
-    for (Point p: model.points)
+     for (Coord p: sinespin)
+   // for (Point p: model.points)
      {
+      PVector P = new PVector(p.x, p.y, p.z);
     color c = 0;
-    c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-    c = blendColor(c, spherys[0].spheryvalue(p.x, p.y, p.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-    c = blendColor(c, spherys[2].spheryvalue(p.x, p.y, p.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+    c = blendColor(c, spherys[1].spheryvalue(P, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+    c = blendColor(c, spherys[0].spheryvalue(P, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+    c = blendColor(c, spherys[2].spheryvalue(P, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
      
       colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
 

@@ -71,10 +71,19 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
    return dist(px, py, pz, f1x, f1y, f1z);
     }
  //void updatespherey(deltaMs, )
+
+ int quadrant(Point p) { 
+  if (p.x > f1xcenter ) {return 140;}
+    else  {return 250;}
+
+
+
+ }
  color spheryvalue (float px, float py, float pz , float f1xc, float f1yc, float f1zc) 
  {
 //switch(sShpape.cur() ) {}  
-   return lx.hsb(constrain(huespread.getValuef()*5*px, 0, 360) , dist(px, py, pz, f1xc, f1yc, f1zc) , 
+   return lx.hsb(constrain( huespread.getValuef()*5*px, 0, 360) ,
+    dist(px, py, pz, f1xc, f1yc, f1zc) , 
     max(0, 100 - 100*widthparameter.getValuef()*abs(dist(px, py, pz, f1xcenter, ybounce.getValuef(), f1zcenter)
       - vibration.getValuef() ) ) ); 
  }
@@ -137,9 +146,9 @@ final Sphery[] spherys;
     public void run( double deltaMs) {
      float t = lx.tempo.rampf();
      float bpm = lx.tempo.bpmf();
-     //spherys[1].run(deltaMs);
-     //spherys[2].run(deltaMs);
-     //spherys[3].run(deltaMs);]
+     spherys[0].run(deltaMs);
+     spherys[1].run(deltaMs);
+     spherys[2].run(deltaMs);
      sinespin.reset(model)
 
      // Translate so the center of the car is the origin, offset 
@@ -153,8 +162,8 @@ final Sphery[] spherys;
       //.translateCenter(model, model.cx, , model.cz);
    
 
-     for (Coord p: sinespin)
-    // for (Point p: model.points)
+     //for (Coord p: sinespin)
+    for (Point p: model.points)
      {
     color c = 0;
     c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);

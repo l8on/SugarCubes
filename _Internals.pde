@@ -4,7 +4,7 @@
  *         //\\   //\\                 //\\   //\\  
  *        ///\\\ ///\\\               ///\\\ ///\\\
  *        \\\/// \\\///               \\\/// \\\///
- *         \\//   \\//                 \\//   \\//
+ *         \\//   \\//                 \\//   \\//H
  *
  *        EXPERTS ONLY!!              EXPERTS ONLY!!
  *
@@ -48,7 +48,7 @@ int startMillis, lastMillis;
 
 // Core engine variables
 GLucose glucose;
-HeronLX lx;
+LX lx;
 LXPattern[] patterns;
 Effects effects;
 MappingTool mappingTool;

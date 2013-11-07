@@ -79,14 +79,21 @@ public Model buildModel() {
         for (int i=0; i<NumBackTowers/2; i++) scubes.add(new StaggeredTower(
                   (i+1)*CW,                                                                 // x
                   (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
-                 - ((i % 2 == 0) ? 0 : 11) + 97          ,   // z
+                 - ((i % 2 == 0) ? 0 : 11) + 80          ,   // z
                  225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );         // num cubes
         
         for (int i=0; i<NumBackTowers/2; i++) scubes.add(new StaggeredTower(
                   (i+1)*CW,                                                                 // x
                   (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
-                 - ((i % 2 == 0) ? 0 : 11) + 97 -pow(CH*CH + CW*CW, .5),   // z
+                 - ((i % 2 == 0) ? 0 : 11) + 80 - pow(CH*CH + CW*CW, .5),   // z
                  225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) ); 
+
+      // for (int i=0; i<2 ; i++) scubes.add(new StaggeredTower(
+      //             (i+1)*CW,                                                                 // x
+      //                0             ,   // y
+      //            - 0 + 97 - 2*pow(CH*CH + CW*CW, .5),   // z
+      //            225,  MaxCubeHeight  ) ); 
+        
         ArrayList<Cube> dcubes = new ArrayList<Cube>();
         // for (int i=1; i<6; i++) {
         //         if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));        

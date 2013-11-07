@@ -1,6 +1,8 @@
-class SineSphere extends DPat {
+class SineSphere extends SCPattern {
   private SawLFO yrot = new SawLFO(0, TWO_PI, 3000);
-  public final Projection sinespin; 
+  private SawLFO yrot2 = new SawLFO(0, -TWO_PI,  8000);
+  public final Projection sinespin;
+  public final Projection sinespin2; 
   private BasicParameter rotation = new BasicParameter("rotation", 0);
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
@@ -74,10 +76,12 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
     }
  //void updatespherey(deltaMs, )
 
- int quadrant(PVector q) {
-   //float theta =  
-  if (q.x > f1xcenter ) {return 140;}
-    else  {return 250;}
+ float quadrant(PVector q) {
+   float qtheta = atan2(  (q.x-f1xcenter) , (-q.y - f1ycenter) ); 
+      return map(qtheta, -PI/2, PI/2, 120, 240);
+  //if (q.x > f1xcenter ) {return 140 ;}
+    //else  {return 250;}  
+  //if ()
 
 
 
@@ -115,13 +119,20 @@ final Sphery[] spherys;
   {
     super(glucose);
     sinespin = new Projection(model);
+    sinespin2 = new Projection(model);
     addModulator(yrot).trigger();
+    addModulator(yrot2).trigger(); 
     addParameter(rotation);
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {
       new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000),
       new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
       new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
+
+      new Sphery(.3*model.xMax, .4*model.yMax, .6*model.zMax, modelrad/16, modelrad/8, 4000),
+      new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
+      new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
+      
     };
   
   }
@@ -152,8 +163,11 @@ final Sphery[] spherys;
      spherys[0].run(deltaMs);
      spherys[1].run(deltaMs);
      spherys[2].run(deltaMs);
+     spherys[3].run(deltaMs);
+     
      sinespin.reset(model)
-
+     
+    
      // Translate so the center of the car is the origin, offset 
       .translateCenter(model, 0, 0, 0)
      // .scale(1.3,1.3,1.3)
@@ -162,7 +176,7 @@ final Sphery[] spherys;
       .translate(model.cx, model.cy, model.cz);
       
 
-      //.translateCenter(model, model.cx, , model.cz);
+   
    
 
      for (Coord p: sinespin)
@@ -173,28 +187,29 @@ final Sphery[] spherys;
     c = blendColor(c, spherys[1].spheryvalue(P, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
     c = blendColor(c, spherys[0].spheryvalue(P, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
     c = blendColor(c, spherys[2].spheryvalue(P, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
-     
-      colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+    
 
-               }
+    colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+    
       
+               }
+   sinespin2.reset(model).
+   translateCenter(model,0,0,0).
+   rotate(yrot2.getValuef(), 0, 1, 0).
+   translate(model.cx,model.cy,model.cz);
+
+    for (Coord p: sinespin2)
+    {   color c = 0;
+      PVector P = new PVector(p.x, p.y, p.z);
+        c = blendColor(c, spherys[3].spheryvalue(P, .3*model.xMax, .7*model.yMax, .6*model.zMax),ADD);
+        colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+
+    }  
+
 
 
   }
-  int spheremode = 0;
   
-   // void keyPressed() {
-   //   spheremode++;
-   //     }
-
-  // color CalcPoint(PVector Px) 
-  // { 
-  //      // if (spheremode == 0 )
-              //{
-            
-             //}
-      //   else if (spheremode == 1)
-      // {
 
       //   color c = 0;
       //   c = blendColor(c, spherys[3].ellipsevalue(Px.x, Px.y, Px.z, model.xMax/4, model.yMax/4, model.zMax/4, 3*model.xMax/4, 3*model.yMax/4, 3*model.zMax/4),ADD);
@@ -233,7 +248,7 @@ ArrayList<PVector> centerlistrelative = new ArrayList<PVector>();
 for (int i = 0; i < model.cubes.size(); i++){
   Cube a = model.cubes.get(i);
   cubeorigin.add(new PVector(a.x, a.y, a.z));
-  centerlist.add(centerofcube(i));
+  centerlist.add(new PVector(a.cx, a.cy, a.cz) );
   
 } 
 

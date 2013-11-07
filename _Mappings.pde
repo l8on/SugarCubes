@@ -75,13 +75,18 @@ public Model buildModel() {
   ////////////////////////////////////////////////////////////////////////
   // dan's proposed lattice
         ArrayList<StaggeredTower> scubes = new ArrayList<StaggeredTower>();
-        if (NumBackTowers != 11) exit();
-        // for (int i=0; i<NumBackTowers; i++) scubes.add(new StaggeredTower(
-        //           (i+1)*CW,                                                                 // x
-        //           (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
-        //          - ((i % 2 == 0) ? 0 : 11) + 97          ,   // z
-        //          225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );         // num cubes
+        //if (NumBackTowers != 25) exit();
+        for (int i=0; i<NumBackTowers/2; i++) scubes.add(new StaggeredTower(
+                  (i+1)*CW,                                                                 // x
+                  (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
+                 - ((i % 2 == 0) ? 0 : 11) + 97          ,   // z
+                 225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) );         // num cubes
         
+        for (int i=0; i<NumBackTowers/2; i++) scubes.add(new StaggeredTower(
+                  (i+1)*CW,                                                                 // x
+                  (i % 2 == 0) ? 0 : CH * 2./3.                ,   // y
+                 - ((i % 2 == 0) ? 0 : 11) + 97 -pow(CH*CH + CW*CW, .5),   // z
+                 225, (i % 2 == 0) ? MaxCubeHeight : MaxCubeHeight-1) ); 
         ArrayList<Cube> dcubes = new ArrayList<Cube>();
         // for (int i=1; i<6; i++) {
         //         if (i>1) dcubes.add(new Cube(-6+CW*4/3*i             , 0, 0, 0, 0, 0, WRR));        
@@ -89,82 +94,82 @@ public Model buildModel() {
         // }
 
 float current_x_position = 0;
-scubes.add(new StaggeredTower(//tower 1
-      current_x_position,               // x
-       15   ,   // y
-       0  ,   // z
-     45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 25.25;
-scubes.add(new StaggeredTower(// tower 2
-      current_x_position,               // x
-       0  ,   // y
-       -10.5   ,   // z
-     45, 6, new Cube.Wiring[] { WFR, WFL, WRR, WRR, WFL, WRR}) );
-current_x_position += 25.25;
-scubes.add(new StaggeredTower(//tower 3
-      current_x_position,               // x
-       15   ,   // y
-       0,   // z
-     45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WRR, WFL, WRR}) );
-current_x_position += 25.25;
-scubes.add(new StaggeredTower(//tower 4
-    current_x_position,               // x
-       0,   // y
-       -10.5  ,   // z
-     45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 28;
-scubes.add(new StaggeredTower(//tower 5
-      current_x_position,               // x
-       15   ,   // y
-       -4.5 ,   // z
-     45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
-current_x_position += 28;
-scubes.add(new StaggeredTower(//tower 6
-      current_x_position,               // x
-       0 ,   // y
-       -10.5,   // z
-     45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 25.25;
-scubes.add(new StaggeredTower(// tower 7
-      current_x_position,               // x
-       15   ,   // y
-      0,   // z
-     45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
-current_x_position += 25.25;     
-scubes.add(new StaggeredTower(//tower 8
-      current_x_position,               // x
-       0  ,   // y
-       -10.5 ,   // z
-     45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 25.25;
-scubes.add(new StaggeredTower(//tower 9
-      current_x_position,               // x
-       15   ,   // y
-       0,   // z
-     45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
-current_x_position += 25.25;
+// scubes.add(new StaggeredTower(//tower 1
+//       current_x_position,               // x
+//        15   ,   // y
+//        0  ,   // z
+//      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
+// scubes.add(new StaggeredTower(// tower 2
+//       current_x_position,               // x
+//        0  ,   // y
+//        -10.5   ,   // z
+//      45, 6, new Cube.Wiring[] { WFR, WFL, WRR, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
+// scubes.add(new StaggeredTower(//tower 3
+//       current_x_position,               // x
+//        15   ,   // y
+//        0,   // z
+//      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
+// scubes.add(new StaggeredTower(//tower 4
+//     current_x_position,               // x
+//        0,   // y
+//        -10.5  ,   // z
+//      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
+// current_x_position += 28;
+// scubes.add(new StaggeredTower(//tower 5
+//       current_x_position,               // x
+//        15   ,   // y
+//        -4.5 ,   // z
+//      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
+// current_x_position += 28;
+// scubes.add(new StaggeredTower(//tower 6
+//       current_x_position,               // x
+//        0 ,   // y
+//        -10.5,   // z
+//      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
+// scubes.add(new StaggeredTower(// tower 7
+//       current_x_position,               // x
+//        15   ,   // y
+//       0,   // z
+//      45, 6, new Cube.Wiring[] { WRR, WFL, WRR, WFL, WRR, WFL}) );
+// current_x_position += 25.25;     
+// scubes.add(new StaggeredTower(//tower 8
+//       current_x_position,               // x
+//        0  ,   // y
+//        -10.5 ,   // z
+//      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
+// scubes.add(new StaggeredTower(//tower 9
+//       current_x_position,               // x
+//        15   ,   // y
+//        0,   // z
+//      45, 6, new Cube.Wiring[] { WFL, WRR, WFL, WRR, WFL, WRR}) );
+// current_x_position += 25.25;
 
-//TOWERS ON DANCE FLOOR
-scubes.add(new StaggeredTower(//tower 10
-      83.75+39+43-124.5,   // x
-      0,   // y
-       -47.5-43,   // z
-     45,  4, new Cube.Wiring[]{ WRR, WFL, WFL, WRR})  ); 
-scubes.add(new StaggeredTower(//tower 11
-      83.75,   // x
-       0,   // y
-       -47.5,   // z
-     45,  4, new Cube.Wiring[]{ WFL, WRR, WRR, WFL})  );  
-scubes.add(new StaggeredTower(//tower 12
-      83.75+39,   // x
-       0,   // y
-       -47.5,   // z
-     45,  4, new Cube.Wiring[]{ WRR, WFL, WFL, WRR})  ); 
-scubes.add(new StaggeredTower(//tower 13
-       83.75+39+43,   // x
-       0,   // y
-       -47.5-43,   // z
-     45,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  ); 
+// //TOWERS ON DANCE FLOOR
+// scubes.add(new StaggeredTower(//tower 10
+//       83.75+39+43-124.5,   // x
+//       0,   // y
+//        -47.5-43,   // z
+//      45,  4, new Cube.Wiring[]{ WRR, WFL, WFL, WRR})  ); 
+// scubes.add(new StaggeredTower(//tower 11
+//       83.75,   // x
+//        0,   // y
+//        -47.5,   // z
+//      45,  4, new Cube.Wiring[]{ WFL, WRR, WRR, WFL})  );  
+// scubes.add(new StaggeredTower(//tower 12
+//       83.75+39,   // x
+//        0,   // y
+//        -47.5,   // z
+//      45,  4, new Cube.Wiring[]{ WRR, WFL, WFL, WRR})  ); 
+// scubes.add(new StaggeredTower(//tower 13
+//        83.75+39+43,   // x
+//        0,   // y
+//        -47.5-43,   // z
+//      45,  4, new Cube.Wiring[]{ WFL, WRR, WFL, WRR})  ); 
 
 // scubes.add(new StaggeredTower(// Single cube on top of tower 4
 //       42,               // x
@@ -185,7 +190,7 @@ scubes.add(new StaggeredTower(//tower 13
   // These guts just convert the shorthand mappings into usable objects
   ArrayList<Tower> towerList = new ArrayList<Tower>();
   ArrayList<Cube> tower;
-  Cube[] cubes = new Cube[100];
+  Cube[] cubes = new Cube[200];
   int cubeIndex = 1;  
   float px, pz, ny;
   for (TowerMapping tm : towerCubes) {

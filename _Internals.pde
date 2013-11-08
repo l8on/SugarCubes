@@ -62,6 +62,7 @@ boolean debugMode = false;
 DebugUI debugUI;
 boolean uiOn = true;
 boolean simulationOn = true;
+boolean diagnosticsOn = false;
 LXPattern restoreToPattern = null;
 PImage logo;
 float[] hsb = new float[3];
@@ -216,6 +217,8 @@ void setup() {
  * Core render loop and drawing functionality.
  */
 void draw() {
+  long drawStart = System.nanoTime();
+  
   // Draws the simulation and the 2D UI overlay
   background(40);
 
@@ -233,13 +236,18 @@ void draw() {
     debugUI.maskColors(sendColors);
   }
 
+  long simulationStart = System.nanoTime();
   if (simulationOn) {
     drawSimulation(simulationColors);
   }
+  long simulationNanos = System.nanoTime() - simulationStart;
   
   // 2D Overlay UI
+  long uiStart = System.nanoTime();
   drawUI();
-    
+  long uiNanos = System.nanoTime() - uiStart;
+  
+  long gammaStart = System.nanoTime();
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   for (int i = 0; i < sendColors.length; ++i) {
@@ -247,11 +255,43 @@ void draw() {
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
+  long gammaNanos = System.nanoTime() - gammaStart;
   
-  // TODO(mcslee): move into GLucose engine
+  long sendStart = System.nanoTime();
   for (PandaDriver p : pandaBoards) {
     p.send(sendColors);
   }
+  long sendNanos = System.nanoTime() - sendStart;
+  
+  long drawNanos = System.nanoTime() - drawStart;
+  
+  if (diagnosticsOn) {
+    drawDiagnostics(lx.drawNanos(), drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos);
+  }
+}
+
+void drawDiagnostics(long lxNanos, long drawNanos, long simulationNanos, long uiNanos, long gammaNanos, long sendNanos) {
+  float ws = 4 / 1000000.;
+  int thirtyfps = 1000000000 / 30;
+  int sixtyfps = 1000000000 / 60;
+  int x = width - 138;
+  int y = height - 14;
+  int h = 10;
+  noFill();
+  stroke(#999999);
+  rect(x, y, thirtyfps * ws, h);
+  noStroke();
+  int xp = x;
+  float hv = 0;
+  for (long val : new long[] {lxNanos, simulationNanos, uiNanos, gammaNanos, sendNanos }) {
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, val * ws, h-1);
+    hv += 140;
+    xp += val * ws;
+  }
+  noFill();
+  stroke(#333333);
+  line(x+sixtyfps*ws, y+1, x+sixtyfps*ws, y+h-1);
 }
 
 void drawSimulation(color[] simulationColors) {
@@ -526,6 +566,11 @@ void keyPressed() {
     case 'p':
       for (PandaDriver p : pandaBoards) {
         p.toggle();
+      }
+      break;
+    case 'q':
+      if (!midiEngine.isQwertyEnabled()) {
+        diagnosticsOn = !diagnosticsOn;
       }
       break;
     case 's':

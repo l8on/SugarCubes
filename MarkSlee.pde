@@ -1477,7 +1477,7 @@ class QuantizeEffect extends SCEffect {
 
 class BlurEffect extends SCEffect {
   
-  final LXParameter amount = new BasicParameter("AMT", 0);
+  final BasicParameter amount = new BasicParameter("AMT", 0);
   final int[] frame;
   final LinearEnvelope env = new LinearEnvelope(0, 1, 100);
   

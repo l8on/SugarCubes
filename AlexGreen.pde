@@ -6,6 +6,7 @@ class SineSphere extends SCPattern {
   private BasicParameter rotation = new BasicParameter("rotation", 0);
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
+  public final PVector P = new PVector();
 
   class Sphery {
   float f1xcenter, f1ycenter, f1zcenter, f2xcenter , f2ycenter, f2zcenter; //second three are for an ellipse with two foci
@@ -20,9 +21,7 @@ class SineSphere extends SCPattern {
   public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
-  public PVector circlecenter; 
-  
-  
+  public final PVector circlecenter = new PVector(); 
  
   public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) 
   {
@@ -43,7 +42,7 @@ class SineSphere extends SCPattern {
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
    addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000./lx.tempo.bpm())).trigger(); //vibration.modulateDurationBy(vx);
-   
+      
   }
  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
   float vibration_min, float vibration_max, float vperiod)  
@@ -84,13 +83,24 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
   //if (q.x > f1xcenter ) {return 140 ;}
     //else  {return 250;}  
  }
- color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) 
- {  circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
+ color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) {
+   circlecenter.set(f1xcenter, f1ycenter, f1zcenter); 
+
+  // circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
 //switch(sShpape.cur() ) {}  
-   return lx.hsb(constrain( huespread.getValuef()*5*quadrant(p), 0, 360) ,
-    80, 
-    max(0, 100 - 100*widthparameter.getValuef()*abs(PVector.dist(p, circlecenter)
-      - vibration.getValuef() ) ) ); 
+
+   float b = max(0, 100 - 100*widthparameter.getValuef()*abs(p.dist(circlecenter)
+      - vibration.getValuef() ) );
+
+   if (b <= 0) {
+     return 0;
+   }
+
+   return lx.hsb(
+     constrain(huespread.getValuef()*5*quadrant(p), 0, 360),
+     80,
+     b
+   ); 
  }
  color ellipsevalue(float px, float py, float pz , float f1xc, float f1yc, float f1zc, float f2xc, float f2yc, float f2zc)
   {
@@ -131,8 +141,7 @@ final Sphery[] spherys;
       new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
       new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
       
-    };
-  
+    };  
   }
 
 // public void onParameterChanged(LXParameter parameter)
@@ -180,14 +189,15 @@ final Sphery[] spherys;
      for (Coord p: sinespin)
    // for (Point p: model.points)
      {
-      PVector P = new PVector(p.x, p.y, p.z);
-    color c = 0;
-    c = blendColor(c, spherys[1].spheryvalue(P, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
-    c = blendColor(c, spherys[0].spheryvalue(P, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
-    c = blendColor(c, spherys[2].spheryvalue(P, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+       P.set(p.x, p.y, p.z);
+      // PVector P = new PVector(p.x, p.y, p.z);
+    color c = #000000;
+    c = blendIfColor(c, spherys[1].spheryvalue(P, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+    c = blendIfColor(c, spherys[0].spheryvalue(P, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+    c = blendIfColor(c, spherys[2].spheryvalue(P, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
     
 
-    colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+    colors[p.index] = c;
     
       
                }
@@ -198,15 +208,23 @@ final Sphery[] spherys;
 
     for (Coord p: sinespin2)
     {   color c = 0;
-      PVector P = new PVector(p.x, p.y, p.z);
-        c = blendColor(c, spherys[3].spheryvalue(P, .3*model.xMax, .7*model.yMax, .6*model.zMax),ADD);
+      // PVector P = new PVector(p.x, p.y, p.z);
+        P.set(p.x, p.y, p.z);
+        c = blendIfColor(c, spherys[3].spheryvalue(P, .3*model.xMax, .7*model.yMax, .6*model.zMax),ADD);
          
-        colors[p.index] = blendColor(colors[p.index], c , ADD);
+        colors[p.index] = blendIfColor(colors[p.index], c , ADD);
 
     }  
 
 
 
+  }
+  
+  color blendIfColor(color c1, color c2, int mode) {
+    if (c2 != 0) {
+      return blendColor(c1, c2, mode);
+    }
+    return c1;
   }
   
 

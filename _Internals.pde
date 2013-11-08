@@ -61,6 +61,7 @@ boolean mappingMode = false;
 boolean debugMode = false;
 DebugUI debugUI;
 boolean uiOn = true;
+boolean simulationOn = true;
 LXPattern restoreToPattern = null;
 PImage logo;
 float[] hsb = new float[3];
@@ -232,7 +233,29 @@ void draw() {
     debugUI.maskColors(sendColors);
   }
 
-  camera(
+  if (simulationOn) {
+    drawSimulation(simulationColors);
+  }
+  
+  // 2D Overlay UI
+  drawUI();
+    
+  // Gamma correction here. Apply a cubic to the brightness
+  // for better representation of dynamic range
+  for (int i = 0; i < sendColors.length; ++i) {
+    lx.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+  }
+  
+  // TODO(mcslee): move into GLucose engine
+  for (PandaDriver p : pandaBoards) {
+    p.send(sendColors);
+  }
+}
+
+void drawSimulation(color[] simulationColors) {
+    camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
     0, -1, 0
@@ -279,22 +302,6 @@ void draw() {
     vertex(p.x, p.y, p.z);
   }
   endShape();
-  
-  // 2D Overlay UI
-  drawUI();
-    
-  // Gamma correction here. Apply a cubic to the brightness
-  // for better representation of dynamic range
-  for (int i = 0; i < sendColors.length; ++i) {
-    lx.RGBtoHSB(sendColors[i], hsb);
-    float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-  }
-  
-  // TODO(mcslee): move into GLucose engine
-  for (PandaDriver p : pandaBoards) {
-    p.send(sendColors);
-  }
 }
 
 void drawBassBox(BassBox b, boolean hasSub) {
@@ -519,6 +526,11 @@ void keyPressed() {
     case 'p':
       for (PandaDriver p : pandaBoards) {
         p.toggle();
+      }
+      break;
+    case 's':
+      if (!midiEngine.isQwertyEnabled()) {
+        simulationOn = !simulationOn;
       }
       break;
     case 'u':

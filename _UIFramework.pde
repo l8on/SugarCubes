@@ -538,6 +538,27 @@ public abstract class UIParameterControl extends UIObject implements LXParameter
     redraw();
   }
   
+  protected float getNormalized() {
+    if (parameter != null) {
+      if (parameter instanceof BasicParameter) {
+        return ((BasicParameter)parameter).getNormalizedf();
+      }
+      return parameter.getValuef();
+    }
+    return 0;
+  }
+  
+  protected UIParameterControl setNormalized(float value) {
+    if (parameter != null) {
+      if (parameter instanceof BasicParameter) {
+        ((BasicParameter)parameter).setNormalized(value);
+      } else {
+        parameter.setValue(value);
+      }
+    }
+    return this;
+  }
+  
   public UIParameterControl setParameter(LXParameter parameter) {
     if (this.parameter != null) {
       if (this.parameter instanceof LXListenableParameter) {
@@ -559,6 +580,7 @@ public class UIParameterKnob extends UIParameterControl {
   private int knobSize = 28;
   private final float knobIndent = .4;  
   private final int knobLabelHeight = 14;
+  private boolean showValue = false;
     
   public UIParameterKnob(float x, float y) {
     this(x, y, 0, 0);
@@ -570,7 +592,7 @@ public class UIParameterKnob extends UIParameterControl {
   }
 
   protected void onDraw(PGraphics pg) {    
-    float knobValue = (parameter != null) ? parameter.getValuef() : 0;
+    float knobValue = getNormalized();
     
     pg.ellipseMode(CENTER);
     pg.noStroke();
@@ -590,7 +612,12 @@ public class UIParameterKnob extends UIParameterControl {
     pg.fill(#333333);
     pg.ellipse(knobSize/2, knobSize/2, knobSize/2, knobSize/2);
 
-    String knobLabel = (parameter != null) ? parameter.getLabel() : null;
+    String knobLabel;
+    if (showValue) {
+      knobLabel = (parameter != null) ? ("" + parameter.getValue()) : null;
+    } else {
+      knobLabel = (parameter != null) ? parameter.getLabel() : null;
+    }
     if (knobLabel == null) {
       knobLabel = "-";
     } else if (knobLabel.length() > 4) {
@@ -614,13 +641,18 @@ public class UIParameterKnob extends UIParameterControl {
     } else {
       lastMousePress = now;
     }
+    showValue = true;
+    redraw();    
+  }
+  
+  public void onMouseReleased(float mx, float my) {
+    showValue = false;
+    redraw();
   }
   
   public void onMouseDragged(float mx, float my, float dx, float dy) {
-    if (parameter != null) {
-      float value = constrain(parameter.getValuef() - dy / 100., 0, 1);
-      parameter.setValue(value);
-    }
+    float value = constrain(getNormalized() - dy / 100., 0, 1);
+    setNormalized(value);
   }
 }
 
@@ -649,12 +681,12 @@ public class UIParameterSlider extends UIParameterControl {
   private float doubleClickX = 0;
   protected void onMousePressed(float mx, float my) {
     long now = millis();
-    float handleLeft = 4 + parameter.getValuef() * (w-8-handleWidth);
+    float handleLeft = 4 + getNormalized() * (w-8-handleWidth);
     if (mx >= handleLeft && mx < handleLeft + handleWidth) {
       editing = true;
     } else {
       if ((now - lastClick) < DOUBLE_CLICK_THRESHOLD && abs(mx - doubleClickX) < 3) {
-        parameter.setValue(doubleClickMode);  
+        setNormalized(doubleClickMode);  
       }
       doubleClickX = mx;
       if (mx < w*.25) {
@@ -674,7 +706,7 @@ public class UIParameterSlider extends UIParameterControl {
   
   protected void onMouseDragged(float mx, float my, float dx, float dy) {
     if (editing) {
-      parameter.setValue(constrain((mx - handleWidth/2. - 4) / (w-8-handleWidth), 0, 1));
+      setNormalized(constrain((mx - handleWidth/2. - 4) / (w-8-handleWidth), 0, 1));
     }
   }
 }

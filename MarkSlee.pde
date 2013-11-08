@@ -516,7 +516,7 @@ class BouncyBalls extends SCPattern {
     float zPos;
     
     BouncyBall(int i) {
-      addModulator(xPos).setBasis(random(0, TWO_PI)).start();
+      addModulator(xPos.setBasis(random(0, TWO_PI)).start());
       addModulator(yPos = new Accelerator(0, 0, 0));
       zPos = lerp(model.zMin, model.zMax, (i+2.) / (NUM_BALLS + 4.));
     }
@@ -644,7 +644,7 @@ class SpaceTime extends SCPattern {
 }
 
 class Swarm extends SCPattern {
-
+  
   SawLFO offset = new SawLFO(0, 1, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
@@ -931,7 +931,7 @@ class BoomEffect extends SCEffect {
       boom.trigger();
     }
 
-    void doApply(int[] colors) {
+    void apply(int[] colors) {
       float brightv = 100 * bright.getValuef();
       float falloffv = falloffv();
       float satv = sat.getValuef() * 100;
@@ -971,10 +971,10 @@ class BoomEffect extends SCEffect {
     onEnable();
   }
 
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     for (Layer l : layers) {
       if (l.boom.isRunning()) {
-        l.doApply(colors);
+        l.apply(colors);
       }
     }
   }
@@ -1405,7 +1405,7 @@ class ColorFuckerEffect extends SCEffect {
     addParameter(invert);
   }
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     if (!enabled) {
       return;
     }
@@ -1457,7 +1457,7 @@ class QuantizeEffect extends SCEffect {
     lastQuant = 0;
   } 
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     float fQuant = amount.getValuef();
     if (fQuant > 0) {
       float tRamp = (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
@@ -1503,7 +1503,7 @@ class BlurEffect extends SCEffect {
     env.setRangeFromHereTo(0, 1000).start();
   }
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     float amt = env.getValuef() * amount.getValuef();
     if (amt > 0) {    
       amt = (1 - amt);

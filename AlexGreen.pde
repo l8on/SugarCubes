@@ -62,7 +62,7 @@ class SineSphere extends SCPattern {
    addModulator(ybounce).trigger(); 
    addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
    addParameter(widthparameter = new BasicParameter("Width", .1));
-   addParameter(huespread = new BasicParameter("Hue", .2));
+   addParameter(huespread = new BasicParameter("Hue", 1));
   
 }
 
@@ -77,19 +77,17 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
  //void updatespherey(deltaMs, )
 
  float quadrant(PVector q) {
-   float qtheta = atan2(  (q.x-f1xcenter) , (-q.y - f1ycenter) ); 
-      return map(qtheta, -PI/2, PI/2, 120, 240);
+   float qtheta = atan2(  (q.x-f1xcenter) , (q.z - f1zcenter) ); 
+   //println( "qtheta  " + qtheta);
+
+    return map(qtheta, -PI/2, PI/2, 0, 360);
   //if (q.x > f1xcenter ) {return 140 ;}
     //else  {return 250;}  
-  //if ()
-
-
-
  }
  color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) 
  {  circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
 //switch(sShpape.cur() ) {}  
-   return lx.hsb(constrain( huespread.getValuef()*5*quadrant(p), 0, 360) ,
+   return lx.hsb(constrain( huespread.getValuef()*quadrant(p), 0, 360) ,
     PVector.dist(p,circlecenter) , 
     max(0, 100 - 100*widthparameter.getValuef()*abs(PVector.dist(p, circlecenter)
       - vibration.getValuef() ) ) ); 
@@ -202,7 +200,8 @@ final Sphery[] spherys;
     {   color c = 0;
       PVector P = new PVector(p.x, p.y, p.z);
         c = blendColor(c, spherys[3].spheryvalue(P, .3*model.xMax, .7*model.yMax, .6*model.zMax),ADD);
-        colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c));
+         
+        colors[p.index] = blendColor(colors[p.index], c , ADD);
 
     }  
 

@@ -266,11 +266,11 @@ void draw() {
   long drawNanos = System.nanoTime() - drawStart;
   
   if (diagnosticsOn) {
-    drawDiagnostics(lx.drawNanos(), drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos);
+    drawDiagnostics(drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos);
   }
 }
 
-void drawDiagnostics(long lxNanos, long drawNanos, long simulationNanos, long uiNanos, long gammaNanos, long sendNanos) {
+void drawDiagnostics(long drawNanos, long simulationNanos, long uiNanos, long gammaNanos, long sendNanos) {
   float ws = 4 / 1000000.;
   int thirtyfps = 1000000000 / 30;
   int sixtyfps = 1000000000 / 60;
@@ -283,7 +283,7 @@ void drawDiagnostics(long lxNanos, long drawNanos, long simulationNanos, long ui
   noStroke();
   int xp = x;
   float hv = 0;
-  for (long val : new long[] {lxNanos, simulationNanos, uiNanos, gammaNanos, sendNanos }) {
+  for (long val : new long[] {lx.timer.drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos }) {
     fill(lx.hsb(hv % 360, 100, 80));
     rect(xp, y, val * ws, h-1);
     hv += 140;
@@ -292,6 +292,23 @@ void drawDiagnostics(long lxNanos, long drawNanos, long simulationNanos, long ui
   noFill();
   stroke(#333333);
   line(x+sixtyfps*ws, y+1, x+sixtyfps*ws, y+h-1);
+  
+  y = y - 14;
+  xp = x;
+  float tw = thirtyfps * ws;
+  noFill();
+  stroke(#999999);
+  rect(x, y, tw, h);
+  noStroke();
+  for (long val : new long[] {
+    lx.engine.timer.deckNanos,
+    lx.engine.timer.fxNanos}) {
+    float amt = val / (float) lx.timer.drawNanos;
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, amt * tw, h-1);
+    hv += 140;
+    xp += amt * tw;
+  }  
 }
 
 void drawSimulation(color[] simulationColors) {

@@ -1411,7 +1411,7 @@ class ColorFuckerEffect extends SCEffect {
     float bMod = level.getValuef();
     float sMod = 1 - desat.getValuef();
     float hMod = hueShift.getValuef();
-    float fSharp = 1/(1.0001-sharp.getValuef());
+    float fSharp = sharp.getValuef();
     float fSoft = soft.getValuef();
     boolean mon = mono.getValuef() > 0.5;
     boolean ivt = invert.getValuef() > 0.5;
@@ -1425,6 +1425,7 @@ class ColorFuckerEffect extends SCEffect {
           hsb[2] = 1 - hsb[2];
         }
         if (fSharp > 0) {
+          fSharp = 1/(1-fSharp);
           hsb[2] = hsb[2] < .5 ? pow(hsb[2],fSharp) : 1-pow(1-hsb[2],fSharp);
         }
         if (fSoft > 0) {

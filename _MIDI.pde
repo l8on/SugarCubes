@@ -218,6 +218,16 @@ public abstract class SCMidiInput extends AbstractScrollItem {
       getTargetPattern().noteOff(note);
     }
   }
+  
+  protected void setNormalized(LXParameter parameter, float value) {
+    if (parameter != null) {
+      if (parameter instanceof BasicParameter) {
+        ((BasicParameter)parameter).setNormalized(value);
+      } else {
+        parameter.setValue(value);
+      }
+    }
+  }
 
   // Subclasses may implement these to map top-level functionality
   protected boolean handleProgramChange(ProgramChange pc) { return false; }
@@ -411,31 +421,31 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 7:
      switch (channel) {
        case 0:
-         uiSpeed.speed.setValue(0.5 - value*0.5);
+         uiSpeed.speed.setNormalized(0.5 - value*0.5);
          return true;
        case 1:
-         effects.colorFucker.desat.setValue(value);
+         effects.colorFucker.desat.setNormalized(value);
          return true;
        case 2:
-         effects.colorFucker.sharp.setValue(value);
+         effects.colorFucker.desat.setNormalized(value);
          return true;
        case 3:
-         effects.blur.amount.setValue(value);
+         effects.blur.amount.setNormalized(value);
          return true;
        case 4:
-         effects.quantize.amount.setValue(value);
+         effects.quantize.amount.setNormalized(value);
          return true;
      }
      break;
      
     // Master bright
     case 14:
-      effects.colorFucker.level.setValue(value);
+      effects.colorFucker.level.setNormalized(value);
       return true;
 
     // Crossfader
     case 15:
-      lx.engine.getDeck(GLucose.RIGHT_DECK).getFader().setValue(value);
+      lx.engine.getDeck(GLucose.RIGHT_DECK).getFader().setNormalized(value);
       return true;
       
     // Cue level
@@ -448,7 +458,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
         cv = cv - 64;
       }
       val += (cv - 64) / 500.;
-      effects.colorFucker.hueShift.setValue((val+1) % 1);
+      effects.colorFucker.hueShift.setNormalized((val+1) % 1);
       return true;
     }
     
@@ -461,7 +471,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     if (parameterIndex >= 0) {
       List<LXParameter> parameters = getTargetPattern().getParameters();
       if (parameterIndex < parameters.size()) {
-        parameters.get(parameterIndex).setValue(value);
+        setNormalized(parameters.get(parameterIndex), value);
         return true;
       }
     }
@@ -470,7 +480,7 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
       int effectIndex = number - 20;
       List<LXParameter> parameters = glucose.getSelectedEffect().getParameters();
       if (effectIndex < parameters.size()) {
-        parameters.get(effectIndex).setValue(value);
+        setNormalized(parameters.get(effectIndex), value);
         return true;
       }
     }
@@ -496,10 +506,10 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 49: // SOLO/CUE
       switch (nChan) {
         case 4:
-          effects.colorFucker.mono.setValue(1);
+          effects.colorFucker.mono.setNormalized(1);
           return true;
         case 5:
-          effects.colorFucker.invert.setValue(1);
+          effects.colorFucker.invert.setNormalized(1);
           return true;
         case 6:
           lx.cycleBaseHue(60000);
@@ -607,10 +617,10 @@ public class APC40MidiInput extends GenericDeviceMidiInput {
     case 49: // SOLO/CUE
       switch (nChan) {
         case 4:
-          effects.colorFucker.mono.setValue(0);
+          effects.colorFucker.mono.setNormalized(0);
           return true;
         case 5:
-          effects.colorFucker.invert.setValue(0);
+          effects.colorFucker.invert.setNormalized(0);
           return true;
         case 6:
           lx.setBaseHue(lx.getBaseHue());
@@ -670,7 +680,7 @@ class KorgNanoKontrolMidiInput extends GenericDeviceMidiInput {
       int parameterIndex = number - 16;
       List<LXParameter> parameters = midiEngine.getFocusedPattern().getParameters();
       if (parameterIndex < parameters.size()) {
-        parameters.get(parameterIndex).setValue(cc.getValue() / 127.);
+        setNormalized(parameters.get(parameterIndex), cc.getValue() / 127.);
         return true;
       }
     }
@@ -910,7 +920,7 @@ class ArturiaMinilabMidiInput extends GenericDeviceMidiInput {
       case 75:
         float val = effects.colorFucker.hueShift.getValuef();
         val += (cc.getValue() - 64) / 256.;
-        effects.colorFucker.hueShift.setValue((val+1) % 1);
+        effects.colorFucker.hueShift.setNormalized((val+1) % 1);
         break;
     }
     if (parameterIndex >= 0) {
@@ -919,7 +929,7 @@ class ArturiaMinilabMidiInput extends GenericDeviceMidiInput {
         LXParameter p = parameters.get(parameterIndex);
         float curVal = p.getValuef();
         curVal += (cc.getValue() - 64) / 127.;
-        p.setValue(constrain(curVal, 0, 1));
+        setNormalized(p, constrain(curVal, 0, 1));
       }
     }
     return false;

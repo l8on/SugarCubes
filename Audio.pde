@@ -4,7 +4,7 @@
  */
 public static class GraphicEQ {
   
-  private final HeronLX lx;
+  private final LX lx;
   
   public final BasicParameter level = new BasicParameter("LVL", 0.5);
   public final BasicParameter range = new BasicParameter("RNGE", 0.5);
@@ -19,7 +19,7 @@ public static class GraphicEQ {
   
   public final static int DEFAULT_NUM_BANDS = 16;
 
-  public GraphicEQ(HeronLX lx) {
+  public GraphicEQ(LX lx) {
     this(lx, DEFAULT_NUM_BANDS);
   }
   
@@ -27,7 +27,7 @@ public static class GraphicEQ {
    * Note that the number of bands is a suggestion. Due to the FFT implementation
    * the actual number may be slightly different.
    */
-  public GraphicEQ(HeronLX lx, int num) {
+  public GraphicEQ(LX lx, int num) {
     this.lx = lx;
     fft = new FFT(lx.audioInput().bufferSize(), lx.audioInput().sampleRate());
     fft.window(FFT.HAMMING);

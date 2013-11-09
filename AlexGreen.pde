@@ -4,6 +4,7 @@ class SineSphere extends DPat {
   private BasicParameter rotation = new BasicParameter("rotation", 0);
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
+  public final PVector P = new PVector();
 
   class Sphery {
   float f1xcenter, f1ycenter, f1zcenter, f2xcenter , f2ycenter, f2zcenter; //second three are for an ellipse with two foci
@@ -18,9 +19,6 @@ class SineSphere extends DPat {
   public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
-  public PVector circlecenter; 
-  
-  
  
   public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) 
   {
@@ -41,7 +39,7 @@ class SineSphere extends DPat {
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
    addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000./lx.tempo.bpm())).trigger(); //vibration.modulateDurationBy(vx);
-   
+      
   }
  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
   float vibration_min, float vibration_max, float vperiod)  

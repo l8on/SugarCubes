@@ -4,7 +4,7 @@
  *         //\\   //\\                 //\\   //\\  
  *        ///\\\ ///\\\               ///\\\ ///\\\
  *        \\\/// \\\///               \\\/// \\\///
- *         \\//   \\//                 \\//   \\//
+ *         \\//   \\//                 \\//   \\//H
  *
  *        EXPERTS ONLY!!              EXPERTS ONLY!!
  *
@@ -48,7 +48,7 @@ int startMillis, lastMillis;
 
 // Core engine variables
 GLucose glucose;
-HeronLX lx;
+LX lx;
 LXPattern[] patterns;
 Effects effects;
 MappingTool mappingTool;
@@ -61,6 +61,8 @@ boolean mappingMode = false;
 boolean debugMode = false;
 DebugUI debugUI;
 boolean uiOn = true;
+boolean simulationOn = true;
+boolean diagnosticsOn = false;
 LXPattern restoreToPattern = null;
 PImage logo;
 float[] hsb = new float[3];
@@ -215,6 +217,8 @@ void setup() {
  * Core render loop and drawing functionality.
  */
 void draw() {
+  long drawStart = System.nanoTime();
+  
   // Draws the simulation and the 2D UI overlay
   background(40);
 
@@ -232,7 +236,99 @@ void draw() {
     debugUI.maskColors(sendColors);
   }
 
-  camera(
+  long simulationStart = System.nanoTime();
+  if (simulationOn) {
+    drawSimulation(simulationColors);
+  }
+  long simulationNanos = System.nanoTime() - simulationStart;
+  
+  // 2D Overlay UI
+  long uiStart = System.nanoTime();
+  drawUI();
+  long uiNanos = System.nanoTime() - uiStart;
+  
+  long gammaStart = System.nanoTime();
+  // Gamma correction here. Apply a cubic to the brightness
+  // for better representation of dynamic range
+  for (int i = 0; i < sendColors.length; ++i) {
+    lx.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+  }
+  long gammaNanos = System.nanoTime() - gammaStart;
+  
+  long sendStart = System.nanoTime();
+  for (PandaDriver p : pandaBoards) {
+    p.send(sendColors);
+  }
+  long sendNanos = System.nanoTime() - sendStart;
+  
+  long drawNanos = System.nanoTime() - drawStart;
+  
+  if (diagnosticsOn) {
+    drawDiagnostics(drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos);
+  }
+}
+
+void drawDiagnostics(long drawNanos, long simulationNanos, long uiNanos, long gammaNanos, long sendNanos) {
+  float ws = 4 / 1000000.;
+  int thirtyfps = 1000000000 / 30;
+  int sixtyfps = 1000000000 / 60;
+  int x = width - 138;
+  int y = height - 14;
+  int h = 10;
+  noFill();
+  stroke(#999999);
+  rect(x, y, thirtyfps * ws, h);
+  noStroke();
+  int xp = x;
+  float hv = 0;
+  for (long val : new long[] {lx.timer.drawNanos, simulationNanos, uiNanos, gammaNanos, sendNanos }) {
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, val * ws, h-1);
+    hv += 140;
+    xp += val * ws;
+  }
+  noFill();
+  stroke(#333333);
+  line(x+sixtyfps*ws, y+1, x+sixtyfps*ws, y+h-1);
+  
+  y = y - 14;
+  xp = x;
+  float tw = thirtyfps * ws;
+  noFill();
+  stroke(#999999);
+  rect(x, y, tw, h);
+  h = 5;
+  noStroke();
+  for (long val : new long[] {
+    lx.engine.timer.deckNanos,
+    lx.engine.timer.copyNanos,
+    lx.engine.timer.fxNanos}) {
+    float amt = val / (float) lx.timer.drawNanos;
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, amt * tw, h-1);
+    hv += 140;
+    xp += amt * tw;
+  }
+  
+  xp = x;
+  y += h;
+  hv = 120;
+  for (long val : new long[] {
+    lx.engine.getDeck(0).timer.runNanos,
+    lx.engine.getDeck(1).timer.runNanos,
+    lx.engine.getDeck(1).getFaderTransition().timer.blendNanos}) {
+    float amt = val / (float) lx.timer.drawNanos;
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, amt * tw, h-1);
+    hv += 140;
+    xp += amt * tw;
+  }
+}
+
+void drawSimulation(color[] simulationColors) {
+    camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
     0, -1, 0
@@ -279,22 +375,6 @@ void draw() {
     vertex(p.x, p.y, p.z);
   }
   endShape();
-  
-  // 2D Overlay UI
-  drawUI();
-    
-  // Gamma correction here. Apply a cubic to the brightness
-  // for better representation of dynamic range
-  for (int i = 0; i < sendColors.length; ++i) {
-    lx.RGBtoHSB(sendColors[i], hsb);
-    float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-  }
-  
-  // TODO(mcslee): move into GLucose engine
-  for (PandaDriver p : pandaBoards) {
-    p.send(sendColors);
-  }
 }
 
 void drawBassBox(BassBox b, boolean hasSub) {
@@ -519,6 +599,16 @@ void keyPressed() {
     case 'p':
       for (PandaDriver p : pandaBoards) {
         p.toggle();
+      }
+      break;
+    case 'q':
+      if (!midiEngine.isQwertyEnabled()) {
+        diagnosticsOn = !diagnosticsOn;
+      }
+      break;
+    case 's':
+      if (!midiEngine.isQwertyEnabled()) {
+        simulationOn = !simulationOn;
       }
       break;
     case 'u':

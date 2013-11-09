@@ -79,7 +79,7 @@ class ObjectMuckerEffect extends SCEffect {
   ObjectMuckerEffect(GLucose glucose) {
     super(glucose);
   }
-  public void doApply(int[] colors){
+  public void apply(int[] colors){
     /*for(Strip s: model.strips){
       for(int i=0; i<s.points.size(); i++){
          int index = s.points.get(i).index;
@@ -105,7 +105,7 @@ class BlendFrames extends SCEffect {
        frames[i] = new int[model.points.size()];       
     }
   }
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     if(fcount<maxfbuf){
       for(int i=0; i<colors.length; i++){
         frames[(maxfbuf-1)-fcount][i]=colors[i];

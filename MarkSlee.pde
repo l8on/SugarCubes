@@ -57,10 +57,10 @@ class Cathedrals extends SCPattern {
       if (abs(p.x - cx) < arm) {
         d = min(abs(p.x - cx), abs(p.y - middle));
       }
-      colors[p.index] = color(
+      colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + .2*abs(p.y - model.cy)) % 360,
         min(100, sf*dist(abs(p.x - cx), p.y, arm, middle)),
-        max(0, 120 - d*falloff));
+        constrain(120 - d*falloff, 0, 100));
     }
   } 
 }
@@ -110,7 +110,7 @@ class MidiMusic extends SCPattern {
       }
       float posf = position.getValuef();
       for (Point p : model.points) {
-        colors[p.index] = blendColor(colors[p.index], color(
+        colors[p.index] = blendColor(colors[p.index], lx.hsb(
           (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
           100,
           max(0, bright - posf*100 - falloff*abs(p.y - posf*model.yMax))
@@ -255,7 +255,7 @@ class MidiMusic extends SCPattern {
       for (Point p : s.points) {
         int wavi = (int) constrain(p.x / model.xMax * wval.length, 0, wval.length-1);
         float wavb = max(0, wave.getValuef()*100. - 8.*abs(p.y - wval[wavi]));
-        colors[p.index] = color(
+        colors[p.index] = lx.hsb(
           (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
           100,
           constrain(wavb + max(0, maxBright - 40.*abs(sparklePos - abs(i - (Cube.POINTS_PER_STRIP-1)/2.))), 0, 100)
@@ -516,7 +516,7 @@ class BouncyBalls extends SCPattern {
     float zPos;
     
     BouncyBall(int i) {
-      addModulator(xPos).setBasis(random(0, TWO_PI)).start();
+      addModulator(xPos.setBasis(random(0, TWO_PI)).start());
       addModulator(yPos = new Accelerator(0, 0, 0));
       zPos = lerp(model.zMin, model.zMax, (i+2.) / (NUM_BALLS + 4.));
     }
@@ -644,7 +644,7 @@ class SpaceTime extends SCPattern {
 }
 
 class Swarm extends SCPattern {
-
+  
   SawLFO offset = new SawLFO(0, 1, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
@@ -931,7 +931,7 @@ class BoomEffect extends SCEffect {
       boom.trigger();
     }
 
-    void doApply(int[] colors) {
+    void apply(int[] colors) {
       float brightv = 100 * bright.getValuef();
       float falloffv = falloffv();
       float satv = sat.getValuef() * 100;
@@ -971,10 +971,10 @@ class BoomEffect extends SCEffect {
     onEnable();
   }
 
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     for (Layer l : layers) {
       if (l.boom.isRunning()) {
-        l.doApply(colors);
+        l.apply(colors);
       }
     }
   }
@@ -1405,14 +1405,14 @@ class ColorFuckerEffect extends SCEffect {
     addParameter(invert);
   }
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     if (!enabled) {
       return;
     }
     float bMod = level.getValuef();
     float sMod = 1 - desat.getValuef();
     float hMod = hueShift.getValuef();
-    float fSharp = 1/(1.0001-sharp.getValuef());
+    float fSharp = sharp.getValuef();
     float fSoft = soft.getValuef();
     boolean mon = mono.getValuef() > 0.5;
     boolean ivt = invert.getValuef() > 0.5;
@@ -1426,7 +1426,12 @@ class ColorFuckerEffect extends SCEffect {
           hsb[2] = 1 - hsb[2];
         }
         if (fSharp > 0) {
-          hsb[2] = hsb[2] < .5 ? pow(hsb[2],fSharp) : 1-pow(1-hsb[2],fSharp);
+          fSharp = 1/(1-fSharp);
+          if (hsb[2] < .5) {
+            hsb[2] = pow(hsb[2],fSharp);
+          } else {
+            hsb[2] = 1-pow(1-hsb[2],fSharp);
+          }
         }
         if (fSoft > 0) {
           if (hsb[2] > 0.5) {
@@ -1457,7 +1462,7 @@ class QuantizeEffect extends SCEffect {
     lastQuant = 0;
   } 
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     float fQuant = amount.getValuef();
     if (fQuant > 0) {
       float tRamp = (lx.tempo.rampf() % (1./pow(2,floor((1-fQuant) * 4))));
@@ -1478,7 +1483,7 @@ class QuantizeEffect extends SCEffect {
 
 class BlurEffect extends SCEffect {
   
-  final LXParameter amount = new BasicParameter("AMT", 0);
+  final BasicParameter amount = new BasicParameter("AMT", 0);
   final int[] frame;
   final LinearEnvelope env = new LinearEnvelope(0, 1, 100);
   
@@ -1503,7 +1508,7 @@ class BlurEffect extends SCEffect {
     env.setRangeFromHereTo(0, 1000).start();
   }
   
-  public void doApply(int[] colors) {
+  public void apply(int[] colors) {
     float amt = env.getValuef() * amount.getValuef();
     if (amt > 0) {    
       amt = (1 - amt);

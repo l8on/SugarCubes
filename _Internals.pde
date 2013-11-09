@@ -40,8 +40,8 @@ final float TRAILER_WIDTH = 240;
 final float TRAILER_DEPTH = 97;
 final float TRAILER_HEIGHT = 33;
 
-final int MaxCubeHeight = 5;
-final int NumBackTowers = 11;
+final int MaxCubeHeight = 7;
+final int NumBackTowers = 18;
 
 int targetFramerate = 60;
 int startMillis, lastMillis;

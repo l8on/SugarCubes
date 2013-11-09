@@ -1426,7 +1426,11 @@ class ColorFuckerEffect extends SCEffect {
         }
         if (fSharp > 0) {
           fSharp = 1/(1-fSharp);
-          hsb[2] = hsb[2] < .5 ? pow(hsb[2],fSharp) : 1-pow(1-hsb[2],fSharp);
+          if (hsb[2] < .5) {
+            hsb[2] = pow(hsb[2],fSharp);
+          } else {
+            hsb[2] = 1-pow(1-hsb[2],fSharp);
+          }
         }
         if (fSoft > 0) {
           if (hsb[2] > 0.5) {

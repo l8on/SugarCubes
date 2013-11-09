@@ -299,16 +299,32 @@ void drawDiagnostics(long drawNanos, long simulationNanos, long uiNanos, long ga
   noFill();
   stroke(#999999);
   rect(x, y, tw, h);
+  h = 5;
   noStroke();
   for (long val : new long[] {
     lx.engine.timer.deckNanos,
+    lx.engine.timer.copyNanos,
     lx.engine.timer.fxNanos}) {
     float amt = val / (float) lx.timer.drawNanos;
     fill(lx.hsb(hv % 360, 100, 80));
     rect(xp, y, amt * tw, h-1);
     hv += 140;
     xp += amt * tw;
-  }  
+  }
+  
+  xp = x;
+  y += h;
+  hv = 120;
+  for (long val : new long[] {
+    lx.engine.getDeck(0).timer.runNanos,
+    lx.engine.getDeck(1).timer.runNanos,
+    lx.engine.getDeck(1).getFaderTransition().timer.blendNanos}) {
+    float amt = val / (float) lx.timer.drawNanos;
+    fill(lx.hsb(hv % 360, 100, 80));
+    rect(xp, y, amt * tw, h-1);
+    hv += 140;
+    xp += amt * tw;
+  }
 }
 
 void drawSimulation(color[] simulationColors) {

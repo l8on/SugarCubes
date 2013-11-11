@@ -21,6 +21,7 @@ class SineSphere extends SCPattern {
   public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
+  public BasicParameter vibrationrate;
   public final PVector circlecenter = new PVector(); 
  
   public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) 
@@ -33,17 +34,20 @@ class SineSphere extends SCPattern {
    this.vperiod = vperiod;
    //addParameter(bounceamp = new BasicParameter("Amp", .5));
    //addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
+   addParameter(vibrationrate = new BasicParameter("vibration", 1000, 10000));
    addParameter(widthparameter = new BasicParameter("Width", .1));
-   addParameter(huespread = new BasicParameter("Hue", .5, 10));
+   addParameter(huespread = new BasicParameter("Hue", 180, 360));
    
-   addModulator( vx = new SinLFO(-4000, 10000, 100000)).trigger() ;
+   addModulator( vx = new SinLFO(500, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //ybounce.modulateDurationBy
+   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //bounce.modulateDurationBy
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000./lx.tempo.bpm())).trigger(); //vibration.modulateDurationBy(vx);
+   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000./lx.tempo.bpm() ) ).trigger(); vibration.modulateDurationBy(vx);
       
   }
+
+  //for an ellipse
  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
   float vibration_min, float vibration_max, float vperiod)  
  
@@ -77,16 +81,16 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
 
  float quadrant(PVector q) {
    float qtheta = atan2(  (q.x-f1xcenter) , (q.z - f1zcenter) ); 
-   //println( "qtheta  " + qtheta);
 
-    return map(qtheta, -PI/2, PI/2, 140, 240);
+
+    return map(qtheta, -PI/2, PI/2, 0, huespread.getValuef());
   //if (q.x > f1xcenter ) {return 140 ;}
     //else  {return 250;}  
  }
  color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) {
    circlecenter.set(f1xcenter, f1ycenter, f1zcenter); 
 
-  // circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
+  
 //switch(sShpape.cur() ) {}  
 
    float b = max(0, 100 - 100*widthparameter.getValuef()*abs(p.dist(circlecenter)
@@ -97,7 +101,7 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
    }
 
    return lx.hsb(
-     constrain(huespread.getValuef()*5*quadrant(p), 0, 360),
+     constrain(quadrant(p), 0, 360),
      80,
      b
    ); 

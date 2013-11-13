@@ -46,10 +46,10 @@ class Swim extends SCPattern {
 
     float denominator = max(xAngle.getValuef() + yAngle.getValuef() + zAngle.getValuef(), 1);
 
-    projection.reset(model)
+    projection.reset()
       // Swim around the world
       .rotate(rotation.getValuef(), xAngle.getValuef() / denominator, yAngle.getValuef() / denominator, zAngle.getValuef() / denominator)
-        .translateCenter(model, 0, 50 + yPos.getValuef(), 0);
+        .translateCenter(0, 50 + yPos.getValuef(), 0);
 
     float model_height =  model.yMax - model.yMin;
     float model_width =  model.xMax - model.xMin;
@@ -157,7 +157,7 @@ class Balance extends SCPattern {
     float phase = phaseLFO.getValuef();
 
     float crazy_factor = crazyParam.getValuef() / 0.2;
-    projection.reset(model)
+    projection.reset()
       .rotate(rotationZ.getValuef() * crazy_factor,  0, 1, 0)
         .rotate(rotationX.getValuef() * crazy_factor, 0, 0, 1)
           .rotate(rotationY.getValuef() * crazy_factor, 0, 1, 0);

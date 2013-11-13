@@ -403,7 +403,7 @@ class dCursor {
 		evalTurn(vCur.t2);			evalTurn(vCur.t3);
 	}
 
-	Point 	p1, p2; int i2;
+	LXPoint 	p1, p2; int i2;
 
 	int draw(int nAmount, SCPattern pat) {
 		int nFrom	= (pos    ) >> 12;

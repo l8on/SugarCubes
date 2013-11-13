@@ -26,7 +26,6 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
 
-    
     // Slee
     new Cathedrals(glucose),
     new MidiMusic(glucose),
@@ -104,7 +103,6 @@ LXPattern[] patterns(GLucose glucose) {
     new TestBassMapping(glucose),
     new TestFloorMapping(glucose),
     new TestSpeakerMapping(glucose),    
-    new TestPerformancePattern(glucose),
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

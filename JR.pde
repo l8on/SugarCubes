@@ -75,9 +75,9 @@ class Gimbal extends SCPattern {
     Ring ring2 = new Ring((hue + hue_delta * 1) % 360, radius2, girth);
     Ring ring3 = new Ring((hue + hue_delta * 2) % 360, radius3, girth);
 
-    projection.reset(model)
+    projection.reset()
       // Translate so the center of the car is the origin
-      .translateCenter(model, 0, 0, 0);
+      .center();
 
     for (Coord c : projection) {
       //if (first_run) println(c.x + "," + c.y + "," + c.z);
@@ -191,9 +191,9 @@ class Zebra extends SCPattern {
     float b = (millis() / 1200.f) % (2 * PI);
     float g = (millis() / 1600.f) % (2 * PI);
 
-    projection.reset(model)
+    projection.reset()
       // Translate so the center of the car is the origin
-      .translateCenter(model, 0, 0, 0);
+      .center();
 
     for (Coord c : projection) {
 //      rotate3d(c, a, b, g);

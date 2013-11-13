@@ -264,7 +264,7 @@ public static class PandaDriver {
   
   private int mapStrip(Strip s, int direction, int[] points, int pi) {
     if (direction == FORWARD) {
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         points[pi++] = p.index;
       }
     } else if (direction == BACKWARD) {

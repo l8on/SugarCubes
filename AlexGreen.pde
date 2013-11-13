@@ -136,17 +136,17 @@ final Sphery[] spherys;
      //spherys[1].run(deltaMs);
      //spherys[2].run(deltaMs);
      //spherys[3].run(deltaMs);]
-     sinespin.reset(model)
+     sinespin.reset()
 
      // Translate so the center of the car is the origin, offset by yPos
-      .translateCenter(model, 0, 0, 0)
+      .center()
 
       // Rotate around the origin (now the center of the car) about an X-vector
       .rotate(yrot.getValuef(), 0, 1, 0);
 
 
 
-     for (Point p: model.points){
+     for (LXPoint p : model.points){
     color c = 0;
     c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
     c = blendColor(c, spherys[0].spheryvalue(p.x, p.y, p.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
@@ -242,7 +242,7 @@ float cfloor = c.y;
 
 // if (i%3 == 0){
 
-// for (Point p : c.points ){
+// for (LXPoint p : c.points ){
 //  // colors[p.index]=color(0,0,0);
 //   //float dif = (p.y - c.y);
 //   //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
@@ -251,7 +251,7 @@ float cfloor = c.y;
 
 // else if (i%3 == 1) {
   
-//  for (Point p: c.points){
+//  for (LXPoint p: c.points){
 //   colors[p.index]=color(0,0,0);
 //   float dif = (p.y - c.y);
 //   // colors[p.index] = 
@@ -262,7 +262,7 @@ float cfloor = c.y;
 //     }
 // else if (i%3 == 2){
  // centerlist[i].sub(cubeorigin(i);
-   for (Point p: c.points) {
+   for (LXPoint p: c.points) {
     PVector pv = new PVector(p.x, p.y, p.z);
      colors[p.index] =color( constrain(4* pv.dist(centerlist.get(i)), 0, 360)  , 50, 100 );
    // colors[p.index] =color(constrain(centerlist[i].x, 0, 360), constrain(centerlist[i].y, 0, 100),  );
@@ -290,7 +290,7 @@ HueTestHSB(GLucose glucose) {
 }
   void run(double deltaMs){
 
-  for (Point p : model.points) {
+  for (LXPoint p : model.points) {
     color c = 0;
     c = blendColor(c, lx.hsb(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
     colors[p.index]= c;

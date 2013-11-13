@@ -6,8 +6,8 @@ boolean btwn  	(double 	a,double b,double 	c)		{ return a >= b && a <= c; 	}
 float	interp 	(float a, float b, float c) { return (1-a)*b + a*c; }
 float	randctr	(float a) { return random(a) - a*.5; }
 float	min		(float a, float b, float c, float d) { return min(min(a,b),min(c,d)); 	}
-float   pointDist(Point p1, Point p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); 	}
-float   xyDist   (Point p1, Point p2) { return dist(p1.x,p1.y,p2.x,p2.y); 				}
+float   pointDist(LXPoint p1, LXPoint p2) { return dist(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z); 	}
+float   xyDist   (LXPoint p1, LXPoint p2) { return dist(p1.x,p1.y,p2.x,p2.y); 				}
 float 	distToSeg(float x, float y, float x1, float y1, float x2, float y2) {
 	float A 			= x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
 	float dot 			= A * C + B * D, len_sq	= C * C + D * D;
@@ -79,7 +79,7 @@ public class DPat extends SCPattern
 	float 		interpWv(float i, float[] vals) 			{ return interp(i-floor(i), vals[floor(i)], vals[ceil(i)]); 		}
 	void 		setNorm (PVector vec)						{ vec.set(vec.x/mMax.x, vec.y/mMax.y, vec.z/mMax.z); 				}
 	void		setRand	(PVector vec)						{ vec.set(random(mMax.x), random(mMax.y), random(mMax.z)); 			}
-	void		setVec 	(PVector vec, Point p)				{ vec.set(p.x, p.y, p.z);  											}
+	void		setVec 	(PVector vec, LXPoint p)				{ vec.set(p.x, p.y, p.z);  											}
 	void		interpolate(float i, PVector a, PVector b)	{ a.set(interp(i,a.x,b.x), interp(i,a.y,b.y), interp(i,a.z,b.z)); 	}
 	void  		StartRun(double deltaMs) 					{ }
 	float 		val		(BasicParameter p) 					{ return p.getValuef();												}
@@ -211,7 +211,7 @@ public class DPat extends SCPattern
 				xWaveNz[i] = wvAmp * (noise(i/(mMax.y*.3)-(1e3+NoiseMove)/1500.) - .5) * (mMax.x/2.);
 		}
 
-		for (Point p : model.points) { nPoint++;
+		for (LXPoint p : model.points) { nPoint++;
 			setVec(P,p);
 			P.sub(modmin);
 			P.sub(pTrans);
@@ -248,8 +248,8 @@ class dVertex {
 	int 	dir, ci;		// dir -- 1 or -1.
 							// ci  -- color index
 
-	dVertex(Strip _s, Point _p)  { s = _s; ci  = _p.index; }
-	Point 	getPoint(int i) 	 { return s.points.get(dir>0 ? i : 15-i);  }
+	dVertex(Strip _s, LXPoint _p)  { s = _s; ci  = _p.index; }
+	LXPoint 	getPoint(int i) 	 { return s.points.get(dir>0 ? i : 15-i);  }
 	void 	setOpp(dVertex _opp) { opp = _opp; dir = (ci < opp.ci ? 1 : -1); }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class dLattice {
 																	if (v0.t3 == null) { v0.t3=t; return; }
 																}
 	float   dist2	 (Strip s1, int pos1, Strip s2, int pos2) 	{ 	return pointDist(s1.points.get(pos1), s2.points.get(pos2)); }
-	float   pd2 	 (Point p1, float x, float y, float z) 		{ 	return dist(p1.x,p1.y,p1.z,x,y,z); }
+	float   pd2 	 (LXPoint p1, float x, float y, float z) 		{ 	return dist(p1.x,p1.y,p1.z,x,y,z); }
 	boolean sameSame (Strip s1, Strip s2) 						{	return max(dist2(s1, 0, s2, 0), dist2(s1,15, s2,15)) < 5 ;	}	// same strut, same direction
 	boolean sameOpp  (Strip s1, Strip s2) 						{	return max(dist2(s1, 0, s2,15), dist2(s1,15, s2,0 )) < 5 ;	}	// same strut, opp direction
 	boolean sameBar  (Strip s1, Strip s2) 						{	return sameSame(s1,s2) || sameOpp(s1,s2);					}	// 2 strips on same strut

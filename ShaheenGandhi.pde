@@ -252,7 +252,7 @@ class HelixPattern extends SCPattern {
     h2.step(deltaMs);
     calculateSpokes();
 
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       PVector pt = new PVector(p.x,p.y,p.z);
       color h1c = h1.colorOfPoint(pt);
       color h2c = h2.colorOfPoint(pt);

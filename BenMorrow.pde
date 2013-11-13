@@ -59,7 +59,7 @@ class TowerParams extends SCPattern
 		for(int i=0; i<towerSize ;i++)
 		{	
 			t= model.towers.get(i);
-			for(Point p : t.points)
+			for(LXPoint p : t.points)
 			{
 				if(p.y<towerParams.get(i).getValuef()*200)
 				{
@@ -72,7 +72,7 @@ class TowerParams extends SCPattern
 
 	public void clearALL()
 	{
-		for(Point p : model.points)
+		for(LXPoint p : model.points)
 		{
 			colors[p.index] = 0;
 		}
@@ -117,7 +117,7 @@ class Sandbox extends SCPattern
 	public void doDraw(int c,long col)
 	{
 			Tower t= model.towers.get((int) c);
-			for(Point p : t.points)
+			for(LXPoint p : t.points)
 			{
 				colors[p.index] = (int) col;
 			}
@@ -186,7 +186,7 @@ class GranimTestPattern2 extends GranimPattern
 	}
 	public void clearALL()
 	{
-		for(Point p : model.points)
+		for(LXPoint p : model.points)
 		{
 			colors[p.index] = 0;
 		}

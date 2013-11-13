@@ -200,7 +200,7 @@ class DebugUI {
               if (state != DEBUG_STATE_ANIM) {
                 color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
                 Cube cube = glucose.model.getCubeByRawIndex(rawCubeIndex);
-                for (Point p : cube.points) {
+                for (LXPoint p : cube.points) {
                   colors[p.index] = debugColor;
                 }
               }
@@ -214,7 +214,7 @@ class DebugUI {
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
               for (Strip s : glucose.model.bassBox.boxStrips) {
-                for (Point p : s.points) {
+                for (LXPoint p : s.points) {
                   colors[p.index] = debugColor;
                 }
               }
@@ -225,11 +225,11 @@ class DebugUI {
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
-              for (Point p : glucose.model.boothFloor.points) {
+              for (LXPoint p : glucose.model.boothFloor.points) {
                 colors[p.index] = debugColor;
               }
               for (Strip s : glucose.model.bassBox.struts) {
-                for (Point p : s.points) {
+                for (LXPoint p : s.points) {
                   colors[p.index] = debugColor;
                 }
               }
@@ -240,7 +240,7 @@ class DebugUI {
            state = debugState[channelIndex][1];
            if (state != DEBUG_STATE_ANIM) {
               color debugColor = (state == DEBUG_STATE_WHITE) ? white : off;
-              for (Point p : glucose.model.speakers.get(channel.objectIndices[0]).points) {
+              for (LXPoint p : glucose.model.speakers.get(channel.objectIndices[0]).points) {
                 colors[p.index] = debugColor;
               }
            }

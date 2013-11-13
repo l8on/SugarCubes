@@ -53,7 +53,7 @@ class TimSpheres extends SCPattern {
     spheres[0].radius = 100 * hueParameter.getValuef();
     spheres[1].radius = 100 * hueParameter.getValuef();
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float value = 0;
 
       color c = lx.hsb(0, 0, 0);      
@@ -124,7 +124,7 @@ class Vector3 {
     return distanceTo(v.x, v.y, v.z);
   }
   
-  float distanceTo(Point p) {
+  float distanceTo(LXPoint p) {
     return distanceTo(p.x, p.y, p.z);
   }
   
@@ -246,7 +246,7 @@ class TimRaindrops extends SCPattern {
       raindrops.add(new Raindrop());
     }
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       color c = 
         blendColor(
           lx.hsb(210, 20, (float)Math.max(0, 1 - Math.pow((model.yMax - p.y) / 10, 2)) * 50),
@@ -337,14 +337,14 @@ class TimCubes extends SCPattern {
       flashes.add(new CubeFlash());
     }
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       colors[p.index] = 0;
     }
     
     for (CubeFlash flash : flashes) {
       float hue = (hueParameter.getValuef() + (hueVarianceParameter.getValuef() * flash.hue)) % 1.0;
       color c = lx.hsb(hue * 360, saturationParameter.getValuef() * 100, (flash.value) * 100);
-      for (Point p : flash.c.points) {
+      for (LXPoint p : flash.c.points) {
         colors[p.index] = c;
       }
     }
@@ -456,7 +456,7 @@ class TimPlanes extends SCPattern {
     
     Vector3 normalizedPoint = new Vector3();
 
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       if (random(1.0) < derez) {
         continue;
       }
@@ -631,7 +631,7 @@ class TimPinwheels extends SCPattern {
     float zSlope = (zSlopeParameter.getValuef() - 0.5) * 2;
     
     int i = -1;
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       ++i;
       
       int value = 0;
@@ -663,25 +663,25 @@ class TimPinwheels extends SCPattern {
  * it but there may be useful code here.
  */
 class TimTrace extends SCPattern {
-  private Map<Point, List<Point>> pointToNeighbors;
-  private Map<Point, Strip> pointToStrip;
+  private Map<LXPoint, List<LXPoint>> pointToNeighbors;
+  private Map<LXPoint, Strip> pointToStrip;
   //  private final Map<Strip, List<Strip>> stripToNearbyStrips;
   
   int extraMs;
   
   class MovingPoint {
-    Point currentPoint;
+    LXPoint currentPoint;
     float hue;
     private Strip currentStrip;
     private int currentStripIndex;
     private int direction; // +1 or -1
     
-    MovingPoint(Point p) {
+    MovingPoint(LXPoint p) {
       this.setPointOnNewStrip(p);
       hue = random(360);
     }
     
-    private void setPointOnNewStrip(Point p) {
+    private void setPointOnNewStrip(LXPoint p) {
       this.currentPoint = p;
       this.currentStrip = pointToStrip.get(p);
       for (int i = 0; i < this.currentStrip.points.size(); ++i) {
@@ -703,9 +703,9 @@ class TimTrace extends SCPattern {
     }
     
     void step() {
-      List<Point> neighborsOnOtherStrips = pointToNeighbors.get(this.currentPoint);
+      List<LXPoint> neighborsOnOtherStrips = pointToNeighbors.get(this.currentPoint);
 
-      Point nextPointOnCurrentStrip = null;      
+      LXPoint nextPointOnCurrentStrip = null;      
       this.currentStripIndex += this.direction;
       if (this.currentStripIndex >= 0 && this.currentStripIndex < this.currentStrip.points.size()) {
         nextPointOnCurrentStrip = this.currentStrip.points.get(this.currentStripIndex);
@@ -745,7 +745,7 @@ class TimTrace extends SCPattern {
     Map<Strip, Vector3> stripToCenter = new HashMap();
     for (Strip s : model.strips) {
       Vector3 v = new Vector3();
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         v.add(p.x, p.y, p.z);
       }
       v.divide(s.points.size());
@@ -770,23 +770,23 @@ class TimTrace extends SCPattern {
     return stripToNeighbors;
   }
   
-  private Map<Point, List<Point>> buildPointToNeighborsMap() {
-    Map<Point, List<Point>> m = new HashMap();
+  private Map<LXPoint, List<LXPoint>> buildPointToNeighborsMap() {
+    Map<LXPoint, List<LXPoint>> m = new HashMap();
     Map<Strip, List<Strip>> stripToNearbyStrips = this.buildStripToNearbyStripsMap();
     
     for (Strip s : model.strips) {
       List<Strip> nearbyStrips = stripToNearbyStrips.get(s);
       
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         Vector3 v = new Vector3(p.x, p.y, p.z);
         
-        List<Point> neighbors = new ArrayList();
+        List<LXPoint> neighbors = new ArrayList();
         
         for (Strip nearbyStrip : nearbyStrips) {
-          Point closestPoint = null;
+          LXPoint closestPoint = null;
           float closestPointDistance = 100000;
           
-          for (Point nsp : nearbyStrip.points) {
+          for (LXPoint nsp : nearbyStrip.points) {
             float distance = v.distanceTo(nsp.x, nsp.y, nsp.z);
             if (closestPoint == null || distance < closestPointDistance) {
               closestPoint = nsp;
@@ -806,10 +806,10 @@ class TimTrace extends SCPattern {
     return m;
   }
   
-  private Map<Point, Strip> buildPointToStripMap() {
-    Map<Point, Strip> m = new HashMap();
+  private Map<LXPoint, Strip> buildPointToStripMap() {
+    Map<LXPoint, Strip> m = new HashMap();
     for (Strip s : model.strips) {
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         m.put(p, s);
       }
     }
@@ -817,7 +817,7 @@ class TimTrace extends SCPattern {
   }
   
   public void run(double deltaMs) {
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       color c = colors[p.index];
       colors[p.index] = lx.hsb(lx.h(c), lx.s(c), lx.b(c) - 3);
     }

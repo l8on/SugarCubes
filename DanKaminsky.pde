@@ -174,10 +174,10 @@ class OSC_Balls extends OSCPattern {
   }
   
   void run(double deltaMs){
-    for(Point p: model.points){ colors[p.index]=0; }
+    for(LXPoint p: model.points){ colors[p.index]=0; }
     for(int i=1; i<balls.length; i++){
       if(millis() - balls[i].lastSeen < 1000) {
-        for(Point p: model.points){
+        for(LXPoint p: model.points){
           int x = int(balls[i].x * 255.0);
           int y = int(balls[i].y * 127.0);
           if(p.x < x+4 && p.x > x-4 && p.y < y+4 && p.y > y-4) { colors[p.index] = #FF0000; } 
@@ -207,7 +207,7 @@ import processing.serial.*;
      pret.pixels = ss.getScreenShotJNI2(x, y, w, h);
      //for(int i=0; i<px.length; i++){ pret.pixels[i] = px[i]; }
      //println(pret.get(10,10));
-     for(Point p: model.points){
+     for(LXPoint p: model.points){
        colors[p.index] = pret.get((int(p.x)/8)*8, 128-int(p.y));
      }     
   }

@@ -210,7 +210,7 @@ for (StaggeredTower st : scubes) {
       tower.add(cubes[cubeIndex++] = new Cube(st.x, st.y + CH* 4/3.*i, st.z, 0, st.r, 0, w));
     }
     towerList.add(new Tower(tower));
-  }
+  }   
 
   return new Model(towerList, cubes, bassBox, speakers);
 }

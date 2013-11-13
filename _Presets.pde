@@ -10,7 +10,7 @@ class PresetManager {
   public static final String FILENAME = "data/presets.txt";
   public static final String DELIMITER = "\t";
   
-  class DeckState implements LXParameter.Listener {
+  class DeckState implements LXParameterListener {
     
     final LXDeck deck;
     LXPattern selectedPattern = null;    

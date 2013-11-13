@@ -710,7 +710,7 @@ class KorgNanoKontrolMidiInput extends GenericDeviceMidiInput {
   }
 }
 
-class APC40MidiOutput implements LXParameter.Listener, GridOutput {
+class APC40MidiOutput implements LXParameterListener, GridOutput {
   
   private final MidiEngine midiEngine;
   private final MidiOutput output;

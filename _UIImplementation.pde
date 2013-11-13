@@ -479,7 +479,7 @@ class UISpeed extends UIWindow {
     super("SPEED", x, y, w, h);
     speed = new BasicParameter("SPEED", 0.5);
     new UIParameterSlider(4, titleHeight, w-10, 20)
-    .setParameter(speed.addListener(new LXParameter.Listener() {
+    .setParameter(speed.addListener(new LXParameterListener() {
       public void onParameterChanged(LXParameter parameter) {
         lx.setSpeed(parameter.getValuef() * 2);
       }

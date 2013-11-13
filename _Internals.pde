@@ -16,9 +16,9 @@
 import glucose.*;
 import glucose.model.*;
 import heronarts.lx.*;
-import heronarts.lx.control.*;
 import heronarts.lx.effect.*;
 import heronarts.lx.modulator.*;
+import heronarts.lx.parameter.*;
 import heronarts.lx.pattern.*;
 import heronarts.lx.transform.*;
 import heronarts.lx.transition.*;

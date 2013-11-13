@@ -3,15 +3,15 @@ class GenericController {
     public void RotateKnob(int type, int num, float val){
       LXParameter p = null;
       if(type==0) {
-        p = glucose.patternKnobs.get(num);
+        p = glucose.getPattern().getParameters().get(num);
         if(p!=null) { p.setValue(val); }
       }
       if(type==1) {
-        p = glucose.transitionKnobs.get(num);
+        p = glucose.getSelectedTransition().getParameters().get(num);
         if(p!=null) { p.setValue(val); }
       }
       if(type==2) {
-        p = glucose.effectKnobs.get(num);
+        p = glucose.getSelectedEffect().getParameters().get(num);
         if(p!=null) { p.setValue(val); }
       }
     }
@@ -38,9 +38,9 @@ OscP5 listener;
 //  }
 //  if(cc.getCC()==1){
 //    for(int i=0; i<16; i++){
-//      if(noteState[i] && i<8)  { LXParameter p = glucose.patternKnobs.get(i); p.setValue(cc.getValue()/127.0); }
-//      else if(noteState[i] && i<12) { LXParameter p = glucose.transitionKnobs.get(i-8); p.setValue(cc.getValue()/127.0); }
-//      else if(noteState[i] && i<16) { LXParameter p = glucose.effectKnobs.get(i-12); p.setValue(cc.getValue()/127.0); }
+//      if(noteState[i] && i<8)  { LXParameter p = glucose.getPattern().getParameters().get(i); p.setValue(cc.getValue()/127.0); }
+//      else if(noteState[i] && i<12) { LXParameter p = glucose.getSelectedTransition().getParameters().get(i-8); p.setValue(cc.getValue()/127.0); }
+//      else if(noteState[i] && i<16) { LXParameter p = glucose.getSelectedEffect().getParameters().get(i-12); p.setValue(cc.getValue()/127.0); }
 //    }
 //  }
 //}

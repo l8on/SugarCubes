@@ -14,11 +14,7 @@
  */
 
 import glucose.*;
-import glucose.control.*;
-import glucose.effect.*;
 import glucose.model.*;
-import glucose.pattern.*;
-import glucose.transition.*;
 import heronarts.lx.*;
 import heronarts.lx.control.*;
 import heronarts.lx.effect.*;

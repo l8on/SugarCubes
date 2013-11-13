@@ -1,6 +1,6 @@
 class SineSphere extends SCPattern {
   private SinLFO yrot = new SinLFO(0, TWO_PI, 2000);
-  public final Projection sinespin; 
+  public final LXProjection sinespin; 
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
   public final PVector P = new PVector();
@@ -99,7 +99,7 @@ final Sphery[] spherys;
   SineSphere(GLucose glucose) 
   {
     super(glucose);
-    sinespin = new Projection(model);
+    sinespin = new LXProjection(model);
     addModulator(yrot).trigger();
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {

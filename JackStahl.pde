@@ -9,7 +9,7 @@
 class Swim extends SCPattern {
 
   // Projection stuff
-  private final Projection projection;
+  private final LXProjection projection;
   SawLFO rotation = new SawLFO(0, TWO_PI, 19000);
   SinLFO yPos = new SinLFO(-25, 25, 12323);
   final BasicParameter xAngle = new BasicParameter("XANG", 0.9);
@@ -20,7 +20,7 @@ class Swim extends SCPattern {
 
   public Swim(GLucose glucose) {
     super(glucose);
-    projection = new Projection(model);
+    projection = new LXProjection(model);
 
     addParameter(xAngle);
     addParameter(yAngle);
@@ -53,7 +53,7 @@ class Swim extends SCPattern {
 
     float model_height =  model.yMax - model.yMin;
     float model_width =  model.xMax - model.xMin;
-    for (Coord p : projection) {
+    for (LXVector p : projection) {
       float x_percentage = (p.x - model.xMin)/model_width;
 
       // Multiply by 1.4 to shrink the size of the sin wave to be less than the height of the cubes.
@@ -83,7 +83,7 @@ class Balance extends SCPattern {
 
 
   // Projection stuff
-  private final Projection projection;
+  private final LXProjection projection;
 
   SinLFO sphere1Z = new SinLFO(0, 0, 15323);
   SinLFO sphere2Z = new SinLFO(0, 0, 8323);
@@ -102,7 +102,7 @@ class Balance extends SCPattern {
   public Balance(GLucose glucose) {
     super(glucose);
 
-    projection = new Projection(model);
+    projection = new LXProjection(model);
 
     addParameter(hueScale);
     addParameter(phaseParam);
@@ -162,7 +162,7 @@ class Balance extends SCPattern {
         .rotate(rotationX.getValuef() * crazy_factor, 0, 0, 1)
           .rotate(rotationY.getValuef() * crazy_factor, 0, 1, 0);
 
-    for (Coord p : projection) {
+    for (LXVector p : projection) {
       float x_percentage = (p.x - model.xMin)/modelWidth;
 
       float y_in_range = heightMod.getValuef() * (2*p.y - model.yMax - model.yMin) / modelHeight;

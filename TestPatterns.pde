@@ -229,13 +229,13 @@ class TestTowerPattern extends TestPattern {
  */
 class TestProjectionPattern extends TestPattern {
   
-  private final Projection projection;
+  private final LXProjection projection;
   private final SawLFO angle = new SawLFO(0, TWO_PI, 9000);
   private final SinLFO yPos = new SinLFO(-20, 40, 5000);
   
   public TestProjectionPattern(GLucose glucose) {
     super(glucose);
-    projection = new Projection(model);
+    projection = new LXProjection(model);
     addModulator(angle).trigger();
     addModulator(yPos).trigger();
   }
@@ -256,7 +256,7 @@ class TestProjectionPattern extends TestPattern {
       .scale(1, 1.5, 1);
 
     float hv = lx.getBaseHuef();
-    for (Coord c : projection) {
+    for (LXVector c : projection) {
       float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
       // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
       d = max(0, abs(c.y) - 10 + .1*abs(c.z) + .02*abs(c.x)); // plane / spear thing

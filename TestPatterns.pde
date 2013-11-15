@@ -25,7 +25,7 @@ class TestSpeakerMapping extends TestPattern {
     for (Speaker speaker : model.speakers) {
       for (Strip strip : speaker.strips) {
         float b = 100;
-        for (Point p : strip.points) {
+        for (LXPoint p : strip.points) {
           colors[p.index] = lx.hsb(h % 360, 100, b);
           b = max(0, b - 10);
         }
@@ -46,7 +46,7 @@ class TestBassMapping extends TestPattern {
     int h = 0;
     for (int si : strips) {
       float b = 100;
-      for (Point p : model.bassBox.strips.get(si).points) {
+      for (LXPoint p : model.bassBox.strips.get(si).points) {
         colors[p.index] = lx.hsb(h % 360, 100, b);
         b = max(0, b - 10);
       }
@@ -65,7 +65,7 @@ class TestFloorMapping extends TestPattern {
     int h = 0;
     for (int si : strutIndices) {
       float b = 100;
-      for (Point p : model.bassBox.struts.get(si).points) {
+      for (LXPoint p : model.bassBox.struts.get(si).points) {
         colors[p.index] = lx.hsb(h % 360, 100, b);
         b = max(0, b - 10);
       }
@@ -75,64 +75,11 @@ class TestFloorMapping extends TestPattern {
     h = 0;
     for (int fi : floorIndices) {
       float b = 100;
-      for (Point p : model.boothFloor.strips.get(fi).points) {
+      for (LXPoint p : model.boothFloor.strips.get(fi).points) {
         colors[p.index] = lx.hsb(h, 100, b);
         b = max(0, b - 3);
       }
       h += 90;
-    }
-  }
-}
-
-class TestPerformancePattern extends TestPattern {
-  
-  final BasicParameter ops = new BasicParameter("OPS", 0);
-  final BasicParameter iter = new BasicParameter("ITER", 0);
-  
-  TestPerformancePattern(GLucose glucose) {
-    super(glucose);
-    addParameter(ops);
-    addParameter(iter);
-  }
-  
-  public void run(double deltaMs) {
-    float x = 1;
-    for (int j = 0; j < ops.getValuef() * 400000; ++j) {
-      x *= random(0, 1);
-    }
-
-    if (iter.getValuef() < 0.25) {
-      for (Point p : model.points) {
-        colors[p.index] = lx.hsb(
-          (p.x*.1 + p.y*.1) % 360,
-          100,
-          100
-        );
-      }
-    } else if (iter.getValuef() < 0.5) {
-      for (int i = 0; i < colors.length; ++i) {
-        colors[i] = lx.hsb(
-          (90 + model.px[i]*.1 + model.py[i]*.1) % 360,
-          100,
-          100
-        );
-      }
-    } else if (iter.getValuef() < 0.75) {
-      for (int i = 0; i < colors.length; ++i) {
-        colors[i] = lx.hsb(
-          (180 + model.p[3*i]*.1 + model.p[3*i+1]*.1) % 360,
-          100,
-          100
-        );
-      }
-    } else {
-      for (int i = 0; i < colors.length; ++i) {
-        colors[i] = lx.hsb(
-          (270 + model.x(i)*.1 + model.y(i)*.1) % 360,
-          100,
-          100
-        );
-      }
     }
   }
 }
@@ -148,7 +95,7 @@ class TestStripPattern extends TestPattern {
   
   public void run(double deltaMs) {
     for (Strip s : model.strips) {
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,
@@ -188,7 +135,7 @@ class TestXPattern extends TestPattern {
   }
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       // This is a common technique for modulating brightness.
       // You can use abs() to determine the distance between two
       // values. The further away this point is from an exact
@@ -210,7 +157,7 @@ class TestYPattern extends TestPattern {
   }
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float bv = max(0, 100 - abs(p.y - yPos.getValuef()));
       colors[p.index] = lx.hsb(hv, 100, bv);
     }
@@ -228,7 +175,7 @@ class TestZPattern extends TestPattern {
   }
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float bv = max(0, 100 - abs(p.z - zPos.getValuef()));
       colors[p.index] = lx.hsb(hv, 100, bv);
     }
@@ -249,7 +196,7 @@ class TestTowerPattern extends TestPattern {
   public void run(double deltaMs) {
     int ti = 0;
     for (Tower t : model.towers) {
-      for (Point p : t.points) {
+      for (LXPoint p : t.points) {
         colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,
@@ -282,13 +229,13 @@ class TestTowerPattern extends TestPattern {
  */
 class TestProjectionPattern extends TestPattern {
   
-  private final Projection projection;
+  private final LXProjection projection;
   private final SawLFO angle = new SawLFO(0, TWO_PI, 9000);
   private final SinLFO yPos = new SinLFO(-20, 40, 5000);
   
   public TestProjectionPattern(GLucose glucose) {
     super(glucose);
-    projection = new Projection(model);
+    projection = new LXProjection(model);
     addModulator(angle).trigger();
     addModulator(yPos).trigger();
   }
@@ -297,10 +244,10 @@ class TestProjectionPattern extends TestPattern {
     // For the same reasons described above, it may logically feel to you that
     // some of these operations are in reverse order. Again, just keep in mind that
     // the car itself is what's moving, not the object
-    projection.reset(model)
+    projection.reset()
     
       // Translate so the center of the car is the origin, offset by yPos
-      .translateCenter(model, 0, yPos.getValuef(), 0)
+      .translateCenter(0, yPos.getValuef(), 0)
 
       // Rotate around the origin (now the center of the car) about an X-vector
       .rotate(angle.getValuef(), 1, 0, 0)
@@ -309,7 +256,7 @@ class TestProjectionPattern extends TestPattern {
       .scale(1, 1.5, 1);
 
     float hv = lx.getBaseHuef();
-    for (Coord c : projection) {
+    for (LXVector c : projection) {
       float d = sqrt(c.x*c.x + c.y*c.y + c.z*c.z); // distance from origin
       // d = abs(d-60) + max(0, abs(c.z) - 20); // life saver / ring thing
       d = max(0, abs(c.y) - 10 + .1*abs(c.z) + .02*abs(c.x)); // plane / spear thing
@@ -334,7 +281,7 @@ class TestCubePattern extends TestPattern {
   public void run(double deltaMs) {
     for (Cube c : model.cubes) {
       int i = 0;
-      for (Point p : c.points) {
+      for (LXPoint p : c.points) {
         colors[p.index] = lx.hsb(
           lx.getBaseHuef(),
           100,

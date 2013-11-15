@@ -6,7 +6,7 @@ class Gimbal extends SCPattern {
   private final int MAXIMUM_BEATS_PER_REVOLUTION = 100;
   
   private boolean first_run = true;
-  private final Projection projection;
+  private final LXProjection projection;
   private final BasicParameter beatsPerRevolutionParam = new BasicParameter("SLOW", 20./MAXIMUM_BEATS_PER_REVOLUTION);
   private final BasicParameter hueDeltaParam = new BasicParameter("HUED", 60./360);
   private final BasicParameter fadeFromCoreParam = new BasicParameter("FADE", 1);
@@ -21,7 +21,7 @@ class Gimbal extends SCPattern {
 
   Gimbal(GLucose glucose) {
     super(glucose);
-    projection = new Projection(model);
+    projection = new LXProjection(model);
     addParameter(beatsPerRevolutionParam);
     addParameter(hueDeltaParam);
     addParameter(fadeFromCoreParam);
@@ -75,11 +75,11 @@ class Gimbal extends SCPattern {
     Ring ring2 = new Ring((hue + hue_delta * 1) % 360, radius2, girth);
     Ring ring3 = new Ring((hue + hue_delta * 2) % 360, radius3, girth);
 
-    projection.reset(model)
+    projection.reset()
       // Translate so the center of the car is the origin
-      .translateCenter(model, 0, 0, 0);
+      .center();
 
-    for (Coord c : projection) {
+    for (LXVector c : projection) {
       //if (first_run) println(c.x + "," + c.y + "," + c.z);
 
       rotate3d(c, a, 0, 0);
@@ -109,7 +109,7 @@ class Gimbal extends SCPattern {
       this.girth = girth;
     }
 
-    public color colorFor(Coord c) {
+    public color colorFor(LXVector c) {
       float theta = atan2(c.y, c.x);
       float nearest_circle_x = cos(theta) * radius;
       float nearest_circle_y = sin(theta) * radius;
@@ -135,7 +135,7 @@ class Gimbal extends SCPattern {
 
 class Zebra extends SCPattern {
 
-  private final Projection projection;
+  private final LXProjection projection;
   SinLFO angleM = new SinLFO(0, PI * 2, 30000);
 
 /*
@@ -146,12 +146,12 @@ class Zebra extends SCPattern {
 
   Zebra(GLucose glucose) {
     super(glucose);
-    projection = new Projection(model);
+    projection = new LXProjection(model);
 
     addModulator(angleM).trigger();
   }
 
-  color colorFor(Coord c) {
+  color colorFor(LXVector c) {
     float hue = lx.getBaseHuef();
 
 
@@ -191,11 +191,11 @@ class Zebra extends SCPattern {
     float b = (millis() / 1200.f) % (2 * PI);
     float g = (millis() / 1600.f) % (2 * PI);
 
-    projection.reset(model)
+    projection.reset()
       // Translate so the center of the car is the origin
-      .translateCenter(model, 0, 0, 0);
+      .center();
 
-    for (Coord c : projection) {
+    for (LXVector c : projection) {
 //      rotate3d(c, a, b, g);
       colors[c.index] = colorFor(c);
     }
@@ -215,7 +215,7 @@ class Zebra extends SCPattern {
 
 }
 
-void rotate3d(Coord c, float a /* roll */, float b /* pitch */, float g /* yaw */) {
+void rotate3d(LXVector c, float a /* roll */, float b /* pitch */, float g /* yaw */) {
   float cosa = cos(a);
   float cosb = cos(b);
   float cosg = cos(g);

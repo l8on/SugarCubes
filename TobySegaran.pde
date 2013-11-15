@@ -24,7 +24,7 @@ class GlitchPlasma extends SCPattern {
   }
 
   public void run(double deltaMs) {
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float hv = sin(dist(p.x + pos, p.y, 128.0, 128.0) / 8.0)
 	  + sin(dist(p.x, p.y, 64.0, 64.0) / 8.0)
 	  + sin(dist(p.x, p.y + pos / 7, 192.0, 64.0) / 7.0)
@@ -81,7 +81,7 @@ class FireEffect extends SCPattern {
       }
     }
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       int x = max(0,(int(p.x)+int(p.z))%xm);
       int y = constrain(ym-int(p.y),0,ym-1);
       colors[p.index] = flameColor(intensity[x][y]);
@@ -120,7 +120,7 @@ class StripBounce extends SCPattern {
         boolean on = avgdist<30;
         float hv = (lx.getBaseHuef()+colorOffset[i])%360;
         float br = max(0,100-avgdist*4);
-        for (Point p : strip.points) {
+        for (LXPoint p : strip.points) {
           if (on && br>bright[p.index]) {
             colors[p.index] = lx.hsb(hv,sat[i].getValuef(),br);
             bright[p.index] = br;
@@ -184,7 +184,7 @@ class SoundRain extends SCPattern {
       for (int j=0; j<c.strips.size(); j++) {
         Strip s = c.strips.get(j);
         if (j%4!=0 && j%4!=2) {
-          for (Point p : s.points) {
+          for (LXPoint p : s.points) {
             int seq = int(p.y*avgSize/model.yMax+pos.getValuef()+sin(p.x+p.z)*2)%avgSize;
             seq=min(abs(seq-(avgSize/2)),avgSize-1);
             colors[p.index] = lx.hsb(200,max(0,100-abs(p.x-col1.getValuef())/2),lightVals[seq]);
@@ -215,7 +215,7 @@ class FaceSync extends SCPattern {
     int i=0;
     for (Strip s : model.strips) {
       i++;
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         float dx, dz;
         if (i%32 < 16) {
           dx = p.x - (s.cx+xosc.getValuef());
@@ -286,7 +286,7 @@ class SoundSpikes extends SCPattern {
       for (int j=0; j<c.strips.size(); j++) {
         Strip s = c.strips.get(j);
         if (j%4!=0 && j%4!=2) {
-          for (Point p : s.points) {
+          for (LXPoint p : s.points) {
             float dis = (abs(p.x-model.xMax/2)+pos.getValuef())%model.xMax/2;
             int seq = int((dis*avgSize*2)/model.xMax);
             if (seq>avgSize) seq=avgSize-seq;

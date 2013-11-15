@@ -6,15 +6,7 @@ class SineSphere extends SCPattern {
   private int pitch = 0; 
   private int channel = 0; 
   private int velocity = 0; 
-  public final Projection sinespin;
-  public final Projection sinespin2; 
-  
-  //to-do:  how to sync all hues across sphery's via one basicparameter 
-  //public BasicParameter huespread = new BasicParameter("HueSpread", 180, 360);
-  public BasicParameter rotationx = new BasicParameter("rotx", 0, 0, 1 );
-  public BasicParameter rotationy = new BasicParameter("roty", 1, 0, 1);
-  public BasicParameter rotationz = new BasicParameter("rotz", 0, 0, 1);
-  
+  public final LXProjection sinespin; 
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
   public final PVector P = new PVector();
@@ -160,7 +152,7 @@ final Sphery[] spherys;
   SineSphere(GLucose glucose) 
   {
     super(glucose);
-    sinespin = new Projection(model);
+    sinespin = new LXProjection(model);
     sinespin2 = new Projection(model);
     addParameter(huespread);
     addParameter(rotationx);
@@ -206,11 +198,13 @@ final Sphery[] spherys;
     public void run( double deltaMs) {
      double t = lx.tempo.ramp();
      double bpm = lx.tempo.bpm();
-     spherys[0].run(deltaMs);
-     spherys[1].run(deltaMs);
-     spherys[2].run(deltaMs);
-     spherys[3].run(deltaMs);
-     
+     //spherys[0].run(deltaMs);
+     //spherys[1].run(deltaMs);
+     //spherys[2].run(deltaMs);
+     //spherys[3].run(deltaMs);]
+     sinespin.reset()
+    .center
+     .rotate(yrot.getValuef(), 0, 1, 0);
 
      switch (pitch) 
     {
@@ -221,7 +215,7 @@ final Sphery[] spherys;
      case 55: t = 2*t;  bpm = 2*bpm; break;
 
      default: t= t;   bpm = bpm; 
-
+}
      
       }
       
@@ -272,8 +266,6 @@ final Sphery[] spherys;
         colors[p.index] = blendIfColor(colors[p.index], c , ADD);
 
     }  
-
-
 
   }
   
@@ -353,7 +345,7 @@ float cfloor = c.y;
 
 // if (i%3 == 0){
 
-// for (Point p : c.points ){
+// for (LXPoint p : c.points ){
 //  // colors[p.index]=color(0,0,0);
 //   //float dif = (p.y - c.y);
 //   //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
@@ -362,7 +354,7 @@ float cfloor = c.y;
 
 // else if (i%3 == 1) {
   
-//  for (Point p: c.points){
+//  for (LXPoint p: c.points){
 //   colors[p.index]=color(0,0,0);
 //   float dif = (p.y - c.y);
 //   // colors[p.index] = 
@@ -373,7 +365,7 @@ float cfloor = c.y;
 //     }
 // else if (i%3 == 2){
  // centerlist[i].sub(cubeorigin(i);
-   for (Point p: c.points) {
+   for (LXPoint p: c.points) {
     PVector pv = new PVector(p.x, p.y, p.z);
      colors[p.index] =color( constrain(4* pv.dist(centerlist.get(i)), 0, 360)  , 50, 100 );
    // colors[p.index] =color(constrain(centerlist[i].x, 0, 360), constrain(centerlist[i].y, 0, 100),  );
@@ -401,7 +393,7 @@ HueTestHSB(GLucose glucose) {
 }
   void run(double deltaMs){
 
-  for (Point p : model.points) {
+  for (LXPoint p : model.points) {
     color c = 0;
     c = blendColor(c, lx.hsb(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
     colors[p.index]= c;

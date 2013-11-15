@@ -1,9 +1,25 @@
 class SineSphere extends SCPattern {
+<<<<<<< HEAD
   private SawLFO yrot = new SawLFO(0, TWO_PI, 3000);
   private SawLFO yrot2 = new SawLFO(0, -TWO_PI,  8000);
+  public BasicParameter huespread = new BasicParameter("Hue", 0, 180);
+  public BasicParameter widthparameter= new BasicParameter("Width", .2);
+  private int pitch = 0; 
+  private int channel = 0; 
+  private int velocity = 0; 
   public final Projection sinespin;
   public final Projection sinespin2; 
-  private BasicParameter rotation = new BasicParameter("rotation", 0);
+  
+  //to-do:  how to sync all hues across sphery's via one basicparameter 
+  //public BasicParameter huespread = new BasicParameter("HueSpread", 180, 360);
+  public BasicParameter rotationx = new BasicParameter("rotx", 0, 0, 1 );
+  public BasicParameter rotationy = new BasicParameter("roty", 1, 0, 1);
+  public BasicParameter rotationz = new BasicParameter("rotz", 0, 0, 1);
+  
+=======
+  private SinLFO yrot = new SinLFO(0, TWO_PI, 2000);
+  public final LXProjection sinespin; 
+>>>>>>> b8bb27489db7dc687bf150576e9d9439f1fa17a6
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
   public final PVector P = new PVector();
@@ -17,14 +33,12 @@ class SineSphere extends SCPattern {
   public SinLFO ybounce;
   private SinLFO zbounce;
   float vibration_min, vibration_max, vperiod;
-  public BasicParameter widthparameter;
-  public BasicParameter huespread;
+  
+  //public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
-<<<<<<< HEAD
-=======
+  public BasicParameter vibrationrate;
   public final PVector circlecenter = new PVector(); 
->>>>>>> 4ad9f85959980d306800ad50636f4fd7c2a5d36b
  
   public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float vibration_min, float vibration_max, float vperiod) 
   {
@@ -36,40 +50,49 @@ class SineSphere extends SCPattern {
    this.vperiod = vperiod;
    //addParameter(bounceamp = new BasicParameter("Amp", .5));
    //addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
-   addParameter(widthparameter = new BasicParameter("Width", .1));
-   addParameter(huespread = new BasicParameter("Hue", .5, 10));
+   //addParameter(vibrationrate = new BasicParameter("vibration", 1000, 10000));
+    //addParameter(widthparameter = new BasicParameter("Width", .2));
+    
    
-   addModulator( vx = new SinLFO(-4000, 10000, 100000)).trigger() ;
+   addModulator( vx = new SinLFO(500, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //ybounce.modulateDurationBy
+   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //bounce.modulateDurationBy
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000./lx.tempo.bpm())).trigger(); //vibration.modulateDurationBy(vx);
+   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 10000)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
       
   }
- public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
-  float vibration_min, float vibration_max, float vperiod)  
+
+  //for an ellipse
+//  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
+//   float vibration_min, float vibration_max, float vperiod)  
  
- {
-    this.f1xcenter = f1xcenter;
-   this.f1ycenter = f1ycenter;
-   this.f1zcenter = f1zcenter;
-   this.f2xcenter = f2xcenter;
-   this.f2ycenter = f2ycenter;
-   this.f2zcenter = f2zcenter;
-   this.vibration_min = vibration_min;
-   this.vibration_max = vibration_max;
-   this.vperiod = vperiod;
-   //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce).trigger(); 
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
-   addParameter(widthparameter = new BasicParameter("Width", .1));
-   addParameter(huespread = new BasicParameter("Hue", .2));
+//  {
+//     this.f1xcenter = f1xcenter;
+//    this.f1ycenter = f1ycenter;
+//    this.f1zcenter = f1zcenter;
+//    this.f2xcenter = f2xcenter;
+//    this.f2ycenter = f2ycenter;
+//    this.f2zcenter = f2zcenter;
+//    this.vibration_min = vibration_min;
+//    this.vibration_max = vibration_max;
+//    this.vperiod = vperiod;
+//    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
+//    addModulator(ybounce).trigger(); 
+//    addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
+//    addParameter(widthparameter = new BasicParameter("Width", .1));
+//    //addParameter(huespread = new BasicParameter("bonk", .2));
   
+// }
+ 
+
+
+void setVibrationPeriod(double period){
+// to-do:  make this conditional upon time signature
+
+vibration.setPeriod(period);
+
 }
-
-
-
 
 
 float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, float f1z) 
@@ -80,16 +103,16 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
 
  float quadrant(PVector q) {
    float qtheta = atan2(  (q.x-f1xcenter) , (q.z - f1zcenter) ); 
-   //println( "qtheta  " + qtheta);
 
-    return map(qtheta, -PI/2, PI/2, 140, 240);
+
+    return map(qtheta, -PI/2, PI/2, 160-huespread.getValuef(), 240 +huespread.getValuef());
   //if (q.x > f1xcenter ) {return 140 ;}
     //else  {return 250;}  
  }
  color spheryvalue (PVector p, float f1xcenter, float f1ycenter, float f1zcenter) {
    circlecenter.set(f1xcenter, f1ycenter, f1zcenter); 
 
-  // circlecenter = new PVector(f1xcenter, f1ycenter, f1zcenter);
+  
 //switch(sShpape.cur() ) {}  
 
    float b = max(0, 100 - 100*widthparameter.getValuef()*abs(p.dist(circlecenter)
@@ -100,7 +123,7 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
    }
 
    return lx.hsb(
-     constrain(huespread.getValuef()*5*quadrant(p), 0, 360),
+     constrain(quadrant(p), 0, 360),
      80,
      b
    ); 
@@ -123,17 +146,39 @@ void run(double deltaMs) {
   
 }  
 
+// public boolean gridPressed(int row, int co){
+// midiengine.grid.setState();
+
+// return true;
+
+// }
+
+public boolean noteOn(Note note)  {
+pitch= note.getPitch();  
+velocity=note.getVelocity();
+channel=note.getChannel();
+return true;
+}
 
 final Sphery[] spherys;
  
   SineSphere(GLucose glucose) 
   {
     super(glucose);
+<<<<<<< HEAD
     sinespin = new Projection(model);
     sinespin2 = new Projection(model);
+    addParameter(huespread);
+    addParameter(rotationx);
+    addParameter(rotationy);
+    addParameter(rotationz);
+=======
+    sinespin = new LXProjection(model);
+>>>>>>> b8bb27489db7dc687bf150576e9d9439f1fa17a6
     addModulator(yrot).trigger();
     addModulator(yrot2).trigger(); 
-    addParameter(rotation);
+    
+    //addParameter(huespread);
     //Sshape = addPick("Shape", , 1);
     spherys = new Sphery[] {
       new Sphery(model.xMax/4, model.yMax/2, model.zMax/2, modelrad/16, modelrad/8, 3000),
@@ -167,14 +212,53 @@ final Sphery[] spherys;
 //     }
 //   }
 
+<<<<<<< HEAD
     public void run( double deltaMs) {
-     float t = lx.tempo.rampf();
-     float bpm = lx.tempo.bpmf();
+     double t = lx.tempo.ramp();
+     double bpm = lx.tempo.bpm();
      spherys[0].run(deltaMs);
      spherys[1].run(deltaMs);
      spherys[2].run(deltaMs);
      spherys[3].run(deltaMs);
      
+
+     switch (pitch) 
+    {
+     case 53: t = .5*t;   bpm = .5*bpm;  break;
+=======
+     void run( double deltaMs) {
+     float t = lx.tempo.rampf();
+     float bpm = lx.tempo.bpmf();
+     //spherys[1].run(deltaMs);
+     //spherys[2].run(deltaMs);
+     //spherys[3].run(deltaMs);]
+     sinespin.reset()
+
+     // Translate so the center of the car is the origin, offset by yPos
+      .center()
+>>>>>>> b8bb27489db7dc687bf150576e9d9439f1fa17a6
+
+     case 54: t = t;   bpm = bpm;   break;
+
+     case 55: t = 2*t;  bpm = 2*bpm; break;
+
+     default: t= t;   bpm = bpm; 
+
+<<<<<<< HEAD
+=======
+     for (LXPoint p : model.points){
+    color c = 0;
+    c = blendColor(c, spherys[1].spheryvalue(p.x, p.y, p.z, .75*model.xMax, model.yMax/2, model.zMax/2), ADD);
+    c = blendColor(c, spherys[0].spheryvalue(p.x, p.y, p.z, model.xMax/4, model.yMax/4, model.zMax/2), ADD);
+    c = blendColor(c, spherys[2].spheryvalue(p.x, p.y, p.z, model.xMax/2, model.yMax/2, model.zMax/2),ADD);
+>>>>>>> b8bb27489db7dc687bf150576e9d9439f1fa17a6
+     
+      }
+      
+      for ( Sphery s: spherys){
+      s.setVibrationPeriod(480000/bpm);
+      s.vibration.setBasis(t);
+       }
      sinespin.reset(model)
      
     
@@ -182,7 +266,7 @@ final Sphery[] spherys;
       .translateCenter(model, 0, 0, 0)
      // .scale(1.3,1.3,1.3)
       // Rotate around the origin (now the center of the car) about an y-vector
-      .rotate(yrot.getValuef(), 0, 1 , 0)
+      .rotate(yrot.getValuef(), rotationx.getValuef(), rotationy.getValuef() , rotationz.getValuef())
       .translate(model.cx, model.cy, model.cz);
       
 
@@ -299,7 +383,7 @@ float cfloor = c.y;
 
 // if (i%3 == 0){
 
-// for (Point p : c.points ){
+// for (LXPoint p : c.points ){
 //  // colors[p.index]=color(0,0,0);
 //   //float dif = (p.y - c.y);
 //   //colors[p.index] = color( bg.getValuef() , 80 , dif < curl.getValuef() ? 80 : 0, ADD);
@@ -308,7 +392,7 @@ float cfloor = c.y;
 
 // else if (i%3 == 1) {
   
-//  for (Point p: c.points){
+//  for (LXPoint p: c.points){
 //   colors[p.index]=color(0,0,0);
 //   float dif = (p.y - c.y);
 //   // colors[p.index] = 
@@ -319,7 +403,7 @@ float cfloor = c.y;
 //     }
 // else if (i%3 == 2){
  // centerlist[i].sub(cubeorigin(i);
-   for (Point p: c.points) {
+   for (LXPoint p: c.points) {
     PVector pv = new PVector(p.x, p.y, p.z);
      colors[p.index] =color( constrain(4* pv.dist(centerlist.get(i)), 0, 360)  , 50, 100 );
    // colors[p.index] =color(constrain(centerlist[i].x, 0, 360), constrain(centerlist[i].y, 0, 100),  );
@@ -347,7 +431,7 @@ HueTestHSB(GLucose glucose) {
 }
   void run(double deltaMs){
 
-  for (Point p : model.points) {
+  for (LXPoint p : model.points) {
     color c = 0;
     c = blendColor(c, lx.hsb(360*HueT.getValuef(), 100*SatT.getValuef(), 100*BriT.getValuef()), ADD);
     colors[p.index]= c;

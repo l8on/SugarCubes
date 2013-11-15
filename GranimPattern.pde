@@ -109,7 +109,7 @@ class GranimPattern extends SCPattern
 			{
 				((Granim) g).update();
 			}
-			List<Point> drawList = model.points.subList(Math.min(g.position,colors.length-1), Math.min(g.position + g.width(),colors.length-1));
+			List<LXPoint> drawList = model.points.subList(Math.min(g.position,colors.length-1), Math.min(g.position + g.width(),colors.length-1));
 			//println("drawlistsize "+drawList.size());
 			
 			gbuffer = g.graphicBuffer.toArray(new Integer[0]);

@@ -527,7 +527,7 @@ public class UIToggleSet extends UIObject {
 }
 
 
-public abstract class UIParameterControl extends UIObject implements LXParameter.Listener {
+public abstract class UIParameterControl extends UIObject implements LXParameterListener {
   protected LXParameter parameter = null;
     
   protected UIParameterControl(float x, float y, float w, float h) {

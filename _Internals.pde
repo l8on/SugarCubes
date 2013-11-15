@@ -14,17 +14,13 @@
  */
 
 import glucose.*;
-import glucose.control.*;
-import glucose.effect.*;
 import glucose.model.*;
-import glucose.pattern.*;
-import glucose.transform.*;
-import glucose.transition.*;
 import heronarts.lx.*;
-import heronarts.lx.control.*;
 import heronarts.lx.effect.*;
 import heronarts.lx.modulator.*;
+import heronarts.lx.parameter.*;
 import heronarts.lx.pattern.*;
+import heronarts.lx.transform.*;
 import heronarts.lx.transition.*;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
@@ -140,7 +136,7 @@ void setup() {
   lx = glucose.lx;
   lx.enableKeyboardTempo();
   logTime("Built GLucose engine");
-  
+    
   // Set the patterns
   LXEngine engine = lx.engine;
   engine.setPatterns(patterns = _leftPatterns(glucose));
@@ -328,7 +324,7 @@ void drawDiagnostics(long drawNanos, long simulationNanos, long uiNanos, long ga
 }
 
 void drawSimulation(color[] simulationColors) {
-    camera(
+  camera(
     eyeX, eyeY, eyeZ,
     midX, midY, midZ,
     0, -1, 0
@@ -370,7 +366,7 @@ void drawSimulation(color[] simulationColors) {
   noFill();
   strokeWeight(2);
   beginShape(POINTS);
-  for (Point p : glucose.model.points) {
+  for (LXPoint p : glucose.model.points) {
     stroke(simulationColors[p.index]);
     vertex(p.x, p.y, p.z);
   }

@@ -45,7 +45,7 @@ class Cathedrals extends SCPattern {
     
     float sf = 100. / (70 - 69.9*sat.getValuef());
 
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float d = MAX_FLOAT;
       if (p.y > model.cy) {
         arm = tarm;
@@ -109,7 +109,7 @@ class MidiMusic extends SCPattern {
         return;
       }
       float posf = position.getValuef();
-      for (Point p : model.points) {
+      for (LXPoint p : model.points) {
         colors[p.index] = blendColor(colors[p.index], lx.hsb(
           (lx.getBaseHuef() + .2*abs(p.x - model.cx) + .2*abs(p.y - model.cy)) % 360,
           100,
@@ -151,7 +151,7 @@ class MidiMusic extends SCPattern {
         return;
       }
       float yVal = yPos.getValuef();
-      for (Point p : model.points) {
+      for (LXPoint p : model.points) {
         float falloff = 6 - 5*lightSize.getValuef();
         float b = max(0, bVal - falloff*dist(p.x, p.y, xPos, yVal));
         if (b > 0) {
@@ -252,7 +252,7 @@ class MidiMusic extends SCPattern {
     float maxBright = sparkleBright * (1 - sparkle.getValuef());
     for (Strip s : model.strips) {
       int i = 0;
-      for (Point p : s.points) {
+      for (LXPoint p : s.points) {
         int wavi = (int) constrain(p.x / model.xMax * wval.length, 0, wval.length-1);
         float wavb = max(0, wave.getValuef()*100. - 8.*abs(p.y - wval[wavi]));
         colors[p.index] = lx.hsb(
@@ -366,7 +366,7 @@ class Pulley extends SCPattern {
       fPos = .2 + 4 * (.2 - fPos);
     }
     float falloff = 100. / (3 + sz.getValuef() * 36 + fPos * beatAmount.getValuef()*48);
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       int gi = (int) constrain((p.x - model.xMin) * NUM_DIVISIONS / (model.xMax - model.xMin), 0, NUM_DIVISIONS-1);
       colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + abs(p.x - model.cx)*.8 + p.y*.4) % 360,
@@ -438,7 +438,7 @@ class ViolinWave extends SCPattern {
       }
       
       float pFalloff = (30 - 27*pSize.getValuef());
-      for (Point p : model.points) {
+      for (LXPoint p : model.points) {
         float b = 100 - pFalloff * (abs(p.x - x.getValuef()) + abs(p.y - y.getValuef()));
         if (b > 0) {
           colors[p.index] = blendColor(colors[p.index], lx.hsb(
@@ -489,7 +489,7 @@ class ViolinWave extends SCPattern {
     float rng = (78 - 64 * range.getValuef()) / (model.yMax - model.cy);
     float val = max(2, dbValue.getValuef());
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       int ci = (int) lerp(0, centers.length-1, (p.x - model.xMin) / (model.xMax - model.xMin));
       float rFactor = 1.0 -  0.9 * abs(p.x - model.cx) / (model.xMax - model.cx);
       colors[p.index] = lx.hsb(
@@ -545,7 +545,7 @@ class BouncyBalls extends SCPattern {
       float xv = xPos.getValuef();
       float yv = yPos.getValuef();
       
-      for (Point p : model.points) {
+      for (LXPoint p : model.points) {
         float d = sqrt((p.x-xv)*(p.x-xv) + (p.y-yv)*(p.y-yv) + .1*(p.z-zPos)*(p.z-zPos));
         float b = constrain(130 - falloff*d, 0, 100);
         if (b > 0) {
@@ -630,7 +630,7 @@ class SpaceTime extends SCPattern {
     int s = 0;
     for (Strip strip : model.strips) {
       int i = 0;
-      for (Point p : strip.points) {
+      for (LXPoint p : strip.points) {
         colors[p.index] = lx.hsb(
           (lx.getBaseHuef() + 360 - p.x*.2 + p.y * .3) % 360, 
           constrain(.4 * min(abs(s - sVal1), abs(s - sVal2)), 20, 100),
@@ -648,9 +648,9 @@ class Swarm extends SCPattern {
   SawLFO offset = new SawLFO(0, 1, 1000);
   SinLFO rate = new SinLFO(350, 1200, 63000);
   SinLFO falloff = new SinLFO(15, 50, 17000);
-  SinLFO fX = new SinLFO(0, model.xMax, 19000);
-  SinLFO fY = new SinLFO(0, model.yMax, 11000);
-  SinLFO hOffX = new SinLFO(0, model.xMax, 13000);
+  SinLFO fX = new SinLFO(model.xMin, model.xMax, 19000);
+  SinLFO fY = new SinLFO(model.yMin, model.yMax, 11000);
+  SinLFO hOffX = new SinLFO(model.xMin, model.xMax, 13000);
 
   public Swarm(GLucose glucose) {
     super(glucose);
@@ -677,9 +677,9 @@ class Swarm extends SCPattern {
 
   void run(double deltaMs) {
     float s = 0;
-    for (Strip strip : model.strips  ) {
+    for (Strip strip : model.strips) {
       int i = 0;
-      for (Point p : strip.points) {
+      for (LXPoint p : strip.points) {
         float fV = max(-1, 1 - dist(p.x/2., p.y, fX.getValuef()/2., fY.getValuef()) / 64.);
         colors[p.index] = lx.hsb(
         (lx.getBaseHuef() + 0.3 * abs(p.x - hOffX.getValuef())) % 360, 
@@ -707,7 +707,7 @@ class SwipeTransition extends SCTransition {
   void computeBlend(int[] c1, int[] c2, double progress) {
     float bleedf = 10 + bleed.getValuef() * 200.;
     float xPos = (float) (-bleedf + progress * (model.xMax + bleedf));
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float d = (p.x - xPos) / bleedf;
       if (d < 0) {
         colors[p.index] = c2[p.index];
@@ -830,7 +830,7 @@ class BassPod extends SCPattern {
     
     float satBase = bassLevel*480*clr.getValuef();
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       int avgIndex = (int) constrain(1 + abs(p.x-model.cx)/(model.cx)*(eq.numBands-5), 0, eq.numBands-5);
       float value = 0;
       for (int i = avgIndex; i < avgIndex + 5; ++i) {
@@ -881,7 +881,7 @@ class CubeEQ extends SCPattern {
     float edgeConst = 2 + 30*edge.getValuef();
     float clrConst = 1.1 + clr.getValuef();
 
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float avgIndex = constrain(2 + p.x / model.xMax * (eq.numBands-4), 0, eq.numBands-4);
       int avgFloor = (int) avgIndex;
 
@@ -936,7 +936,7 @@ class BoomEffect extends SCEffect {
       float falloffv = falloffv();
       float satv = sat.getValuef() * 100;
       float huev = lx.getBaseHuef();
-      for (Point p : model.points) {
+      for (LXPoint p : model.points) {
         colors[p.index] = blendColor(
         colors[p.index], 
         lx.hsb(huev, satv, constrain(brightv - falloffv*abs(boom.getValuef() - dist(p.x, 2*p.y, 3*p.z, model.xMax/2, model.yMax, model.zMax*1.5)), 0, 100)), 
@@ -1112,7 +1112,7 @@ class CrossSections extends SCPattern {
     float ywv = 100. / (10 + 40*yw.getValuef());
     float zwv = 100. / (10 + 40*zw.getValuef());
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       color c = 0;
       c = blendColor(c, lx.hsb(
       (lx.getBaseHuef() + p.x/10 + p.y/3) % 360, 
@@ -1159,7 +1159,7 @@ class Blinders extends SCPattern {
     for (Strip strip : model.strips) {
       int i = 0;
       float mv = m[si % m.length].getValuef();
-      for (Point p : strip.points) {
+      for (LXPoint p : strip.points) {
         colors[p.index] = lx.hsb(
           (hv + p.z + p.y*hs.getValuef()) % 360, 
           min(100, abs(p.x - s.getValuef())/2.), 
@@ -1195,7 +1195,7 @@ class Psychedelia extends SCPattern {
     float mv = m.getValuef();
     int i = 0;
     for (Strip strip : model.strips) {
-      for (Point p : strip.points) {
+      for (LXPoint p : strip.points) {
         colors[p.index] = lx.hsb(
           (huev + i*constrain(cv, 0, 2) + p.z/2. + p.x/4.) % 360, 
           min(100, abs(p.y-sv)), 
@@ -1257,7 +1257,7 @@ class AskewPlanes extends SCPattern {
     planes[1].run(deltaMs);
     planes[2].run(deltaMs);    
     
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float d = MAX_FLOAT;
       for (Plane plane : planes) {
         if (plane.denom != 0) {
@@ -1295,7 +1295,7 @@ class ShiftingPlane extends SCPattern {
     float cv = c.getValuef();
     float dv = d.getValuef();    
     float denom = sqrt(av*av + bv*bv + cv*cv);
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       float d = abs(av*(p.x-model.cx) + bv*(p.y-model.cy) + cv*(p.z-model.cz) + dv) / denom;
       colors[p.index] = lx.hsb(
         (hv + abs(p.x-model.cx)*.6 + abs(p.y-model.cy)*.9 + abs(p.z - model.cz)) % 360,
@@ -1362,7 +1362,7 @@ class Traktor extends SCPattern {
     bass[index] = rawBass * rawBass * rawBass * rawBass;
     treble[index] = rawTreble * rawTreble;
 
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       int i = (int) constrain((model.xMax - p.x) / model.xMax * FRAME_WIDTH, 0, FRAME_WIDTH-1);
       int pos = (index + FRAME_WIDTH - i) % FRAME_WIDTH;
       
@@ -1521,3 +1521,4 @@ class BlurEffect extends SCEffect {
       
   }  
 }
+

@@ -15,7 +15,7 @@ class TelevisionStatic extends SCPattern {
 
  void run(double deltaMs) {
     boolean d = direction.getValuef() > 5.0;
-    for (Point p : model.points) {             
+    for (LXPoint p : model.points) {             
       colors[p.index] = lx.hsb((lx.getBaseHuef() + random(hueParameter.getValuef() * 360))%360, random(saturationParameter.getValuef() * 100), random(brightParameter.getValuef() * 100));
     }
   }
@@ -38,7 +38,7 @@ class AbstractPainting extends SCPattern {
   } 
  
   void run(double deltaMs) {    
-    for (Point p : model.points) {
+    for (LXPoint p : model.points) {
       color c = img.get((int)((p.x / model.xMax) * img.width), img.height - (int)((p.y / model.yMax) * img.height));
       colors[p.index] = lx.hsb(hue(c) + colorMod.getValuef()%360, saturation(c), brightness(c) - ((p.z - brightMod.getValuef())/p.z));
     }    
@@ -55,7 +55,7 @@ class Spirality extends SCPattern {
   Spirality(GLucose glucose) {
     super(glucose);   
     addParameter(r);
-    for (Point p : model.points) {  
+    for (LXPoint p : model.points) {  
       colors[p.index] = lx.hsb(0, 0, 0);
     }
   }
@@ -65,7 +65,7 @@ class Spirality extends SCPattern {
     rad += deltaMs * .025 * direction;
     float x = model.xMax / 2 + cos(angle) * rad;
     float y = model.yMax / 2 + sin(angle) * rad;
-    for (Point p : model.points) {    
+    for (LXPoint p : model.points) {    
       float b = dist(x,y,p.x,p.y);
       if (b < 90) {
         colors[p.index] = blendColor(

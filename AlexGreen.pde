@@ -7,8 +7,16 @@ class SineSphere extends SCPattern {
   private int channel = 0; 
   private int velocity = 0; 
   public final LXProjection sinespin; 
+  public final LXProjection sinespin2;
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
   Pick Sshape; 
+
+  //to-do:  how to sync all hues across sphery's via one basicparameter 
+  //public BasicParameter huespread = new BasicParameter("HueSpread", 180, 360);
+  public BasicParameter rotationx = new BasicParameter("rotx", 0, 0, 1 );
+  public BasicParameter rotationy = new BasicParameter("roty", 1, 0, 1);
+  public BasicParameter rotationz = new BasicParameter("rotz", 0, 0, 1);
+  
   public final PVector P = new PVector();
 
   class Sphery {
@@ -153,7 +161,7 @@ final Sphery[] spherys;
   {
     super(glucose);
     sinespin = new LXProjection(model);
-    sinespin2 = new Projection(model);
+    sinespin2 = new LXProjection(model);
     addParameter(huespread);
     addParameter(rotationx);
     addParameter(rotationy);
@@ -203,9 +211,11 @@ final Sphery[] spherys;
      //spherys[2].run(deltaMs);
      //spherys[3].run(deltaMs);]
      sinespin.reset()
-    .center
-     .rotate(yrot.getValuef(), 0, 1, 0);
-
+     .center() 
+     // .scale(1.3,1.3,1.3)
+      // Rotate around the origin (now the center of the car) about an y-vector
+      .rotate(yrot.getValuef(), rotationx.getValuef(), rotationy.getValuef() , rotationz.getValuef())
+      .translate(model.cx, model.cy, model.cz);
      switch (pitch) 
     {
      case 53: t = .5*t;   bpm = .5*bpm;  break;
@@ -215,19 +225,19 @@ final Sphery[] spherys;
      case 55: t = 2*t;  bpm = 2*bpm; break;
 
      default: t= t;   bpm = bpm; 
-}
+     }
      
-      }
+      
       
       for ( Sphery s: spherys){
       s.setVibrationPeriod(480000/bpm);
       s.vibration.setBasis(t);
        }
-     sinespin.reset(model)
+     sinespin.reset()
      
     
      // Translate so the center of the car is the origin, offset 
-      .translateCenter(model, 0, 0, 0)
+      .center()
      // .scale(1.3,1.3,1.3)
       // Rotate around the origin (now the center of the car) about an y-vector
       .rotate(yrot.getValuef(), rotationx.getValuef(), rotationy.getValuef() , rotationz.getValuef())
@@ -237,7 +247,7 @@ final Sphery[] spherys;
    
    
 
-     for (Coord p: sinespin)
+     for (LXVector p: sinespin)
    // for (Point p: model.points)
      {
        P.set(p.x, p.y, p.z);
@@ -252,12 +262,12 @@ final Sphery[] spherys;
     
       
                }
-   sinespin2.reset(model).
-   translateCenter(model,0,0,0).
-   rotate(yrot2.getValuef(), 0, 1, 0).
-   translate(model.cx,model.cy,model.cz);
+   sinespin2.reset()
+   .center()
+   .rotate(yrot.getValuef(), rotationx.getValuef(), rotationy.getValuef() , rotationz.getValuef())
+   .translate(model.cx,model.cy,model.cz);
 
-    for (Coord p: sinespin2)
+    for (LXVector p: sinespin2)
     {   color c = 0;
       // PVector P = new PVector(p.x, p.y, p.z);
         P.set(p.x, p.y, p.z);

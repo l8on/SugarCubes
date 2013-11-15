@@ -25,6 +25,9 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
+     
+     new SineSphere(glucose),
+     new CubeCurl(glucose), 
 
     // Slee
     new Cathedrals(glucose),

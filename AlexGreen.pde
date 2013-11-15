@@ -1,7 +1,11 @@
 class SineSphere extends SCPattern {
   private SawLFO yrot = new SawLFO(0, TWO_PI, 3000);
   private SawLFO yrot2 = new SawLFO(0, -TWO_PI,  8000);
- 
+  public BasicParameter huespread = new BasicParameter("Hue", 0, 180);
+  public BasicParameter widthparameter= new BasicParameter("Width", .2);
+  private int pitch = 0; 
+  private int channel = 0; 
+  private int velocity = 0; 
   public final Projection sinespin;
   public final Projection sinespin2; 
   
@@ -24,8 +28,8 @@ class SineSphere extends SCPattern {
   public SinLFO ybounce;
   private SinLFO zbounce;
   float vibration_min, vibration_max, vperiod;
-  public BasicParameter widthparameter;
-  public BasicParameter huespread;
+  
+  //public BasicParameter huespread;
   public BasicParameter bouncerate;
   public BasicParameter bounceamp;
   public BasicParameter vibrationrate;
@@ -42,39 +46,40 @@ class SineSphere extends SCPattern {
    //addParameter(bounceamp = new BasicParameter("Amp", .5));
    //addParameter(bouncerate = new BasicParameter("Rate", .5));  //ybounce.modulateDurationBy(bouncerate);
    //addParameter(vibrationrate = new BasicParameter("vibration", 1000, 10000));
-    addParameter(widthparameter = new BasicParameter("Width", .2));
-    addParameter(huespread = new BasicParameter("Hue", 0, 180));
+    //addParameter(widthparameter = new BasicParameter("Width", .2));
+    
    
    addModulator( vx = new SinLFO(500, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
    addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //bounce.modulateDurationBy
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 240000)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
+   addModulator( vibration = new SinLFO(vibration_min , vibration_max, 10000)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
       
   }
 
   //for an ellipse
- public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
-  float vibration_min, float vibration_max, float vperiod)  
+//  public Sphery(float f1xcenter, float f1ycenter, float f1zcenter, float f2xcenter, float f2ycenter, float f2zcenter, 
+//   float vibration_min, float vibration_max, float vperiod)  
  
- {
-    this.f1xcenter = f1xcenter;
-   this.f1ycenter = f1ycenter;
-   this.f1zcenter = f1zcenter;
-   this.f2xcenter = f2xcenter;
-   this.f2ycenter = f2ycenter;
-   this.f2zcenter = f2zcenter;
-   this.vibration_min = vibration_min;
-   this.vibration_max = vibration_max;
-   this.vperiod = vperiod;
-   //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce).trigger(); 
-   addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
-   addParameter(widthparameter = new BasicParameter("Width", .1));
-   addParameter(huespread = new BasicParameter("Hue", .2));
+//  {
+//     this.f1xcenter = f1xcenter;
+//    this.f1ycenter = f1ycenter;
+//    this.f1zcenter = f1zcenter;
+//    this.f2xcenter = f2xcenter;
+//    this.f2ycenter = f2ycenter;
+//    this.f2zcenter = f2zcenter;
+//    this.vibration_min = vibration_min;
+//    this.vibration_max = vibration_max;
+//    this.vperiod = vperiod;
+//    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
+//    addModulator(ybounce).trigger(); 
+//    addModulator( vibration = new SinLFO(vibration_min , vibration_max, lx.tempo.rampf())).trigger(); //vibration.modulateDurationBy(vx);
+//    addParameter(widthparameter = new BasicParameter("Width", .1));
+//    //addParameter(huespread = new BasicParameter("bonk", .2));
   
-}
+// }
+ 
 
 
 void setVibrationPeriod(double period){
@@ -136,6 +141,19 @@ void run(double deltaMs) {
   
 }  
 
+// public boolean gridPressed(int row, int co){
+// midiengine.grid.setState();
+
+// return true;
+
+// }
+
+public boolean noteOn(Note note)  {
+pitch= note.getPitch();  
+velocity=note.getVelocity();
+channel=note.getChannel();
+return true;
+}
 
 final Sphery[] spherys;
  
@@ -144,6 +162,7 @@ final Sphery[] spherys;
     super(glucose);
     sinespin = new Projection(model);
     sinespin2 = new Projection(model);
+    addParameter(huespread);
     addParameter(rotationx);
     addParameter(rotationy);
     addParameter(rotationz);
@@ -191,10 +210,25 @@ final Sphery[] spherys;
      spherys[1].run(deltaMs);
      spherys[2].run(deltaMs);
      spherys[3].run(deltaMs);
-     for ( Sphery s: spherys){
-      s.setVibrationPeriod(240000/bpm);
+     
+
+     switch (pitch) 
+    {
+     case 53: t = .5*t;   bpm = .5*bpm;  break;
+
+     case 54: t = t;   bpm = bpm;   break;
+
+     case 55: t = 2*t;  bpm = 2*bpm; break;
+
+     default: t= t;   bpm = bpm; 
+
+     
+      }
+      
+      for ( Sphery s: spherys){
+      s.setVibrationPeriod(480000/bpm);
       s.vibration.setBasis(t);
-     }
+       }
      sinespin.reset(model)
      
     

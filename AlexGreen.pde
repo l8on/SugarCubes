@@ -6,6 +6,7 @@ class SineSphere extends SCPattern {
   private int pitch = 0; 
   private int channel = 0; 
   private int velocity = 0; 
+  private int cur = 0; 
   public final LXProjection sinespin; 
   public final LXProjection sinespin2;
  float modelrad = sqrt((model.xMax)*(model.xMax) + (model.yMax)*(model.yMax) + (model.zMax)*(model.zMax));
@@ -51,7 +52,7 @@ class SineSphere extends SCPattern {
    
    addModulator( vx = new SinLFO(500, 10000, 100000)).trigger() ;
    //addModulator(xbounce = new SinLFO(model.xMax/3, 2*model.yMax/3, 2000)).trigger(); 
-   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000./lx.tempo.bpm())).trigger(); //bounce.modulateDurationBy
+   addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000)).trigger(); //bounce.modulateDurationBy
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
    addModulator( vibration = new SinLFO(vibration_min , vibration_max, 10000)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
@@ -155,6 +156,14 @@ channel=note.getChannel();
 return true;
 }
 
+public boolean gridPressed(int row, int col) {
+ pitch = row; channel = col; 
+ cur = NumApcCols*(pitch-53)+col; 
+//setState(row, col, 0 ? 1 : 0); 
+return true;
+}
+
+//public grid
 final Sphery[] spherys;
  
   SineSphere(GLucose glucose) 
@@ -206,32 +215,30 @@ final Sphery[] spherys;
     public void run( double deltaMs) {
      double t = lx.tempo.ramp();
      double bpm = lx.tempo.bpm();
-     //spherys[0].run(deltaMs);
-     //spherys[1].run(deltaMs);
-     //spherys[2].run(deltaMs);
-     //spherys[3].run(deltaMs);]
+     
      sinespin.reset()
      .center() 
      // .scale(1.3,1.3,1.3)
       // Rotate around the origin (now the center of the car) about an y-vector
       .rotate(yrot.getValuef(), rotationx.getValuef(), rotationy.getValuef() , rotationz.getValuef())
       .translate(model.cx, model.cy, model.cz);
-     switch (pitch) 
-    {
-     case 53: t = .5*t;   bpm = .5*bpm;  break;
+     
+     switch (cur) {
 
-     case 54: t = t;   bpm = bpm;   break;
+     case 1: t = .5*t;   bpm = .5*bpm;  break;
 
-     case 55: t = 2*t;  bpm = 2*bpm; break;
+     case 2: t = t;   bpm = bpm;   break;
+
+     case 3: t = 2*t;  bpm = 2*bpm; break;
 
      default: t= t;   bpm = bpm; 
      }
-     
-      
-      
+        
       for ( Sphery s: spherys){
+     
       s.setVibrationPeriod(480000/bpm);
       s.vibration.setBasis(t);
+     
        }
      sinespin.reset()
      
@@ -333,16 +340,16 @@ for (int i = 0; i < model.cubes.size(); i++){
 PVector centerofcube(int i) { 
 Cube c = model.cubes.get(i);
 
-println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
+//println(" cube #:  " + i + " c.x  "  +  c.x  + "  c.y   "  + c.y   + "  c.z  "  +   c.z  );
 // PVector cubeangle = new PVector(c.rx, c.ry, c.rz);
-println("raw x angle:  " + c.rx + "raw y angle:  " + c.ry + "raw z angle:  " + c.rz);
-PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
-println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
-PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, cubecenter.y, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
+//println("raw x angle:  " + c.rx + "raw y angle:  " + c.ry + "raw z angle:  " + c.rz);
+//PVector cubecenter = new PVector(c.x + CW/2, c.y + CH/2, c.z + CW/2);
+//println("cubecenter unrotated:  "  + cubecenter.x + "  "  +cubecenter.y + "  " +cubecenter.z );
+//PVector centerrot = new PVector(cos(c.rx)*CW/2 - sin(c.rx)*CW/2, cubecenter.y, cos(c.rz)*CW/2 + sin(c.rz)*CW/2);
  // nCos*(y-o.y) - nSin*(z-o.z) + o.y
-cubecenter = PVector.add(new PVector(c.x, c.y, c.z), centerrot);
-println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
-
+//cubecenter = PVector.add(new PVector(c.x, c.y, c.z), centerrot);
+//println( "  cubecenter.x  " + cubecenter.x  + " cubecenter.y  " +  cubecenter.y + " cubecenter.z  "   +  cubecenter.z  + "   ");
+PVector cubecenter = new PVector(c.cx, c.cy, c.cz);
 
 return cubecenter;
 }

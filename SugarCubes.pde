@@ -26,14 +26,13 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
      
-     new SineSphere(glucose),
-     new CubeCurl(glucose), 
-
+    
     // Slee
-    new Cathedrals(glucose),
+    // new Cathedrals(glucose),
+     new Swarm(glucose),
     new MidiMusic(glucose),
     new Pulley(glucose),
-    new Swarm(glucose),
+    
     new ViolinWave(glucose),
     new BouncyBalls(glucose),
     new SpaceTime(glucose),
@@ -55,10 +54,18 @@ LXPattern[] patterns(GLucose glucose) {
     new Worms(glucose),
 
     // Alex G
+      new SineSphere(glucose),
+     //new CubeCurl(glucose), 
      
+     // Tim
+    new TimPlanes(glucose),
+    new TimPinwheels(glucose),
+    new TimRaindrops(glucose),
+    new TimCubes(glucose),
+    // new TimTrace(glucose),
+    new TimSpheres(glucose),
 
-    // Shaheen
-    new HelixPattern(glucose).setEligible(false),
+
     
     // Toby
     new GlitchPlasma(glucose),
@@ -72,19 +79,15 @@ LXPattern[] patterns(GLucose glucose) {
     new Swim(glucose),
     new Balance(glucose),
 
-    // Tim
-    new TimPlanes(glucose),
-    new TimPinwheels(glucose),
-    new TimRaindrops(glucose),
-    new TimCubes(glucose),
-    // new TimTrace(glucose),
-    new TimSpheres(glucose),
-
+    
     // Ben
     // new Sandbox(glucose),
     new TowerParams(glucose),
     new DriveableCrossSections(glucose),
     new GranimTestPattern2(glucose),
+    
+    // Shaheen
+    //new HelixPattern(glucose).setEligible(false),
     
     //JR
     new Gimbal(glucose),

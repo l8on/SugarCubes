@@ -26,14 +26,13 @@
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
      
-     new SineSphere(glucose),
-     new CubeCurl(glucose), 
+     
 
     // Slee
-    new Cathedrals(glucose),
+    new Swarm(glucose),
+    //new Cathedrals(glucose),
     new MidiMusic(glucose),
     new Pulley(glucose),
-    new Swarm(glucose),
     new ViolinWave(glucose),
     new BouncyBalls(glucose),
     new SpaceTime(glucose),
@@ -55,11 +54,15 @@ LXPattern[] patterns(GLucose glucose) {
     new Worms(glucose),
 
     // Alex G
+     new SineSphere(glucose),
+     //new CubeCurl(glucose), 
      
+     // Tim
+    new TimPlanes(glucose),
+    new TimPinwheels(glucose),
+    new TimRaindrops(glucose),
+    new TimCubes(glucose),
 
-    // Shaheen
-    new HelixPattern(glucose).setEligible(false),
-    
     // Toby
     new GlitchPlasma(glucose),
     new FireEffect(glucose).setEligible(false),
@@ -68,15 +71,16 @@ LXPattern[] patterns(GLucose glucose) {
     new SoundSpikes(glucose).setEligible(false),
     new FaceSync(glucose),
 
+    // Shaheen
+    new HelixPattern(glucose).setEligible(false),
+    
+    
     // Jack
     new Swim(glucose),
     new Balance(glucose),
 
-    // Tim
-    new TimPlanes(glucose),
-    new TimPinwheels(glucose),
-    new TimRaindrops(glucose),
-    new TimCubes(glucose),
+   
+    
     // new TimTrace(glucose),
     new TimSpheres(glucose),
 
@@ -87,24 +91,24 @@ LXPattern[] patterns(GLucose glucose) {
     new GranimTestPattern2(glucose),
     
     //JR
-    new Gimbal(glucose),
+    //new Gimbal(glucose),
     
     // Sam
     new JazzRainbow(glucose),
     
     // Arjun
     new TelevisionStatic(glucose),
-    new AbstractPainting(glucose),
+    //new AbstractPainting(glucose),
     new Spirality(glucose),
 
     // Basic test patterns for reference, not art    
-    new TestCubePattern(glucose),
-    new TestTowerPattern(glucose),
-    new TestProjectionPattern(glucose),
-    new TestStripPattern(glucose),
-    new TestBassMapping(glucose),
-    new TestFloorMapping(glucose),
-    new TestSpeakerMapping(glucose),    
+    //new TestCubePattern(glucose),
+    //new TestTowerPattern(glucose),
+    //new TestProjectionPattern(glucose),
+    //new TestStripPattern(glucose),
+    //new TestBassMapping(glucose),
+    //new TestFloorMapping(glucose),
+    //new TestSpeakerMapping(glucose),    
     // new TestHuePattern(glucose),
     // new TestXPattern(glucose),
     // new TestYPattern(glucose),

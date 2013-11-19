@@ -1,12 +1,12 @@
 class SineSphere extends SCPattern {
    
-  private BasicParameter yrotspeed = new BasicParameter("yspeed", 3000, 0, 10000);
-  private BasicParameter yrot2speed = new BasicParameter("y2speed", 8000, 0, 15000);
-  private BasicParameter yrot3speed = new BasicParameter("y3speed", 900, 0, 15000);
-  private BasicParameter vibrationrate = new BasicParameter("vib", 1000, 0, 10000);
-  private SawLFO yrot = new SawLFO(0, TWO_PI, yrotspeed.getValuef());
-  private SawLFO yrot2 = new SawLFO(0, -TWO_PI, yrot2speed.getValuef());
-  private SawLFO yrot3 = new SawLFO(0, -TWO_PI, yrot3speed.getValuef());
+  private BasicParameter yrotspeed = new BasicParameter("yspeed", 3000, 1, 10000);
+  private BasicParameter yrot2speed = new BasicParameter("y2speed", 8000, 1, 15000);
+  private BasicParameter yrot3speed = new BasicParameter("y3speed", 1400, 1, 15000);
+  private BasicParameter vibrationrate = new BasicParameter("vib", 1000, 1, 10000);
+  private SawLFO yrot = new SawLFO(0, TWO_PI, yrotspeed);
+  private SawLFO yrot2 = new SawLFO(0, -TWO_PI, yrot2speed);
+  private SawLFO yrot3 = new SawLFO(0, -TWO_PI, yrot3speed);
   public BasicParameter huespread = new BasicParameter("Hue", 0, 180);
   public BasicParameter widthparameter= new BasicParameter("Width", .2);
   private int pitch = 0; 
@@ -195,8 +195,8 @@ final Sphery[] spherys;
       new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
       new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
 
-      new Sphery(.8*model.xMax, .8*model.yMax, .7*model.zMax, modelrad/14, modelrad/7, 3500),
-      new Sphery(.75*model.xMax, model.yMax/2, model.zMax/2, modelrad/20, modelrad/10, 2000),
+      new Sphery(.7*model.xMax, .65*model.yMax, .5*model.zMax, modelrad/14, modelrad/7, 3500),
+      new Sphery(.75*model.xMax, .8*model.yMax, .7*model.zMax, modelrad/20, modelrad/10, 2000),
       new Sphery(model.xMax/2, model.yMax/2, model.zMax/2,  modelrad/4, modelrad/8, 2300),
       
     };  
@@ -293,7 +293,7 @@ final Sphery[] spherys;
     }  
     sinespin3.reset()
     .center()
-    .rotate(yrot3.getValuef(), -1 + rotationx.getValuef(), rotationy.getValuef(), rotationz.getValuef())
+    .rotate(yrot3.getValuef(),-1 + rotationx.getValuef(), rotationy.getValuef(), rotationz.getValuef())
     .translate(model.cx, model.cy, model.cz);
    for (LXVector p: sinespin3)
     {   color c = 0;

@@ -25,8 +25,8 @@
 
 LXPattern[] patterns(GLucose glucose) {
   return new LXPattern[] {
-     
-     new SineSphere(glucose),
+    
+    new SineSphere(glucose),
      //new CubeCurl(glucose), 
      
     // Slee
@@ -60,12 +60,15 @@ LXPattern[] patterns(GLucose glucose) {
     // Alex G
      
      // Tim
+    new TimMetronome(glucose),
     new TimPlanes(glucose),
     new TimPinwheels(glucose),
     new TimRaindrops(glucose),
     new TimCubes(glucose),
     // new TimTrace(glucose),
     new TimSpheres(glucose),
+    
+    
 
     // Jackie
     new JackieSquares(glucose),
@@ -73,6 +76,9 @@ LXPattern[] patterns(GLucose glucose) {
     new JackieDots(glucose),
 
 
+
+    // Vincent
+    new VSTowers(glucose),
     
     // Toby
     new GlitchPlasma(glucose),

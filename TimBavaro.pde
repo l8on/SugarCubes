@@ -3,8 +3,9 @@
  */
 class TimSpheres extends SCPattern {
   private BasicParameter hueParameter = new BasicParameter("RAD", 1.0);
+  private BasicParameter periodParameter = new BasicParameter("PERIOD", 4000.0, 200.0, 10000.0);
   private final SawLFO lfo = new SawLFO(0, 1, 10000);
-  private final SinLFO sinLfo = new SinLFO(0, 1, 4000);
+  private final SinLFO sinLfo = new SinLFO(0, 1, periodParameter);
   private final float centerX, centerY, centerZ;
   
   class Sphere {
@@ -18,6 +19,7 @@ class TimSpheres extends SCPattern {
   public TimSpheres(GLucose glucose) {
     super(glucose);
     addParameter(hueParameter);
+    addParameter(periodParameter);
     addModulator(lfo).trigger();
     addModulator(sinLfo).trigger();
     centerX = (model.xMax + model.xMin) / 2;
@@ -828,3 +830,72 @@ class TimTrace extends SCPattern {
     }
   }
 }
+
+class TimMetronome extends SCPattern {
+  private BasicParameter clickyParameter = new BasicParameter("CLICK", 0, 0, 10.0);
+  private BasicParameter derezParameter = new BasicParameter("DREZ", 0.5, 0, 1.0);
+  private BasicParameter driftParameter = new BasicParameter("DRIFT", 0, 0, 1.0);
+  private BasicParameter fadeParameter = new BasicParameter("FADE", 0.05, 0, 0.2);
+  private float modelWidth;
+  private int beatNum;
+  private float prevTempoRamp;
+  private LXProjection projection;
+  private float[] values;
+  private float[] hues;
+  
+  TimMetronome(GLucose glucose) {
+    super(glucose);
+    addParameter(clickyParameter);
+    addParameter(derezParameter);
+    addParameter(driftParameter);
+    addParameter(fadeParameter);
+    modelWidth = model.xMax - model.xMin;
+    projection = new LXProjection(model);
+    beatNum = 0;
+    prevTempoRamp = 0;
+    values = new float[model.points.size()];
+    hues = new float[model.points.size()];
+  }
+  
+  public void run(double deltaMs) {
+    float tempoRamp = lx.tempo.rampf();
+    if (tempoRamp < prevTempoRamp) {
+      beatNum = (beatNum + 1) % 1000;
+    }
+    prevTempoRamp = tempoRamp;
+    
+    float phase = beatNum + pow(tempoRamp, 1.0 + clickyParameter.getValuef());
+    
+    projection.reset();
+    projection.translateCenter(model.xMin, model.yMin, model.cz);
+    projection.rotate(phase * 0.5 * PI, 0, 0, 1);
+    
+    projection.translate(driftParameter.getValuef() * tempoRamp * modelWidth * 0.5, 0, 0);
+    
+    float derezCutoff = derezParameter.getValuef();
+    
+    float fadeMultiplier = (1.0 - fadeParameter.getValuef());
+    
+    float armRadius = modelWidth * 0.1;
+    for (LXVector p : projection) {
+      boolean onArm = false;
+      if (abs(p.x) < armRadius) {
+        onArm = (p.y > 0) || (sqrt(pow(p.x, 2) + pow(p.y, 2)) < armRadius);
+      }
+      if (onArm) {
+        values[p.index] = 1.0;
+        hues[p.index] = (floor(phase / 4) * 90) % 360;
+      } else {
+        values[p.index] *= fadeMultiplier;
+      }
+      
+      float saturation = pow(1 - values[p.index], 0.5) * 0.7 + 0.3;
+      float brightness = values[p.index];
+      
+      if (random(1.0) > derezCutoff) {
+        colors[p.index] = lx.hsb(hues[p.index], saturation * 100, brightness * 100);
+      }
+    }
+  }
+}
+

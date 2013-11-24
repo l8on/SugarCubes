@@ -43,6 +43,8 @@ LXPattern[] patterns(GLucose glucose) {
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
+
+    new MultipleCubes(glucose),
     
     new Traktor(glucose).setEligible(false),
     new BassPod(glucose).setEligible(false),

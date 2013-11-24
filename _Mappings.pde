@@ -214,8 +214,12 @@ float current_x_position = 0;
   }
 
   
-  for (Cube cube : singleCubes) cubes[cubeIndex++] = cube;
-  for (Cube cube : dcubes)                 cubes[cubeIndex++] = cube;
+  for (Cube cube : singleCubes) {
+    cubes[cubeIndex++] = cube;
+  }
+  for (Cube cube : dcubes) {
+    cubes[cubeIndex++] = cube;
+  }
   for (StaggeredTower st : scubes) {
     tower = new ArrayList<Cube>();
     for (int i=0; i < st.n; i++) {
@@ -255,6 +259,7 @@ public PandaMapping[] buildPandaList() {
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 1, 2, 3 }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 4, 5, 6 }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 7, 8, 9 }),
+
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 10, 11, 12 }),
         new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 16, 17, 18 }),
 //        new ChannelMapping(ChannelMapping.MODE_CUBES, new int[] { 34, 35, 36}),

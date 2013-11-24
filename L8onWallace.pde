@@ -22,6 +22,9 @@ class L8onLife extends SCPattern {
   private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
+  // Controls the number of neighbors needed to birth a new life.
+  private BasicParameter fertilityParameter = new BasicParameter("FERT", 2.0, 1.0, 5.0);
+
     
   public final double MIN_ALIVE_PROBABILITY = 0.2;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
@@ -51,7 +54,8 @@ class L8onLife extends SCPattern {
      addParameter(rateParameter);     
      addParameter(randomParameter);   
      addParameter(deadParameter);
-     addParameter(saturationParameter);  
+     addParameter(saturationParameter);
+     addParameter(fertilityParameter);
      addModulator(xPos).trigger();
   }
   
@@ -193,6 +197,7 @@ class L8onLife extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(cube_state);               
     boolean before_alive = cube_state.alive;
     boolean after_alive = before_alive;
+    int fetility_count = (int) fertilityParameter.getValuef();
               
     if(cube_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 3) {
@@ -202,7 +207,7 @@ class L8onLife extends SCPattern {
       }
       
     } else {
-      if(alive_neighbor_count == 3) {
+      if(alive_neighbor_count == fetility_count) {
         after_alive = true;
       } else {
         after_alive = false;

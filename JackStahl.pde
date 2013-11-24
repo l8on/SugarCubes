@@ -10,61 +10,70 @@ class Swim extends SCPattern {
 
   // Projection stuff
   private final LXProjection projection;
-  SawLFO rotation = new SawLFO(0, TWO_PI, 19000);
-  SinLFO yPos = new SinLFO(-25, 25, 12323);
-  final BasicParameter xAngle = new BasicParameter("XANG", 0.9);
-  final BasicParameter yAngle = new BasicParameter("YANG", 0.3);
-  final BasicParameter zAngle = new BasicParameter("ZANG", 0.3);
+  SinLFO rotationX = new SinLFO(-PI/16, PI/8, 9000);
+  SinLFO rotationY = new SinLFO(-PI/8, PI/8, 7000);
+  SinLFO rotationZ = new SinLFO(-PI/8, PI/16, 11000);
+  SinLFO yPos = new SinLFO(-1, 1, 13234);
+  SinLFO sineHeight = new SinLFO(1, 2.5, 13234);
+  SawLFO phaseLFO = new SawLFO(0, 2 * PI, 15000 - 13000 * 0.5);
+  final BasicParameter phaseParam = new BasicParameter("Spd", 0.5);
+  final BasicParameter crazyParam = new BasicParameter("Crzy", 0.5);
 
   final BasicParameter hueScale = new BasicParameter("HUE", 0.3);
 
   public Swim(GLucose glucose) {
     super(glucose);
     projection = new LXProjection(model);
-
-    addParameter(xAngle);
-    addParameter(yAngle);
-    addParameter(zAngle);
     addParameter(hueScale);
+    addParameter(crazyParam);
+    addParameter(phaseParam);
 
-    addModulator(rotation).trigger();
+    addModulator(rotationX).trigger();
+    addModulator(rotationY).trigger();
+    addModulator(rotationZ).trigger();
     addModulator(yPos).trigger();
+    addModulator(phaseLFO).trigger();
   }
-
+  
+  public void onParameterChanged(LXParameter parameter) {
+    if (parameter == phaseParam) {
+      phaseLFO.setDuration(5000 - 4500 * parameter.getValuef());
+    }
+  }
 
   int beat = 0;
   float prevRamp = 0;
   void run(double deltaMs) {
 
-    // Sync to the beat
-    float ramp = (float)lx.tempo.ramp();
-    if (ramp < prevRamp) {
-      beat = (beat + 1) % 4;
-    }
-    prevRamp = ramp;
-    float phase = (beat+ramp) / 2.0 * 2 * PI;
+    float phase = phaseLFO.getValuef();
+    
+    float up_down_range = (model.yMax - model.yMin) / 4;
 
-    float denominator = max(xAngle.getValuef() + yAngle.getValuef() + zAngle.getValuef(), 1);
-
+    // Swim around the world
+    float crazy_factor = crazyParam.getValuef() / 0.2;
     projection.reset()
-      // Swim around the world
-      .rotate(rotation.getValuef(), xAngle.getValuef() / denominator, yAngle.getValuef() / denominator, zAngle.getValuef() / denominator)
-        .translateCenter(0, 50 + yPos.getValuef(), 0);
+    .rotate(rotationZ.getValuef() * crazy_factor,  0, 1, 0)
+      .rotate(rotationX.getValuef() * crazy_factor, 0, 0, 1)
+        .rotate(rotationY.getValuef() * crazy_factor, 0, 1, 0)
+          .translate(0, up_down_range * yPos.getValuef(), 0);
+
 
     float model_height =  model.yMax - model.yMin;
     float model_width =  model.xMax - model.xMin;
     for (LXVector p : projection) {
       float x_percentage = (p.x - model.xMin)/model_width;
 
-      // Multiply by 1.4 to shrink the size of the sin wave to be less than the height of the cubes.
-      float y_in_range = 1.4 * (2*p.y - model.yMax - model.yMin) / model_height;
+      // Multiply by sineHeight to shrink the size of the sin wave to be less than the height of the cubes.
+      float y_in_range = sineHeight.getValuef() * (2*p.y - model.yMax - model.yMin) / model_height;
       float sin_x =  sin(phase + 2 * PI * x_percentage);       
 
-      // Color fade near the top of the sin wave
-      float v1 = sin_x > y_in_range  ? (100 + 100*(y_in_range - sin_x)) : 0;     
+      float size_of_sin_wave = 0.4;
+      
+      float v1 = (abs(y_in_range - sin_x) > size_of_sin_wave) ? 0 : abs((y_in_range - sin_x + size_of_sin_wave) / size_of_sin_wave / 2 * 100);
+
 
       float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.)*.3 + abs(p.y-model.yMax/2)*.9 + abs(p.z - model.zMax/2.))) % 360;
-      colors[p.index] = lx.hsb(hue_color, 70, v1);
+      colors[p.index] = lx.hsb(hue_color, 100, v1);
     }
   }
 }

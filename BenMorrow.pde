@@ -1,3 +1,111 @@
+class XYZPixel extends SCPattern
+{
+	float xm = model.xMin;
+	float ym = model.yMin;
+	float zm = model.zMin;
+
+	float cubeWidth = 35;
+	float xm2 = model.xMin+cubeWidth;
+	float ym2 = model.yMin+cubeWidth;
+	float zm2 = model.zMin+cubeWidth;
+
+	XYZPixel(GLucose glucose) {
+		super(glucose);
+		//myP = new LXPoint(20,20,20);
+	}
+
+	void run(double deltaMs)
+	{
+		for(LXPoint p : model.points)
+		{
+			if(p.x > xm && p.x<= xm2 && p.y > ym && p.y<= xm2 && p.z<= zm2 && p.z > zm)
+			{
+				colors[p.index] = lx.hsb(lx.getBaseHue()+100, 100, 100);
+		        
+			}else{
+				colors[p.index] = 0;
+			}
+		}
+		float minIS=min(model.xMax,model.yMax,model.zMax);
+		xm = (xm + 1 ) % minIS;
+		ym = (ym + 1 ) % minIS;
+		zm = (zm + 1 ) % minIS;
+
+		xm2 = xm + cubeWidth;
+		ym2 = ym2 + cubeWidth;
+		zm2 = zm2 + cubeWidth;
+	}
+}
+
+class MultipleCubes extends SCPattern
+{
+	float xm = model.xMin;
+	float ym = model.yMin+10;
+	float zm = model.zMin+5;
+
+	float xma = model.xMin;
+	float xmb = model.xMin;
+
+	float cubeWidth = 35;
+
+	float minIS;
+
+	MultipleCubes(GLucose glucose) {
+		super(glucose);
+		minIS = 200;
+	}
+
+	void drawVirtualCube(float bottomX, float bottomY, float bottomZ, float side, int cubeColor)
+	{
+		for(LXPoint p : model.points)
+		{
+			if(p.x > bottomX && p.x<= bottomX+side && p.y > bottomY && p.y<= bottomY + side  && p.z > bottomZ &&  p.z<= bottomZ+side)
+			{
+				colors[p.index] = cubeColor;
+			}
+		}
+	}
+
+	void clear()
+	{
+		for(int i=0;i<colors.length;i++)
+		{
+			colors[i]=0;
+		}
+	}
+	float side = 29.0;
+	int col;
+	int hueDo;
+	void run(double deltaMs)
+	{
+		boolean up = false;
+		clear();
+		for(int i = 0;i < model.yMax / side; i++)
+		{
+			//println(Math.abs(minIS - xm - 30*(i % 3) - xm + 30*(i % 3)));
+			if(i % 2 ==0)
+			{
+				xm = xma;
+			}else{
+				xm = xmb;
+			}
+			if(Math.abs(minIS - xm - 30*(i % 3) - xm + 30*(i % 3)) < side * 1.5)
+			{
+				hueDo = (hueDo+1) % 255;
+				up = true;
+			}
+			col =  lx.hsb(lx.getBaseHue() + hueDo,100,100);
+			drawVirtualCube(minIS-xm- 30*(i % 3), ym+i*side, zm, side, col);
+			drawVirtualCube(xm + 30*(i % 3), ym+i*side, zm, side, col);
+		}
+		
+		xma = (xma + 7 ) % minIS;
+		xmb = (xmb + 3) % minIS;
+		//ym = (ym + 1 ) % minIS;
+		//zm = (zm + 1 ) % minIS;
+	}
+}
+
 class TowerParams extends SCPattern
 {
 	BasicParameter hueoff = new BasicParameter("Hueoff", 0.0);

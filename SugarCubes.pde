@@ -43,6 +43,8 @@ LXPattern[] patterns(GLucose glucose) {
     new Blinders(glucose),
     new CrossSections(glucose),
     new Psychedelia(glucose),
+
+    new MultipleCubes(glucose),
     
     new Traktor(glucose).setEligible(false),
     new BassPod(glucose).setEligible(false),
@@ -58,14 +60,25 @@ LXPattern[] patterns(GLucose glucose) {
     // Alex G
      
      // Tim
+    new TimMetronome(glucose),
     new TimPlanes(glucose),
     new TimPinwheels(glucose),
     new TimRaindrops(glucose),
     new TimCubes(glucose),
     // new TimTrace(glucose),
     new TimSpheres(glucose),
+    
+    
+
+    // Jackie
+    new JackieSquares(glucose),
+    new JackieLines(glucose),
+    new JackieDots(glucose),
 
 
+
+    // Vincent
+    new VSTowers(glucose),
     
     // Toby
     new GlitchPlasma(glucose),

@@ -61,7 +61,7 @@ class SineSphere extends SCPattern {
    addModulator(ybounce= new SinLFO(model.yMax/3, 2*model.yMax/3, 240000)).trigger(); //bounce.modulateDurationBy
     
    //addModulator(bounceamp); //ybounce.setMagnitude(bouncerate);
-   addModulator( vibration = new SinLFO( modelrad/10 - vibration_magnitude , modelrad/10 + vibration_magnitude, vperiod)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
+   addModulator( vibration = new SinLFO( modelrad/15 - vibration_magnitude , modelrad/15 + vibration_magnitude, vperiod)).trigger(); //vibration.setPeriod(240000/lx.tempo.bpm());
 
       
   }
@@ -100,7 +100,7 @@ class SineSphere extends SCPattern {
   
 // }
  
-
+public int     c1c    (float a)              { return round(100*constrain(a,0,1));               }
 
 void setVibrationPeriod(double period){
 // to-do:  make this conditional upon time signature
@@ -129,6 +129,13 @@ float distfromcirclecenter(float px, float py, float pz, float f1x, float f1y, f
   //if (q.x > f1xcenter ) {return 140 ;}
     //else  {return 250;}  
  }
+
+ // float noisesat(PVector q) {
+   
+
+ //  return noise()
+
+ // }
  color spheryvalue (PVector p) {
    circlecenter.set(this.f1xcenter, this.f1ycenter, this.f1zcenter); 
 

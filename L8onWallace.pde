@@ -23,10 +23,10 @@ class L8onLife extends SCPattern {
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
     
-  public final double MIN_ALIVE_PROBABILITY = 0.1;
-  public final double MAX_ALIVE_PROBABILITY = 0.8;
+  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MAX_ALIVE_PROBABILITY = 0.9;
   
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 3500);
+  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
   
   // Contains the state of all cubes by index.
   private List<CubeState> cube_states;
@@ -34,6 +34,8 @@ class L8onLife extends SCPattern {
   private int time_since_last_run;
   // Boolean describing if life changes were made during the current run.
   private boolean any_changes_this_run;
+  // Hold the new lives
+  private List<Boolean> new_lives;
   
   public L8onLife(GLucose glucose) {
      super(glucose);  
@@ -44,6 +46,7 @@ class L8onLife extends SCPattern {
      initCubeStates();
      time_since_last_run = 0;
      any_changes_this_run = false;
+     new_lives = new ArrayList<Boolean>();
      
      addParameter(rateParameter);     
      addParameter(randomParameter);   
@@ -57,11 +60,12 @@ class L8onLife extends SCPattern {
     CubeState cube_state;    
     
     any_changes_this_run = false;        
+    new_lives.clear();
     time_since_last_run += deltaMs;
     
     for (Cube cube : model.cubes) {
       cube_state = this.cube_states.get(i);  
-      
+
       if(shouldLightCube(cube_state)) {
         lightLiveCube(cube);
       } else {
@@ -74,6 +78,8 @@ class L8onLife extends SCPattern {
     boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
     if(should_randomize_anyway || !any_changes_this_run) {
       randomizeCubeStates();  
+    } else {
+      applyNewLives();
     }
     
     if(time_since_last_run >= rateParameter.getValuef()) {
@@ -165,39 +171,49 @@ class L8onLife extends SCPattern {
     // Respect rate parameter.
     if(time_since_last_run < rateParameter.getValuef()) {
       any_changes_this_run = true;
-      return cube_state.alive;   
+      return cube_state.alive;
     } else {
-      return cycleOfLife(cube_state);
-    }    
+      boolean new_life = cycleOfLife(cube_state);
+      new_lives.add(new_life);
+      return new_life;
+    }
+  }
+
+  public void applyNewLives() {
+    int index = 0;
+    for(boolean liveliness: new_lives) {
+      CubeState cube_state = this.cube_states.get(index);
+      cube_state.alive = new_lives.get(index);
+      index++;
+    }
   }
       
   public boolean cycleOfLife(CubeState cube_state) {
     Integer index = cube_state.index;
     Integer alive_neighbor_count = countLiveNeighbors(cube_state);               
     boolean before_alive = cube_state.alive;
+    boolean after_alive = before_alive;
               
     if(cube_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 3) {
-        cube_state.alive = false;
+        after_alive = false;
       } else {
-        cube_state.alive = true;
+        after_alive = true;
       }
       
     } else {
       if(alive_neighbor_count == 3) {
-        cube_state.alive = true;
+        after_alive = true;
       } else {
-        cube_state.alive = false;   
+        after_alive = false;
       }
-    }  
-    
-    this.cube_states.set(index, cube_state);
-       
-    if(before_alive != cube_state.alive) {
+    }
+
+    if(before_alive != after_alive) {
       any_changes_this_run = true;
-    }   
-    
-    return cube_state.alive;
+    }
+
+    return after_alive;
   }
       
   public Integer countLiveNeighbors(CubeState cube_state) {

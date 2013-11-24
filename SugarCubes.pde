@@ -65,6 +65,11 @@ LXPattern[] patterns(GLucose glucose) {
     // new TimTrace(glucose),
     new TimSpheres(glucose),
 
+    // Jackie
+    new JackieSquares(glucose),
+    new JackieLines(glucose),
+    new JackieDots(glucose),
+
 
     
     // Toby

@@ -71,6 +71,9 @@ LXPattern[] patterns(GLucose glucose) {
     new JackieDots(glucose),
 
 
+
+    // Vincent
+    new VSTowers(glucose),
     
     // Toby
     new GlitchPlasma(glucose),

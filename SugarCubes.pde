@@ -66,6 +66,9 @@ LXPattern[] patterns(GLucose glucose) {
     new TimSpheres(glucose),
 
 
+
+    // Vincent
+    new VSTowers(glucose),
     
     // Toby
     new GlitchPlasma(glucose),

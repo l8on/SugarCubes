@@ -22,7 +22,7 @@ class Life extends SCPattern {
   
   public Life(GLucose glucose) {
      super(glucose);  
-     //outputCubeInfo();
+     outputCubeInfo();
      initCubeStates();
      time_since_last_run = 0;
      any_changes_this_run = false;
@@ -79,8 +79,7 @@ class Life extends SCPattern {
     
     for (Cube c : model.cubes) {      
       neighbors = findCubeNeighbors(c, i);
-      alive = (i % 6 == 0);      
-//      alive = true;
+      alive = true;
       cube_state = new CubeState(i, alive, neighbors);      
       this.cube_states.add(cube_state);      
       ++i;
@@ -88,8 +87,13 @@ class Life extends SCPattern {
   }
  
   private void randomizeCubeStates() {
-    for (CubeState cube_state: this.cube_states) {
-      if( (cube_state.index % 2 == 0) == cube_state.alive) {
+    print("randomizing!\n");
+    
+    float f = (xPos.getValuef() / model.xMax) * 10;     
+    int mod_value = max(2, (int) f);
+    
+    for (CubeState cube_state: this.cube_states) {      
+      if( (cube_state.index % mod_value == 0) == cube_state.alive) {
         cube_state.alive = !cube_state.alive;  
       }           
     }    
@@ -106,6 +110,7 @@ class Life extends SCPattern {
       }
       
       if(abs(c.x - cube.x) < (Cube.EDGE_WIDTH * 2) && abs(c.y - cube.y) < (Cube.EDGE_HEIGHT * 2)) {      
+        print("Cube " + i + " is a neighbor of " + index + "\n");
         neighbors.add(i);
       }
       

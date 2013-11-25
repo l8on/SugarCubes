@@ -439,7 +439,7 @@ class L8onStrips extends SCPattern {
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
 
-  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MIN_ALIVE_PROBABILITY = 0.4;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
 
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);

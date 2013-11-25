@@ -76,6 +76,7 @@ LXPattern[] patterns(GLucose glucose) {
     // L8on
     new L8onLife(glucose),
     new L8onAutomata(glucose),
+    new L8onStrips(glucose),
 
     // Vincent
     new VSTowers(glucose),

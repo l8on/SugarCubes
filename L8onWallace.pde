@@ -1,6 +1,6 @@
 class L8onLife extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("RATE", 122.5, 0.0, 1000.0);
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
   // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
   private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
   // Controls the brightness of dead cubes.
@@ -237,7 +237,7 @@ class L8onAutomata extends SCPattern {
   // Controls if the points should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
   private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("RATE", 75.0, 0.0, 1000.0);
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 75.0, 0.0, 1000.0);
 
   private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
 
@@ -427,5 +427,248 @@ class L8onAutomata extends SCPattern {
       point_state.alive = (Math.random() <= prob);
     }
   }
+}
 
+class L8onStrips extends SCPattern {
+  // Controls the rate of life algorithm ticks, in milliseconds
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
+  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the brightness of dead cubes.
+  private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
+  // Controls the saturation.
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
+
+  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MAX_ALIVE_PROBABILITY = 0.9;
+
+  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
+  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+
+  class StripState {
+     // Index of strip in glucose.model.strips
+     public Integer index;
+     // Boolean which describes if strip is alive.
+     public boolean alive;
+     // List of this cubes neighbors
+     public List<Integer> neighbors;
+
+     public StripState(Integer index, boolean alive, List<Integer> neighbors) {
+       this.index = index;
+       this.alive = alive;
+       this.neighbors = neighbors;
+     }
+  }
+
+  // Contains the state of all cubes by index.
+  private List<StripState> strip_states;
+  // Contains the amount of time since the last cycle of life.
+  private int time_since_last_run;
+  // Boolean describing if life changes were made during the current run.
+  private boolean any_changes_this_run;
+  // Hold the new lives
+  private List<Boolean> new_lives;
+
+  public L8onStrips(GLucose glucose) {
+     super(glucose);
+
+     //Print debug info about the strips.
+     //outputStripInfo();
+
+     initStripStates();
+     randomizeStripStates();
+     time_since_last_run = 0;
+     any_changes_this_run = false;
+     new_lives = new ArrayList<Boolean>();
+
+     addParameter(rateParameter);
+     addParameter(randomParameter);
+     addParameter(deadParameter);
+     addParameter(saturationParameter);
+
+     addModulator(xPos).trigger();
+     addModulator(zPos).trigger();
+  }
+
+  public void run(double deltaMs) {
+    Integer i = 0;
+    StripState strip_state;
+
+    any_changes_this_run = false;
+    new_lives.clear();
+    time_since_last_run += deltaMs;
+
+    for (Strip strip : model.strips) {
+      strip_state = this.strip_states.get(i);
+
+      if(shouldLightStrip(strip_state)) {
+        lightLiveStrip(strip);
+      } else {
+        lightDeadStrip(strip);
+      }
+
+      i++;
+    }
+
+    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
+    if(should_randomize_anyway || !any_changes_this_run) {
+      randomizeStripStates();
+    } else {
+      applyNewLives();
+    }
+
+    if(time_since_last_run >= rateParameter.getValuef()) {
+      time_since_last_run = 0;
+    }
+  }
+
+  public void lightLiveStrip(Strip strip) {
+    for (LXPoint p : strip.points) {
+      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),
+        75
+      );
+    }
+  }
+
+  public void lightDeadStrip(Strip strip) {
+    for (LXPoint p : strip.points) {
+      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
+      double dead_bright = deadParameter.getValuef() * Math.random();
+
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),
+        dead_bright
+      );
+    }
+  }
+
+  public void outputStripInfo() {
+    int i = 0;
+    for (Strip strip : model.strips) {
+      print("Strip " + i + ": " + strip.cx + "," + strip.cy + "," + strip.cz + "\n");
+      ++i;
+    }
+  }
+
+  private void initStripStates() {
+    List<Integer> neighbors;
+    boolean alive = false;
+    StripState strip_state;
+    this.strip_states = new ArrayList<StripState>();
+    Integer i = 0;
+
+    int total_neighbors = 0;
+
+    for (Strip strip : model.strips) {
+      neighbors = findStripNeighbors(strip, i);
+      alive = true;
+      strip_state = new StripState(i, alive, neighbors);
+      this.strip_states.add(strip_state);
+
+      total_neighbors += neighbors.size();
+      ++i;
+    }
+
+    float average_neighbor_count = (float) total_neighbors / (float) model.strips.size();
+    //print("Average neighbor count: " + average_neighbor_count + "\n");
+  }
+
+  private void randomizeStripStates() {
+    double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
+    double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
+
+    //print("Randomizing strips! p = " + prob + "\n");
+
+    for (StripState strip_state : this.strip_states) {
+      strip_state.alive = (Math.random() <= prob);
+    }
+  }
+
+  public List<Integer> findStripNeighbors(Strip strip, Integer index) {
+    List<Integer> neighbors = new LinkedList<Integer>();
+    Integer i = 0;
+    int neighbor_count = 0;
+    double distance = 0.0;
+
+    for (Strip s : model.strips) {
+      if( (int)index != (int)i )  {
+        distance = Math.sqrt( Math.pow((s.cx - strip.cx), 2) + Math.pow((s.cy - strip.cy), 2) + Math.pow((s.cz - strip.cz), 2) );
+
+        if(distance < ( (double) Cube.EDGE_WIDTH) ) {
+          //print("Strip " + i + " is a neighbor of " + index + "\n");
+          neighbors.add(i);
+        }
+      }
+      i++;
+    }
+
+    return neighbors;
+  }
+
+  public boolean shouldLightStrip(StripState strip_state) {
+    // Respect rate parameter.
+    if(time_since_last_run < rateParameter.getValuef()) {
+      any_changes_this_run = true;
+      return strip_state.alive;
+    } else {
+      boolean new_life = cycleOfStripperLife(strip_state);
+      new_lives.add(new_life);
+      return new_life;
+    }
+  }
+
+  public void applyNewLives() {
+    int index = 0;
+    for(boolean liveliness: new_lives) {
+      StripState strip_state = this.strip_states.get(index);
+      strip_state.alive = new_lives.get(index);
+      index++;
+    }
+  }
+
+  public boolean cycleOfStripperLife(StripState strip_state) {
+    Integer index = strip_state.index;
+    Integer alive_neighbor_count = countLiveNeighbors(strip_state);
+    boolean before_alive = strip_state.alive;
+    boolean after_alive = before_alive;
+
+    if(strip_state.alive) {
+      if(alive_neighbor_count < 2 || alive_neighbor_count > 6) {
+        after_alive = false;
+      } else {
+        after_alive = true;
+      }
+
+    } else {
+      if(alive_neighbor_count == 5) {
+        after_alive = true;
+      } else {
+        after_alive = false;
+      }
+    }
+
+    if(before_alive != after_alive) {
+      any_changes_this_run = true;
+    }
+
+    return after_alive;
+  }
+
+  public Integer countLiveNeighbors(StripState strip_state) {
+    Integer count = 0;
+    StripState neighbor_strip_state;
+
+    for(Integer neighbor_index: strip_state.neighbors) {
+       neighbor_strip_state = this.strip_states.get(neighbor_index);
+       if(neighbor_strip_state.alive) {
+         count++;
+       }
+    }
+
+    return count;
+  }
 }

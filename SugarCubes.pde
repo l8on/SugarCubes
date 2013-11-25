@@ -51,6 +51,9 @@ LXPattern[] patterns(GLucose glucose) {
     new CubeEQ(glucose).setEligible(false),
     new PianoKeyPattern(glucose).setEligible(false),
 
+	// AntonK
+	new AKPong(glucose),
+
     // DanH
     new Noise(glucose),
     new Play (glucose),

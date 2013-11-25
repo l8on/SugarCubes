@@ -1,64 +1,118 @@
-class CubeState {  
- public Integer index;
- public boolean alive;
- public List<Integer> neighbors;
- 
- public CubeState(Integer index, boolean alive, List<Integer> neighbors) {
-   this.index = index;
-   this.alive = alive;
-   this.neighbors = neighbors;
- }
-}
+class L8onLife extends SCPattern {
+  // Controls the rate of life algorithm ticks, in milliseconds
+  private BasicParameter rateParameter = new BasicParameter("RATE", 122.5, 0.0, 1000.0);
+  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the brightness of dead cubes.
+  private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
+  // Controls the saturation.
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
+    
+  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MAX_ALIVE_PROBABILITY = 0.9;
+  
+  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
+  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
 
-class Life extends SCPattern {
-  public final int TIME_BETWEEN_RUNS = 100;
-  public final int MAX_DEAD_BRIGHTNESS = 40;
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 5000);
-  private final SinLFO yPos = new SinLFO(0, model.yMax, 5000);
+  class CubeState {
+     // Index of cube in glucose.model.cubes
+     public Integer index;
+     // Boolean which describes if cube is alive.
+     public boolean alive;
+     // List of this cubes neighbors
+     public List<Integer> neighbors;
+
+     public CubeState(Integer index, boolean alive, List<Integer> neighbors) {
+       this.index = index;
+       this.alive = alive;
+       this.neighbors = neighbors;
+     }
+  }
+
+  // Contains the state of all cubes by index.
+  private List<CubeState> cube_states;
+  // Contains the amount of time since the last cycle of life.
+  private int time_since_last_run;
+  // Boolean describing if life changes were made during the current run.
+  private boolean any_changes_this_run;
+  // Hold the new lives
+  private List<Boolean> new_lives;
   
-  public List<CubeState> cube_states;
-  public int time_since_last_run;
-  public boolean any_changes_this_run;
-  
-  public Life(GLucose glucose) {
+  public L8onLife(GLucose glucose) {
      super(glucose);  
-     outputCubeInfo();
+     
+     //Print debug info about the cubes.
+     //outputCubeInfo();
+     
      initCubeStates();
      time_since_last_run = 0;
      any_changes_this_run = false;
+     new_lives = new ArrayList<Boolean>();
+     
+     addParameter(rateParameter);     
+     addParameter(randomParameter);   
+     addParameter(deadParameter);
+     addParameter(saturationParameter);
      addModulator(xPos).trigger();
-     addModulator(yPos).trigger();          
+     addModulator(zPos).trigger();
   }
   
   public void run(double deltaMs) {        
     Integer i = 0;    
-    CubeState cube_state;
+    CubeState cube_state;    
     
+    any_changes_this_run = false;        
+    new_lives.clear();
     time_since_last_run += deltaMs;
     
-    if(time_since_last_run < TIME_BETWEEN_RUNS) {
-      return;  
-    }
-    any_changes_this_run = false;        
-            
-    for (Cube cube : model.cubes) {    
+    for (Cube cube : model.cubes) {
       cube_state = this.cube_states.get(i);
-      
-      if(shouldBeAlive(i)) {
+
+      if(shouldLightCube(cube_state)) {
         lightLiveCube(cube);
       } else {
         lightDeadCube(cube);
-      }                
-      i++;
+      } 
+      
+      i++;      
     }
     
-    if(!any_changes_this_run) {
+    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
+    if(should_randomize_anyway || !any_changes_this_run) {
       randomizeCubeStates();  
+    } else {
+      applyNewLives();
     }
     
-    time_since_last_run = 0;
+    if(time_since_last_run >= rateParameter.getValuef()) {
+      time_since_last_run = 0;
+    }    
   }
   
+  public void lightLiveCube(Cube cube) {    
+    for (LXPoint p : cube.points) {
+      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),        
+        75
+      );
+    }        
+  }
+  
+  public void lightDeadCube(Cube cube) {
+    for (LXPoint p : cube.points) {
+      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
+      double dead_bright = deadParameter.getValuef() * Math.random();
+      
+      colors[p.index] = lx.hsb(
+        hv,
+        saturationParameter.getValuef(),        
+        dead_bright
+      );     
+    }  
+  } 
+    
   public void outputCubeInfo() {
     int i = 0;      
     for (Cube c : model.cubes) {
@@ -74,7 +128,7 @@ class Life extends SCPattern {
     List<Integer> neighbors;
     boolean alive = false;  
     CubeState cube_state;      
-    this.cube_states = new LinkedList<CubeState>(); 
+    this.cube_states = new ArrayList<CubeState>();
     Integer i = 0;     
     
     for (Cube c : model.cubes) {      
@@ -86,16 +140,14 @@ class Life extends SCPattern {
     }      
   }
  
-  private void randomizeCubeStates() {
-    print("randomizing!\n");
+  private void randomizeCubeStates() {  
+    double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
+    double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
     
-    float f = (xPos.getValuef() / model.xMax) * 10;     
-    int mod_value = max(2, (int) f);
-    
-    for (CubeState cube_state: this.cube_states) {      
-      if( (cube_state.index % mod_value == 0) == cube_state.alive) {
-        cube_state.alive = !cube_state.alive;  
-      }           
+    //print("Randomizing cubes! p = " + prob + "\n");
+     
+    for (CubeState cube_state: this.cube_states) {   
+      cube_state.alive = (Math.random() <= prob);            
     }    
   }
   
@@ -104,14 +156,11 @@ class Life extends SCPattern {
     Integer i = 0;
     
     for (Cube c : model.cubes) {          
-      if(index == i)  {
-        i++;
-        continue;
-      }
-      
-      if(abs(c.x - cube.x) < (Cube.EDGE_WIDTH * 2) && abs(c.y - cube.y) < (Cube.EDGE_HEIGHT * 2)) {      
-        print("Cube " + i + " is a neighbor of " + index + "\n");
-        neighbors.add(i);
+      if(index != i)  {                   
+        if(abs(c.x - cube.x) < (Cube.EDGE_WIDTH * 2) && abs(c.y - cube.y) < (Cube.EDGE_HEIGHT * 2)) {      
+          //print("Cube " + i + " is a neighbor of " + index + "\n");
+          neighbors.add(i);
+        }
       }
       
       i++;
@@ -120,33 +169,53 @@ class Life extends SCPattern {
     return neighbors;    
   }
   
-  public boolean shouldBeAlive(Integer index) {
-    CubeState cube_state = this.cube_states.get(index);    
-    Integer alive_neighbor_count = countLiveNeighbors(cube_state);           
-    
+  public boolean shouldLightCube(CubeState cube_state) {
+    // Respect rate parameter.
+    if(time_since_last_run < rateParameter.getValuef()) {
+      any_changes_this_run = true;
+      return cube_state.alive;
+    } else {
+      boolean new_life = cycleOfLife(cube_state);
+      new_lives.add(new_life);
+      return new_life;
+    }
+  }
+
+  public void applyNewLives() {
+    int index = 0;
+    for(boolean liveliness: new_lives) {
+      CubeState cube_state = this.cube_states.get(index);
+      cube_state.alive = new_lives.get(index);
+      index++;
+    }
+  }
+      
+  public boolean cycleOfLife(CubeState cube_state) {
+    Integer index = cube_state.index;
+    Integer alive_neighbor_count = countLiveNeighbors(cube_state);               
     boolean before_alive = cube_state.alive;
-            
+    boolean after_alive = before_alive;
+              
     if(cube_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 3) {
-        cube_state.alive = false;
+        after_alive = false;
       } else {
-        cube_state.alive = true;
+        after_alive = true;
       }
       
     } else {
-      if(alive_neighbor_count == 3) {
-        cube_state.alive = true;
+      if(alive_neighbor_count == 2) {
+        after_alive = true;
       } else {
-         cube_state.alive = false;   
+        after_alive = false;
       }
-    }  
-    
-    this.cube_states.set(index, cube_state);
-    
-    if(before_alive != cube_state.alive) {
-      any_changes_this_run = true;    
-    }   
-    return cube_state.alive;
+    }
+
+    if(before_alive != after_alive) {
+      any_changes_this_run = true;
+    }
+
+    return after_alive;
   }
       
   public Integer countLiveNeighbors(CubeState cube_state) {
@@ -161,33 +230,202 @@ class Life extends SCPattern {
     }   
     
     return count;
-  }    
-  
-  public void lightLiveCube(Cube cube) {    
-    for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      float bv = max(0, 100 - abs(p.y - yPos.getValuef()));
-      colors[p.index] = lx.hsb(
-        hv,
-        100,        
-        //bv
-        75
-      );
-    }        
+  }         
+}
+
+class L8onAutomata extends SCPattern {
+  // Controls if the points should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the rate of life algorithm ticks, in milliseconds
+  private BasicParameter rateParameter = new BasicParameter("RATE", 75.0, 0.0, 1000.0);
+
+  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+
+  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MAX_ALIVE_PROBABILITY = 0.9;
+
+  class PointState {
+     // Index of cube in glucose.model.cubes
+     public Integer index;
+     // Boolean which describes if cube is alive.
+     public boolean alive;
+
+     public PointState(Integer index, boolean alive) {
+       this.index = index;
+       this.alive = alive;
+     }
   }
-  
-  public void lightDeadCube(Cube cube) {
-    for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      float bv = max(0, MAX_DEAD_BRIGHTNESS - abs(p.y - yPos.getValuef()));
-      
-      colors[p.index] = lx.hsb(
-        hv,
-        100,        
-        //bv
-        10
-      );     
-    }  
+
+  // Contains the state of all cubes by index.
+  private List<PointState> point_states;
+  // Contains the amount of time since the last cycle of life.
+  private int time_since_last_run;
+  // Boolean describing if life changes were made during the current run.
+  private boolean any_changes_this_run;
+  // Hold the new lives
+  private List<Boolean> new_states;
+
+  public L8onAutomata(GLucose glucose) {
+     super(glucose);
+
+     //Print debug info about the cubes.
+     //outputCubeInfo();
+
+     initPointStates();
+     randomizePointStates();
+     time_since_last_run = 0;
+     any_changes_this_run = false;
+     new_states = new ArrayList<Boolean>();
+
+     addParameter(randomParameter);
+     addParameter(rateParameter);
+     addModulator(zPos).trigger();
   }
-  
+
+  private void initPointStates() {
+    boolean alive = false;
+    PointState point_state;
+    this.point_states = new ArrayList<PointState>();
+    Integer i = 0;
+
+    for (LXPoint p : model.points) {
+      alive = true;
+      point_state = new PointState(i, alive);
+      this.point_states.add(point_state);
+      ++i;
+    }
+  }
+
+  public void run(double deltaMs) {
+    Integer i = 0;
+    PointState point_state;
+
+    any_changes_this_run = false;
+    new_states.clear();
+    time_since_last_run += deltaMs;
+
+    for (LXPoint p : model.points) {
+      point_state = this.point_states.get(i);
+
+      if(shouldLightPoint(point_state)) {
+        lightLivePoint(p);
+      } else {
+        lightDeadPoint(p);
+      }
+
+      i++;
+    }
+
+    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
+    if(should_randomize_anyway || !any_changes_this_run) {
+      randomizePointStates();
+    } else {
+      applyNewStates();
+    }
+
+    if(time_since_last_run >= rateParameter.getValuef()) {
+      time_since_last_run = 0;
+    }
+  }
+
+  public void lightLivePoint(LXPoint p) {
+    float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
+    colors[p.index] = lx.hsb(
+      hv,
+      90,
+      80
+    );
+  }
+
+  public void lightDeadPoint(LXPoint p) {
+    colors[p.index] = lx.hsb(
+      lx.getBaseHuef(),
+      0,
+      0
+    );
+  }
+
+  public boolean shouldLightPoint(PointState point_state) {
+    // Respect rate parameter.
+    if(time_since_last_run < rateParameter.getValuef()) {
+      any_changes_this_run = true;
+      return point_state.alive;
+    } else {
+      boolean new_state = cycleOfAutomata(point_state);
+      new_states.add(new_state);
+      return new_state;
+    }
+  }
+
+  public boolean cycleOfAutomata(PointState point_state) {
+    Integer index = point_state.index;
+    Integer alive_neighbor_count = countLiveNeighbors(point_state);
+    boolean before_alive = point_state.alive;
+    boolean after_alive = before_alive;
+
+    if(point_state.alive) {
+      if(alive_neighbor_count == 1) {
+        after_alive = true;
+      } else {
+        after_alive = false;
+      }
+
+    } else {
+      if(alive_neighbor_count == 1) {
+        after_alive = true;
+      } else {
+        after_alive = false;
+      }
+    }
+
+    if(before_alive != after_alive) {
+      any_changes_this_run = true;
+    }
+
+    return after_alive;
+  }
+
+  public int countLiveNeighbors(PointState point_state) {
+    Integer index = point_state.index;
+    PointState before_neighbor;
+    PointState after_neighbor;
+
+    int count = 0;
+    if (index > 0) {
+      before_neighbor = point_states.get(index - 1);
+      if(before_neighbor.alive) {
+        count++;
+      }
+    }
+
+    if (index < (point_states.size() - 1)) {
+      after_neighbor = point_states.get(index + 1);
+      if(after_neighbor.alive) {
+        count++;
+      }
+    }
+
+    return count;
+  }
+
+  private void applyNewStates() {
+    int index = 0;
+    for(boolean new_state: new_states) {
+      PointState point_state = this.point_states.get(index);
+      point_state.alive = new_states.get(index);
+      index++;
+    }
+  }
+
+  private void randomizePointStates() {
+    double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
+    double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
+
+    print("Randomizing points! p = " + prob + "\n");
+
+    for (PointState point_state: this.point_states) {
+      point_state.alive = (Math.random() <= prob);
+    }
+  }
+
 }

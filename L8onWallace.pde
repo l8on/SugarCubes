@@ -1,8 +1,8 @@
 class L8onLife extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
-  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the probability of a mutation in the cycleOfLife
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.000000011, 0.0, 0.1);
   // Controls the brightness of dead cubes.
   private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
   // Controls the saturation.
@@ -11,8 +11,7 @@ class L8onLife extends SCPattern {
   public final double MIN_ALIVE_PROBABILITY = 0.2;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
   
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  private final SawLFO cubePos = new SawLFO(0, model.cubes.size(), 2500);
 
   class CubeState {
      // Index of cube in glucose.model.cubes
@@ -53,8 +52,7 @@ class L8onLife extends SCPattern {
      addParameter(randomParameter);   
      addParameter(deadParameter);
      addParameter(saturationParameter);
-     addModulator(xPos).trigger();
-     addModulator(zPos).trigger();
+     addModulator(cubePos).trigger();
   }
   
   public void run(double deltaMs) {        
@@ -69,16 +67,15 @@ class L8onLife extends SCPattern {
       cube_state = this.cube_states.get(i);
 
       if(shouldLightCube(cube_state)) {
-        lightLiveCube(cube);
+        lightLiveCube(cube, i);
       } else {
-        lightDeadCube(cube);
+        lightDeadCube(cube, i);
       } 
       
       i++;      
     }
     
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizeCubeStates();  
     } else {
       applyNewLives();
@@ -89,9 +86,11 @@ class L8onLife extends SCPattern {
     }    
   }
   
-  public void lightLiveCube(Cube cube) {    
+  public void lightLiveCube(Cube cube, Integer index) {
+    float cube_dist = LXUtils.wrapdistf((float) index, cubePos.getValuef(), model.cubes.size());
+    float hv = (cube_dist / model.cubes.size()) * 360;
+
     for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),        
@@ -100,11 +99,13 @@ class L8onLife extends SCPattern {
     }        
   }
   
-  public void lightDeadCube(Cube cube) {
+  public void lightDeadCube(Cube cube, Integer index) {
+    float cube_dist = LXUtils.wrapdistf((float) index, cubePos.getValuef(), model.cubes.size());
+    float dist_proportion = (cube_dist / (float) model.cubes.size());
+    float hv = dist_proportion * 360;
+    float dead_bright = deadParameter.getValuef() * dist_proportion;
+
     for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      double dead_bright = deadParameter.getValuef() * Math.random();
-      
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),        
@@ -195,6 +196,7 @@ class L8onLife extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(cube_state);               
     boolean before_alive = cube_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
               
     if(cube_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 3) {
@@ -209,6 +211,10 @@ class L8onLife extends SCPattern {
       } else {
         after_alive = false;
       }
+    }
+
+    if(mutation <= randomParameter.getValuef()) {
+      after_alive = !after_alive;
     }
 
     if(before_alive != after_alive) {
@@ -234,12 +240,12 @@ class L8onLife extends SCPattern {
 }
 
 class L8onAutomata extends SCPattern {
-  // Controls if the points should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the probability of a mutation in the cycleOfStripperLife
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.000000011, 0.0, 0.1);
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 75.0, 0.0, 1000.0);
 
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  private final SawLFO pointPos = new SawLFO(0, model.points.size(), 3000);
 
   public final double MIN_ALIVE_PROBABILITY = 0.2;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
@@ -279,7 +285,7 @@ class L8onAutomata extends SCPattern {
 
      addParameter(randomParameter);
      addParameter(rateParameter);
-     addModulator(zPos).trigger();
+     addModulator(pointPos).trigger();
   }
 
   private void initPointStates() {
@@ -308,16 +314,15 @@ class L8onAutomata extends SCPattern {
       point_state = this.point_states.get(i);
 
       if(shouldLightPoint(point_state)) {
-        lightLivePoint(p);
+        lightLivePoint(p, i);
       } else {
-        lightDeadPoint(p);
+        lightDeadPoint(p, i);
       }
 
       i++;
     }
 
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizePointStates();
     } else {
       applyNewStates();
@@ -328,8 +333,10 @@ class L8onAutomata extends SCPattern {
     }
   }
 
-  public void lightLivePoint(LXPoint p) {
-    float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
+  public void lightLivePoint(LXPoint p, Integer index) {
+    float point_dist = LXUtils.wrapdistf((float) index, pointPos.getValuef(), model.points.size());
+    float hv = (point_dist / model.points.size()) * 360;
+
     colors[p.index] = lx.hsb(
       hv,
       90,
@@ -337,9 +344,9 @@ class L8onAutomata extends SCPattern {
     );
   }
 
-  public void lightDeadPoint(LXPoint p) {
+  public void lightDeadPoint(LXPoint p, Integer index) {
     colors[p.index] = lx.hsb(
-      lx.getBaseHuef(),
+      120,
       0,
       0
     );
@@ -362,6 +369,7 @@ class L8onAutomata extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(point_state);
     boolean before_alive = point_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
 
     if(point_state.alive) {
       if(alive_neighbor_count == 1) {
@@ -376,6 +384,10 @@ class L8onAutomata extends SCPattern {
       } else {
         after_alive = false;
       }
+    }
+
+    if(mutation < randomParameter.getValuef()) {
+      after_alive = !after_alive;
     }
 
     if(before_alive != after_alive) {
@@ -421,7 +433,7 @@ class L8onAutomata extends SCPattern {
     double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
     double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
 
-    print("Randomizing points! p = " + prob + "\n");
+    //print("Randomizing points! p = " + prob + "\n");
 
     for (PointState point_state: this.point_states) {
       point_state.alive = (Math.random() <= prob);
@@ -432,8 +444,8 @@ class L8onAutomata extends SCPattern {
 class L8onStrips extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
-  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
+  // Controls the probability of a mutation in the cycleOfStripperLife
+  private BasicParameter randomParameter = new BasicParameter("RAND", 0.000000011, 0.0, 0.1);
   // Controls the brightness of dead cubes.
   private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
   // Controls the saturation.
@@ -442,8 +454,7 @@ class L8onStrips extends SCPattern {
   public final double MIN_ALIVE_PROBABILITY = 0.4;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
 
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  private final SawLFO stripPos = new SawLFO(0, model.strips.size(), 3000);
 
   class StripState {
      // Index of strip in glucose.model.strips
@@ -486,8 +497,7 @@ class L8onStrips extends SCPattern {
      addParameter(deadParameter);
      addParameter(saturationParameter);
 
-     addModulator(xPos).trigger();
-     addModulator(zPos).trigger();
+     addModulator(stripPos).trigger();
   }
 
   public void run(double deltaMs) {
@@ -502,16 +512,15 @@ class L8onStrips extends SCPattern {
       strip_state = this.strip_states.get(i);
 
       if(shouldLightStrip(strip_state)) {
-        lightLiveStrip(strip);
+        lightLiveStrip(strip, i);
       } else {
-        lightDeadStrip(strip);
+        lightDeadStrip(strip, i);
       }
 
       i++;
     }
 
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizeStripStates();
     } else {
       applyNewLives();
@@ -522,9 +531,11 @@ class L8onStrips extends SCPattern {
     }
   }
 
-  public void lightLiveStrip(Strip strip) {
+  public void lightLiveStrip(Strip strip, Integer index) {
+    float strip_dist = LXUtils.wrapdistf((float) index, stripPos.getValuef(), model.strips.size());
+    float hv = (strip_dist / model.strips.size()) * 360;
+
     for (LXPoint p : strip.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
@@ -533,11 +544,13 @@ class L8onStrips extends SCPattern {
     }
   }
 
-  public void lightDeadStrip(Strip strip) {
-    for (LXPoint p : strip.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      double dead_bright = deadParameter.getValuef() * Math.random();
+  public void lightDeadStrip(Strip strip, Integer index) {
+    float strip_dist = LXUtils.wrapdistf((float) index, stripPos.getValuef(), model.strips.size());
+    float dist_proportion = (strip_dist / (float) model.strips.size());
+    float hv = dist_proportion * 360;
+    float dead_bright = deadParameter.getValuef() * dist_proportion;
 
+    for (LXPoint p : strip.points) {
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
@@ -635,6 +648,7 @@ class L8onStrips extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(strip_state);
     boolean before_alive = strip_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
 
     if(strip_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 6) {
@@ -649,6 +663,10 @@ class L8onStrips extends SCPattern {
       } else {
         after_alive = false;
       }
+    }
+
+    if(mutation < randomParameter.getValuef()) {
+      after_alive = !after_alive;
     }
 
     if(before_alive != after_alive) {

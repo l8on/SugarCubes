@@ -443,16 +443,16 @@ class L8onAutomata extends SCPattern {
 
 class L8onStrips extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 1.0, 1000.0);
   // Controls the probability of a mutation in the cycleOfStripperLife
   private BasicParameter randomParameter = new BasicParameter("RAND", 0.000000011, 0.0, 0.1);
-  // Controls the brightness of dead cubes.
-  private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
 
   public final double MIN_ALIVE_PROBABILITY = 0.4;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
+
+  public final float MAX_ALIVE_BRIGHTNESS = 95.0;
 
   private final SawLFO stripPos = new SawLFO(0, model.strips.size(), 3000);
 
@@ -461,10 +461,14 @@ class L8onStrips extends SCPattern {
      public Integer index;
      // Boolean which describes if strip is alive.
      public boolean alive;
+     // Boolean which describes if strip was just changed;
+     public boolean just_changed;
+     // Current brightness
+     public float current_brightness;
      // List of this cubes neighbors
      public List<Integer> neighbors;
 
-     public StripState(Integer index, boolean alive, List<Integer> neighbors) {
+     public StripState(Integer index, boolean alive, float current_brightness, List<Integer> neighbors) {
        this.index = index;
        this.alive = alive;
        this.neighbors = neighbors;
@@ -494,7 +498,6 @@ class L8onStrips extends SCPattern {
 
      addParameter(rateParameter);
      addParameter(randomParameter);
-     addParameter(deadParameter);
      addParameter(saturationParameter);
 
      addModulator(stripPos).trigger();
@@ -512,11 +515,10 @@ class L8onStrips extends SCPattern {
       strip_state = this.strip_states.get(i);
 
       if(shouldLightStrip(strip_state)) {
-        lightLiveStrip(strip, i);
+        lightLiveStrip(strip, strip_state, deltaMs);
       } else {
-        lightDeadStrip(strip, i);
+        lightDeadStrip(strip, strip_state, deltaMs);
       }
-
       i++;
     }
 
@@ -531,30 +533,71 @@ class L8onStrips extends SCPattern {
     }
   }
 
-  public void lightLiveStrip(Strip strip, Integer index) {
+  public void lightLiveStrip(Strip strip, StripState strip_state, double deltaMs) {
+    Integer index = strip_state.index;
     float strip_dist = LXUtils.wrapdistf((float) index, stripPos.getValuef(), model.strips.size());
     float hv = (strip_dist / model.strips.size()) * 360;
+    float bv = strip_state.current_brightness;
+
+    if(!strip_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = min(MAX_ALIVE_BRIGHTNESS, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(index == 100) {
+        print("live prop: " + bright_prop + " bv: " + bv + " current: " + strip_state.current_brightness + "\n");
+      }
+
+      if(strip_state.current_brightness < bv) {
+        strip_state.current_brightness = bv;
+      } else {
+        bv = strip_state.current_brightness;
+      }
+
+      if(index == 100) {
+        print("live bv: " + bv + " current: " + strip_state.current_brightness + "\n");
+      }
+    }
 
     for (LXPoint p : strip.points) {
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
-        75
+        bv
       );
     }
   }
 
-  public void lightDeadStrip(Strip strip, Integer index) {
+  public void lightDeadStrip(Strip strip, StripState strip_state, double deltaMs) {
+    Integer index = strip_state.index;
     float strip_dist = LXUtils.wrapdistf((float) index, stripPos.getValuef(), model.strips.size());
     float dist_proportion = (strip_dist / (float) model.strips.size());
     float hv = dist_proportion * 360;
-    float dead_bright = deadParameter.getValuef() * dist_proportion;
+    float bv =  strip_state.current_brightness;
+
+    if(!strip_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = 1.0 - min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = max(0.0, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(index == 100) {
+        print("dead prop: " + bright_prop + " bv: " + bv + " current: " + strip_state.current_brightness + "\n");
+      }
+
+      if(strip_state.current_brightness > bv) {
+        strip_state.current_brightness = bv;
+      } else {
+        bv = strip_state.current_brightness;
+      }
+
+      if(index == 100) {
+        print("dead bv: " + bv + " current: " + strip_state.current_brightness + "\n");
+      }
+    }
 
     for (LXPoint p : strip.points) {
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
-        dead_bright
+        bv
       );
     }
   }
@@ -570,6 +613,7 @@ class L8onStrips extends SCPattern {
   private void initStripStates() {
     List<Integer> neighbors;
     boolean alive = false;
+    float current_brightness;
     StripState strip_state;
     this.strip_states = new ArrayList<StripState>();
     Integer i = 0;
@@ -579,7 +623,8 @@ class L8onStrips extends SCPattern {
     for (Strip strip : model.strips) {
       neighbors = findStripNeighbors(strip, i);
       alive = true;
-      strip_state = new StripState(i, alive, neighbors);
+      current_brightness = 0.0;
+      strip_state = new StripState(i, alive, current_brightness, neighbors);
       this.strip_states.add(strip_state);
 
       total_neighbors += neighbors.size();
@@ -598,6 +643,11 @@ class L8onStrips extends SCPattern {
 
     for (StripState strip_state : this.strip_states) {
       strip_state.alive = (Math.random() <= prob);
+      if(strip_state.alive) {
+        strip_state.current_brightness = 0;
+      } else{
+        strip_state.current_brightness = MAX_ALIVE_BRIGHTNESS;
+      }
     }
   }
 
@@ -626,6 +676,7 @@ class L8onStrips extends SCPattern {
     // Respect rate parameter.
     if(time_since_last_run < rateParameter.getValuef()) {
       any_changes_this_run = true;
+      strip_state.just_changed = false;
       return strip_state.alive;
     } else {
       boolean new_life = cycleOfStripperLife(strip_state);
@@ -671,6 +722,7 @@ class L8onStrips extends SCPattern {
 
     if(before_alive != after_alive) {
       any_changes_this_run = true;
+      strip_state.just_changed = true;
     }
 
     return after_alive;

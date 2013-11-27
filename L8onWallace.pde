@@ -1,30 +1,34 @@
 class L8onLife extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
-  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
-  // Controls the brightness of dead cubes.
-  private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
+  // Controls the probability of a mutation in the cycleOfLife
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.000000011, 0.0, 0.1);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
     
   public final double MIN_ALIVE_PROBABILITY = 0.2;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
   
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  public final float MAX_ALIVE_BRIGHTNESS = 90.0;
+
+  private final SawLFO cubePos = new SawLFO(0, model.cubes.size(), 4000);
 
   class CubeState {
      // Index of cube in glucose.model.cubes
      public Integer index;
      // Boolean which describes if cube is alive.
      public boolean alive;
+     // Boolean which describes if strip was just changed;
+     public boolean just_changed;
+     // Current brightness
+     public float current_brightness;
      // List of this cubes neighbors
      public List<Integer> neighbors;
 
-     public CubeState(Integer index, boolean alive, List<Integer> neighbors) {
+     public CubeState(Integer index, boolean alive, float current_brightness, List<Integer> neighbors) {
        this.index = index;
        this.alive = alive;
+       this.current_brightness = current_brightness;
        this.neighbors = neighbors;
      }
   }
@@ -50,11 +54,9 @@ class L8onLife extends SCPattern {
      new_lives = new ArrayList<Boolean>();
      
      addParameter(rateParameter);     
-     addParameter(randomParameter);   
-     addParameter(deadParameter);
+     addParameter(mutationParameter);
      addParameter(saturationParameter);
-     addModulator(xPos).trigger();
-     addModulator(zPos).trigger();
+     addModulator(cubePos).trigger();
   }
   
   public void run(double deltaMs) {        
@@ -69,16 +71,15 @@ class L8onLife extends SCPattern {
       cube_state = this.cube_states.get(i);
 
       if(shouldLightCube(cube_state)) {
-        lightLiveCube(cube);
+        lightLiveCube(cube, cube_state, deltaMs);
       } else {
-        lightDeadCube(cube);
+        lightDeadCube(cube, cube_state, deltaMs);
       } 
       
       i++;      
     }
     
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizeCubeStates();  
     } else {
       applyNewLives();
@@ -89,26 +90,52 @@ class L8onLife extends SCPattern {
     }    
   }
   
-  public void lightLiveCube(Cube cube) {    
+  public void lightLiveCube(Cube cube, CubeState cube_state, double deltaMs) {
+    float cube_dist = LXUtils.wrapdistf((float) cube_state.index, cubePos.getValuef(), model.cubes.size());
+    float hv = (cube_dist / model.cubes.size()) * 360;
+    float bv = cube_state.current_brightness;
+
+    if(!cube_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = min(MAX_ALIVE_BRIGHTNESS, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(cube_state.current_brightness < bv) {
+        cube_state.current_brightness = bv;
+      } else {
+        bv = cube_state.current_brightness;
+      }
+    }
+
     for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),        
-        75
+        bv
       );
     }        
   }
   
-  public void lightDeadCube(Cube cube) {
+  public void lightDeadCube(Cube cube, CubeState cube_state, double deltaMs) {
+    float cube_dist = LXUtils.wrapdistf((float) cube_state.index, cubePos.getValuef(), model.cubes.size());
+    float hv = (cube_dist / (float) model.cubes.size()) * 360;
+    float bv =  cube_state.current_brightness;
+
+    if(!cube_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = 1.0 - min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = max(0.0, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(cube_state.current_brightness > bv) {
+        cube_state.current_brightness = bv;
+      } else {
+        bv = cube_state.current_brightness;
+      }
+    }
+
     for (LXPoint p : cube.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      double dead_bright = deadParameter.getValuef() * Math.random();
-      
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),        
-        dead_bright
+        bv
       );     
     }  
   } 
@@ -129,12 +156,13 @@ class L8onLife extends SCPattern {
     boolean alive = false;  
     CubeState cube_state;      
     this.cube_states = new ArrayList<CubeState>();
+    float current_brightness = 0.0;
     Integer i = 0;     
     
-    for (Cube c : model.cubes) {      
+    for (Cube c : model.cubes) {
       neighbors = findCubeNeighbors(c, i);
       alive = true;
-      cube_state = new CubeState(i, alive, neighbors);      
+      cube_state = new CubeState(i, alive, current_brightness, neighbors);
       this.cube_states.add(cube_state);      
       ++i;
     }      
@@ -173,6 +201,7 @@ class L8onLife extends SCPattern {
     // Respect rate parameter.
     if(time_since_last_run < rateParameter.getValuef()) {
       any_changes_this_run = true;
+      cube_state.just_changed = false;
       return cube_state.alive;
     } else {
       boolean new_life = cycleOfLife(cube_state);
@@ -195,6 +224,7 @@ class L8onLife extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(cube_state);               
     boolean before_alive = cube_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
               
     if(cube_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 3) {
@@ -211,7 +241,12 @@ class L8onLife extends SCPattern {
       }
     }
 
+    if(mutation <= mutationParameter.getValuef()) {
+      after_alive = !after_alive;
+    }
+
     if(before_alive != after_alive) {
+      cube_state.just_changed = true;
       any_changes_this_run = true;
     }
 
@@ -234,25 +269,35 @@ class L8onLife extends SCPattern {
 }
 
 class L8onAutomata extends SCPattern {
-  // Controls if the points should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
   // Controls the rate of life algorithm ticks, in milliseconds
   private BasicParameter rateParameter = new BasicParameter("DELAY", 75.0, 0.0, 1000.0);
+  // Controls the probability of a mutation in the cycleOfStripperLife
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.000000011, 0.0, 0.1);
+  // Controls the rate of life algorithm ticks, in milliseconds
+  private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
 
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  private final SawLFO pointPos = new SawLFO(0, model.points.size(), 8000);
 
   public final double MIN_ALIVE_PROBABILITY = 0.2;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
+
+  public final float MAX_ALIVE_BRIGHTNESS = 90.0;
 
   class PointState {
      // Index of cube in glucose.model.cubes
      public Integer index;
      // Boolean which describes if cube is alive.
      public boolean alive;
+     // Boolean which describes if strip was just changed;
+     public boolean just_changed;
+     // Current brightness
+     public float current_brightness;
 
-     public PointState(Integer index, boolean alive) {
+     public PointState(Integer index, boolean alive, float current_brightness) {
        this.index = index;
        this.alive = alive;
+       this.current_brightness = current_brightness;
+       this.just_changed = false;
      }
   }
 
@@ -277,20 +322,21 @@ class L8onAutomata extends SCPattern {
      any_changes_this_run = false;
      new_states = new ArrayList<Boolean>();
 
-     addParameter(randomParameter);
+     addParameter(mutationParameter);
      addParameter(rateParameter);
-     addModulator(zPos).trigger();
+     addParameter(saturationParameter);
+     addModulator(pointPos).trigger();
   }
 
   private void initPointStates() {
-    boolean alive = false;
+    boolean alive = true;
     PointState point_state;
     this.point_states = new ArrayList<PointState>();
     Integer i = 0;
+    float current_brightness = 0.0;
 
     for (LXPoint p : model.points) {
-      alive = true;
-      point_state = new PointState(i, alive);
+      point_state = new PointState(i, alive, current_brightness);
       this.point_states.add(point_state);
       ++i;
     }
@@ -308,16 +354,14 @@ class L8onAutomata extends SCPattern {
       point_state = this.point_states.get(i);
 
       if(shouldLightPoint(point_state)) {
-        lightLivePoint(p);
+        lightLivePoint(p, point_state, deltaMs);
       } else {
-        lightDeadPoint(p);
+        lightDeadPoint(p, point_state, deltaMs);
       }
-
       i++;
     }
 
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizePointStates();
     } else {
       applyNewStates();
@@ -328,20 +372,49 @@ class L8onAutomata extends SCPattern {
     }
   }
 
-  public void lightLivePoint(LXPoint p) {
-    float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
+  public void lightLivePoint(LXPoint p, PointState point_state, double deltaMs) {
+    float point_dist = LXUtils.wrapdistf((float) point_state.index, pointPos.getValuef(), model.points.size());
+    float hv = (point_dist / model.points.size()) * 360;
+    float bv = point_state.current_brightness;
+
+    if(deltaMs >= rateParameter.getValuef() || !point_state.just_changed) {
+      float bright_prop = min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = min(MAX_ALIVE_BRIGHTNESS, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(point_state.current_brightness < bv) {
+        point_state.current_brightness = bv;
+      } else {
+        bv = point_state.current_brightness;
+      }
+    }
+
     colors[p.index] = lx.hsb(
       hv,
-      90,
-      80
+      saturationParameter.getValuef(),
+      bv
     );
   }
 
-  public void lightDeadPoint(LXPoint p) {
+  public void lightDeadPoint(LXPoint p, PointState point_state, double deltaMs) {
+    float point_dist = LXUtils.wrapdistf((float) point_state.index, pointPos.getValuef(), model.points.size());
+    float hv = (point_dist / model.points.size()) * 360;
+    float bv = point_state.current_brightness;
+
+    if(!point_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = 1.0 - min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = max(0.0, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(point_state.current_brightness > bv) {
+        point_state.current_brightness = bv;
+      } else {
+        bv = point_state.current_brightness;
+      }
+    }
+
     colors[p.index] = lx.hsb(
-      lx.getBaseHuef(),
-      0,
-      0
+      hv,
+      saturationParameter.getValuef(),
+      bv
     );
   }
 
@@ -349,6 +422,7 @@ class L8onAutomata extends SCPattern {
     // Respect rate parameter.
     if(time_since_last_run < rateParameter.getValuef()) {
       any_changes_this_run = true;
+      point_state.just_changed = false;
       return point_state.alive;
     } else {
       boolean new_state = cycleOfAutomata(point_state);
@@ -362,6 +436,7 @@ class L8onAutomata extends SCPattern {
     Integer alive_neighbor_count = countLiveNeighbors(point_state);
     boolean before_alive = point_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
 
     if(point_state.alive) {
       if(alive_neighbor_count == 1) {
@@ -378,28 +453,30 @@ class L8onAutomata extends SCPattern {
       }
     }
 
+    if(mutation < mutationParameter.getValuef()) {
+      after_alive = !after_alive;
+    }
+
     if(before_alive != after_alive) {
       any_changes_this_run = true;
+      point_state.just_changed = true;
     }
 
     return after_alive;
   }
 
   public int countLiveNeighbors(PointState point_state) {
-    Integer index = point_state.index;
-    PointState before_neighbor;
-    PointState after_neighbor;
-
     int count = 0;
-    if (index > 0) {
-      before_neighbor = point_states.get(index - 1);
+
+    if (point_state.index > 0) {
+      PointState before_neighbor = point_states.get(point_state.index - 1);
       if(before_neighbor.alive) {
         count++;
       }
     }
 
-    if (index < (point_states.size() - 1)) {
-      after_neighbor = point_states.get(index + 1);
+    if (point_state.index < (point_states.size() - 1)) {
+      PointState after_neighbor = point_states.get(point_state.index + 1);
       if(after_neighbor.alive) {
         count++;
       }
@@ -421,42 +498,48 @@ class L8onAutomata extends SCPattern {
     double prob_range = (1.0 - MIN_ALIVE_PROBABILITY) - (1.0 - MAX_ALIVE_PROBABILITY);
     double prob = MIN_ALIVE_PROBABILITY + (prob_range * Math.random());
 
-    print("Randomizing points! p = " + prob + "\n");
+    //print("Randomizing points! p = " + prob + "\n");
 
     for (PointState point_state: this.point_states) {
       point_state.alive = (Math.random() <= prob);
+      point_state.just_changed = true;
     }
   }
 }
 
-class L8onStrips extends SCPattern {
+class L8onStripLife extends SCPattern {
   // Controls the rate of life algorithm ticks, in milliseconds
-  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 0.0, 1000.0);
-  // Controls if the cubes should be randomized even if something changes. Set above 0.5 to randomize cube aliveness.
-  private BasicParameter randomParameter = new BasicParameter("RAND", 0.0);
-  // Controls the brightness of dead cubes.
-  private BasicParameter deadParameter = new BasicParameter("DEAD", 25.0, 0.0, 100.0);
+  private BasicParameter rateParameter = new BasicParameter("DELAY", 112.5, 1.0, 1000.0);
+  // Controls the probability of a mutation in the cycleOfStripperLife
+  private BasicParameter mutationParameter = new BasicParameter("MUT", 0.000000011, 0.0, 0.1);
   // Controls the saturation.
   private BasicParameter saturationParameter = new BasicParameter("SAT", 90.0, 0.0, 100.0);
 
-  public final double MIN_ALIVE_PROBABILITY = 0.2;
+  public final double MIN_ALIVE_PROBABILITY = 0.4;
   public final double MAX_ALIVE_PROBABILITY = 0.9;
 
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 4500);
-  private final SinLFO zPos = new SinLFO(0, model.zMax, 2500);
+  public final float MAX_ALIVE_BRIGHTNESS = 90.0;
+
+  private final SawLFO stripPos = new SawLFO(0, model.strips.size(), 8000);
 
   class StripState {
      // Index of strip in glucose.model.strips
      public Integer index;
      // Boolean which describes if strip is alive.
      public boolean alive;
+     // Boolean which describes if strip was just changed;
+     public boolean just_changed;
+     // Current brightness
+     public float current_brightness;
      // List of this cubes neighbors
      public List<Integer> neighbors;
 
-     public StripState(Integer index, boolean alive, List<Integer> neighbors) {
+     public StripState(Integer index, boolean alive, float current_brightness, List<Integer> neighbors) {
        this.index = index;
        this.alive = alive;
+       this.current_brightness = current_brightness;
        this.neighbors = neighbors;
+       this.just_changed = false;
      }
   }
 
@@ -469,7 +552,7 @@ class L8onStrips extends SCPattern {
   // Hold the new lives
   private List<Boolean> new_lives;
 
-  public L8onStrips(GLucose glucose) {
+  public L8onStripLife(GLucose glucose) {
      super(glucose);
 
      //Print debug info about the strips.
@@ -482,12 +565,10 @@ class L8onStrips extends SCPattern {
      new_lives = new ArrayList<Boolean>();
 
      addParameter(rateParameter);
-     addParameter(randomParameter);
-     addParameter(deadParameter);
+     addParameter(mutationParameter);
      addParameter(saturationParameter);
 
-     addModulator(xPos).trigger();
-     addModulator(zPos).trigger();
+     addModulator(stripPos).trigger();
   }
 
   public void run(double deltaMs) {
@@ -502,16 +583,14 @@ class L8onStrips extends SCPattern {
       strip_state = this.strip_states.get(i);
 
       if(shouldLightStrip(strip_state)) {
-        lightLiveStrip(strip);
+        lightLiveStrip(strip, strip_state, deltaMs);
       } else {
-        lightDeadStrip(strip);
+        lightDeadStrip(strip, strip_state, deltaMs);
       }
-
       i++;
     }
 
-    boolean should_randomize_anyway = (randomParameter.getValuef() > 0.5);
-    if(should_randomize_anyway || !any_changes_this_run) {
+    if(!any_changes_this_run) {
       randomizeStripStates();
     } else {
       applyNewLives();
@@ -522,26 +601,52 @@ class L8onStrips extends SCPattern {
     }
   }
 
-  public void lightLiveStrip(Strip strip) {
+  public void lightLiveStrip(Strip strip, StripState strip_state, double deltaMs) {
+    float strip_dist = LXUtils.wrapdistf((float) strip_state.index, stripPos.getValuef(), model.strips.size());
+    float hv = (strip_dist / model.strips.size()) * 360;
+    float bv = strip_state.current_brightness;
+
+    if(deltaMs >= rateParameter.getValuef() || !strip_state.just_changed) {
+      float bright_prop = min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = min(MAX_ALIVE_BRIGHTNESS, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(strip_state.current_brightness < bv) {
+        strip_state.current_brightness = bv;
+      } else {
+        bv = strip_state.current_brightness;
+      }
+    }
+
     for (LXPoint p : strip.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.z - zPos.getValuef()));
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
-        75
+        bv
       );
     }
   }
 
-  public void lightDeadStrip(Strip strip) {
-    for (LXPoint p : strip.points) {
-      float hv = max(0, lx.getBaseHuef() - abs(p.x - xPos.getValuef()));
-      double dead_bright = deadParameter.getValuef() * Math.random();
+  public void lightDeadStrip(Strip strip, StripState strip_state, double deltaMs) {
+    float strip_dist = LXUtils.wrapdistf((float) strip_state.index, stripPos.getValuef(), model.strips.size());
+    float hv = (strip_dist / model.strips.size()) * 360;
+    float bv = strip_state.current_brightness;
 
+    if(!strip_state.just_changed || deltaMs >= rateParameter.getValuef()) {
+      float bright_prop = 1.0 - min(((float) time_since_last_run / rateParameter.getValuef()), 1.0);
+      bv = max(0.0, bright_prop * MAX_ALIVE_BRIGHTNESS);
+
+      if(strip_state.current_brightness > bv) {
+        strip_state.current_brightness = bv;
+      } else {
+        bv = strip_state.current_brightness;
+      }
+    }
+
+    for (LXPoint p : strip.points) {
       colors[p.index] = lx.hsb(
         hv,
         saturationParameter.getValuef(),
-        dead_bright
+        bv
       );
     }
   }
@@ -557,6 +662,7 @@ class L8onStrips extends SCPattern {
   private void initStripStates() {
     List<Integer> neighbors;
     boolean alive = false;
+    float current_brightness = 0.0;
     StripState strip_state;
     this.strip_states = new ArrayList<StripState>();
     Integer i = 0;
@@ -566,7 +672,7 @@ class L8onStrips extends SCPattern {
     for (Strip strip : model.strips) {
       neighbors = findStripNeighbors(strip, i);
       alive = true;
-      strip_state = new StripState(i, alive, neighbors);
+      strip_state = new StripState(i, alive, current_brightness, neighbors);
       this.strip_states.add(strip_state);
 
       total_neighbors += neighbors.size();
@@ -585,6 +691,7 @@ class L8onStrips extends SCPattern {
 
     for (StripState strip_state : this.strip_states) {
       strip_state.alive = (Math.random() <= prob);
+      strip_state.just_changed = true;
     }
   }
 
@@ -613,6 +720,7 @@ class L8onStrips extends SCPattern {
     // Respect rate parameter.
     if(time_since_last_run < rateParameter.getValuef()) {
       any_changes_this_run = true;
+      strip_state.just_changed = false;
       return strip_state.alive;
     } else {
       boolean new_life = cycleOfStripperLife(strip_state);
@@ -631,10 +739,10 @@ class L8onStrips extends SCPattern {
   }
 
   public boolean cycleOfStripperLife(StripState strip_state) {
-    Integer index = strip_state.index;
     Integer alive_neighbor_count = countLiveNeighbors(strip_state);
     boolean before_alive = strip_state.alive;
     boolean after_alive = before_alive;
+    double mutation = Math.random();
 
     if(strip_state.alive) {
       if(alive_neighbor_count < 2 || alive_neighbor_count > 6) {
@@ -651,8 +759,13 @@ class L8onStrips extends SCPattern {
       }
     }
 
+    if(mutation < mutationParameter.getValuef()) {
+      after_alive = !after_alive;
+    }
+
     if(before_alive != after_alive) {
       any_changes_this_run = true;
+      strip_state.just_changed = true;
     }
 
     return after_alive;

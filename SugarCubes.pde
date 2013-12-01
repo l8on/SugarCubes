@@ -24,7 +24,7 @@
  */ 
 
 LXPattern[] patterns(GLucose glucose) {
-  return new LXPattern[] {        
+  return new LXPattern[] {
 
     new SineSphere(glucose),
     //new CubeCurl(glucose), 
@@ -83,6 +83,8 @@ LXPattern[] patterns(GLucose glucose) {
     new L8onAutomata(glucose),
     new L8onLife(glucose),
     new L8onStripLife(glucose),
+    new L8onBreathe(glucose),
+    new L8onBreatheSlant(glucose),
 
     // Vincent
     new VSTowers(glucose),

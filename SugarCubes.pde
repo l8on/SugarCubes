@@ -83,8 +83,8 @@ LXPattern[] patterns(GLucose glucose) {
     new L8onAutomata(glucose),
     new L8onLife(glucose),
     new L8onStripLife(glucose),
-    new L8onBreathe(glucose),
-    new L8onBreatheSlant(glucose),
+    new L8onBreatheColor(glucose),
+    new L8onMixColor(glucose),
 
     // Vincent
     new VSTowers(glucose),
@@ -100,8 +100,6 @@ LXPattern[] patterns(GLucose glucose) {
     // Jack
     new Swim(glucose),
     new Balance(glucose),
-    
-
     
     // Ben
     // new Sandbox(glucose),

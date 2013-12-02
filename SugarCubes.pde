@@ -60,6 +60,9 @@ LXPattern[] patterns(GLucose glucose) {
     new Pong (glucose),
     new Worms(glucose),
 
+    // JR
+    new Gimbal(glucose),
+    
     // Alex G
      
      // Tim
@@ -106,9 +109,6 @@ LXPattern[] patterns(GLucose glucose) {
     
     // Shaheen
     //new HelixPattern(glucose).setEligible(false),
-    
-    //JR
-    new Gimbal(glucose),
     
     // Sam
     new JazzRainbow(glucose),
